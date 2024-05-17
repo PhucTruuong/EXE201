@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { StandardResponseModule } from 'nest-standard-response';
 import { DatabaseModule } from './database/database.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { DatabaseModule } from './database/database.module';
     }),
     StandardResponseModule.forRoot({}),
     DatabaseModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [
