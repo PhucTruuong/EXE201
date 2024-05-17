@@ -1,6 +1,8 @@
 import { Sequelize } from 'sequelize-typescript';
 import { SEQUELIZE, DEVELOPMENT, TEST, PRODUCTION } from 'constant';
 import { Dialect } from "@sequelize/core";
+import { Role } from './dabaseModels/role.entity';
+import { User } from './dabaseModels/user.entity';
 
 export const databaseProviders = [
   {
@@ -71,6 +73,8 @@ export const databaseProviders = [
       //console.log('config: ', config);
       //console.log('sequelize: ', sequelize);
       sequelize.addModels([
+        Role,
+        User
       ]);
       //await sequelize.sync({force: true});
       return sequelize;
