@@ -61,8 +61,30 @@ export class RoleRepository implements IRole {
         };
     };
 
+    public async findRoleByName(role_name: string): Promise<object | InternalServerErrorException | NotFoundException> {
+        try {
+            const role = await this.roleModel.findOne({
+                where: {
+                    role_name: role_name
+                },
+                attributes: [
+                    'role_id',
+                    'role_name'
+                ]
+            });
+
+            if (!role) {
+                return new NotFoundException("Role not found!");
+            } else {
+                return role;
+            };
+        } catch (error) {
+            throw new InternalServerErrorException("Error fetching role", error)
+        };
+    };
+
     public async createRole(role_name: string): Promise<any | InternalServerErrorException> {
-        //try {
+        try {
             console.log(role_name)
             const roleExisted = await this.roleModel.findOne({
                 where:{role_name: role_name}
@@ -83,9 +105,9 @@ export class RoleRepository implements IRole {
             });
 
             return newRole;
-        // } catch (error) {
-        //     throw new InternalServerErrorException(error)
-        // };
+        } catch (error) {
+            throw new InternalServerErrorException(error)
+        };
     };
 
     public async updateRole(role: RoleDto): Promise<boolean | InternalServerErrorException> {

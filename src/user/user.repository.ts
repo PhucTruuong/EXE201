@@ -11,16 +11,19 @@ import { User } from 'src/database/dabaseModels/user.entity';
 import { IUser } from './user.interface';
 import { UserPaginationDto, UserModifiedDto, UserCreateDto } from './user.dto';
 import { Op } from 'sequelize';
-import { v4 as uuid } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import { bcryptModule } from 'src/utils/bcryptModule';
+import { Role } from 'src/database/dabaseModels/role.entity';
 
 @Injectable()
 export class UserRepository implements IUser {
     constructor(
         @Inject('USER_REPOSITORY')
         private readonly userModel: typeof User,
-        private readonly bcryptUtils: bcryptModule
-    ) { 
+        private readonly bcryptUtils: bcryptModule,
+        @Inject('ROLE_REPOSITORY')
+        private readonly roleModels: typeof Role
+    ) {
     };
 
     public async findAllUser(pagination: UserPaginationDto): Promise<{
@@ -75,7 +78,7 @@ export class UserRepository implements IUser {
             }
         } catch {
             throw new InternalServerErrorException("Error fetching user");
-        }
+        };
     };
 
     public async createUser(user: UserCreateDto): Promise<object | InternalServerErrorException | ConflictException> {
@@ -89,27 +92,49 @@ export class UserRepository implements IUser {
                 }
             });
 
-            if (!existingUser) {
+            console.log(existingUser);
+
+            if (existingUser !== null) {
                 throw new ConflictException(
-                    `The user has the email ${user.email} or the phone number 
-                    ${user.phone_number} had already exists!`
+                    `The user has the email ${user.email} or the phone number ${user.phone_number} had already exists!`
                 );
             } else {
+                const role = await this.roleModels.findOne({
+                    where: {
+                        role_name: user.role_name
+                    }
+                });
+
+                // console.log("Role: ", role.dataValues);
+                // console.log("Role Id: ", role.role_id)
+
+                if (!role) {
+                    throw new NotFoundException(`The role ${user.role_name} does not exist!`);
+                }
+
+                //console.log("skjdnfkjs");
                 const pwd = await this.bcryptUtils.getHash(user.password);
+                //console.log("Password: ", pwd);
+
                 const newUser = await this.userModel.create({
-                    user_id: uuid(),
+                    user_id: uuidv4(),
                     full_name: user.full_name,
                     email: user.email,
+                    role_id: role.role_id,
                     phone_number: user.phone_number,
                     password_hashed: pwd,
                     account_status: true,
+                    created_at: new Date(),
+                    updated_at: new Date(),
                 });
+
+                //console.log("New user: ", newUser);
 
                 return newUser;
             }
-        } catch {
-            throw new InternalServerErrorException("Error creating user");
-        }
+        } catch (error) {
+            throw new InternalServerErrorException("Error while creating user!", error);
+        };
     };
 
     public async updateUser(user: UserModifiedDto): Promise<boolean | InternalServerErrorException> {
@@ -134,7 +159,7 @@ export class UserRepository implements IUser {
             }
         } catch {
             throw new InternalServerErrorException("Error updating user");
-        }
+        };
     };
 
     public async disableUserAccount(id: number): Promise<boolean | InternalServerErrorException | NotFoundException> {
@@ -154,6 +179,6 @@ export class UserRepository implements IUser {
             }
         } catch {
             throw new InternalServerErrorException("Error disabling user account");
-        }
-    }
-}
+        };
+    };
+};

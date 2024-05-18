@@ -74,7 +74,7 @@ export const databaseProviders = [
       const sequelize = new Sequelize(config);
       //console.log('NODE_ENV: ', process.env.NODE_ENV);
       //console.log('config: ', config);
-      console.log('sequelize: ', sequelize.options);
+      //console.log('sequelize: ', sequelize.options);
       sequelize.addModels([
         Role,
         User
