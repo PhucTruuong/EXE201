@@ -53,7 +53,7 @@ export class User extends Model {
         allowNull: false,
         validate: {
             notEmpty: true,
-            len: [1, 50],
+            len: [1, 100],
         },
     })
     password_hashed: string;
@@ -109,4 +109,4 @@ export class User extends Model {
         defaultValue: new Date(),
     })
     updated_at: Date;
-}
+};

@@ -5,6 +5,7 @@ import { UserService } from './user.service';
 import { UserProviders } from './user.provider';
 import { UserRepository } from './user.repository';
 import { bcryptModule } from 'src/utils/bcryptModule';
+import { RoleProviders } from 'src/role/role.provider';
 
 @Module({
     imports: [
@@ -15,6 +16,7 @@ import { bcryptModule } from 'src/utils/bcryptModule';
         UserService,
         UserRepository,
         bcryptModule,
+        ...RoleProviders,
         ...UserProviders
     ],
 })

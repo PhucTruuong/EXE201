@@ -57,6 +57,14 @@ export class UserCreateDto {
         default: "",
     })
     readonly password: string;
+
+    @IsNotEmpty()
+    @Length(1, 20)
+    @IsString()
+    @ApiProperty({
+        default: "customer",
+    })
+    readonly role_name: string;
 }
 
 export class UserModifiedDto {

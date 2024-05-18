@@ -10,4 +10,5 @@ export interface IRole {
     createRole(role_name: string): Promise<any | InternalServerErrorException>;
     updateRole(role: RoleDto): Promise<boolean | InternalServerErrorException>;
     disableRole(role_id: string): Promise<boolean | InternalServerErrorException | NotFoundException>;
+    findRoleByName(role_name: string): Promise<object | InternalServerErrorException | NotFoundException>;
 }
