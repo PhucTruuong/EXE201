@@ -8,14 +8,14 @@ import {
 import { Role } from './role.entity';
 
 @Table({
-    tableName: 'User',
-    timestamps: true,
+    tableName: 'petcare_user',
+    timestamps: false,
     freezeTableName: true,
 })
 
 export class User extends Model {
     @Column({
-        field: 'UserId',
+        field: 'user_id',
         primaryKey: true,
         type: DataType.UUID,
         allowNull: false,
@@ -25,7 +25,7 @@ export class User extends Model {
     user_id: number;
 
     @Column({
-        field: 'FullName',
+        field: 'full_name',
         type: DataType.STRING(50),
         allowNull: false,
         validate: {
@@ -36,7 +36,7 @@ export class User extends Model {
     full_name: string;
 
     @Column({
-        field: 'Email',
+        field: 'user_email',
         type: DataType.STRING(50),
         allowNull: false,
         validate: {
@@ -48,7 +48,7 @@ export class User extends Model {
     email: string;
 
     @Column({
-        field: 'PasswordHashed',
+        field: 'password_hashed',
         type: DataType.TEXT,
         allowNull: false,
         validate: {
@@ -59,7 +59,7 @@ export class User extends Model {
     password_hashed: string;
 
     @Column({
-        field: 'Phone',
+        field: 'user_phone',
         type: DataType.STRING(12),
         allowNull: false,
         validate: {
@@ -70,7 +70,7 @@ export class User extends Model {
     phone_number: string;
 
     @Column({
-        field: 'Status',
+        field: 'user_status',
         type: DataType.BOOLEAN,
         allowNull: false,
         validate: {
@@ -82,14 +82,14 @@ export class User extends Model {
 
     @ForeignKey(() => Role)
     @Column({
-        field: 'RoleId',
+        field: 'role_id',
         type: DataType.UUID,
         allowNull: false,
     })
     role_id: number;
 
     @Column({
-        field: 'createdAt',
+        field: 'created_at',
         type: DataType.DATE,
         allowNull: false,
         validate: {
@@ -100,7 +100,7 @@ export class User extends Model {
     created_at: Date;
 
     @Column({
-        field: 'updatedAt',
+        field: 'updated_at',
         type: DataType.DATE,
         allowNull: false,
         validate: {

@@ -18,7 +18,7 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: false, // Disable whitelist
       forbidNonWhitelisted: true, // Ensure non-whitelisted properties are rejected
-      transform: true, // Automatically transform payloads to DTO instances
+      transform: true, 
       skipMissingProperties: true,
     }),
   );
