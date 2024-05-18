@@ -3,26 +3,31 @@ import {
     HttpException,
     Injectable,
     InternalServerErrorException,
-    NotFoundException
+    NotFoundException,
+    ConflictException
 } from '@nestjs/common';
+import { UserPaginationDto, UserModifiedDto, UserCreateDto } from './user.dto';
 
 @Injectable()
 export class UserService {
     constructor(private readonly userRepository: UserRepository) { }
 
-    public async findAllUser(): Promise<object[] | InternalServerErrorException | HttpException> {
-        return this.userRepository.findAllUser();
+    public async findAllUser(pagination: UserPaginationDto): Promise<{
+        data: object[],
+        totalCount: number
+    } | InternalServerErrorException | HttpException> {
+        return this.userRepository.findAllUser(pagination);
     }
 
-    public async findUserById(id: number): Promise<object> {
+    public async findUserById(id: number): Promise<object | NotFoundException | InternalServerErrorException> {
         return this.userRepository.findUserById(id);
     }
 
-    public async createUser(user: object): Promise<object> {
+    public async createUser(user: UserCreateDto): Promise<object | InternalServerErrorException | ConflictException> {
         return this.userRepository.createUser(user);
     }
 
-    public async updateUser(user: any): Promise<boolean | InternalServerErrorException> {
+    public async updateUser(user: UserModifiedDto): Promise<boolean | InternalServerErrorException> {
         return this.userRepository.updateUser(user);
     }
 

@@ -48,7 +48,11 @@ export const databaseProviders = [
             port: parseInt(process.env.POSTGRES_PORT),
             dialect: 'postgres' as Dialect,
             dialectOptions: {
-              useUTC: true
+              useUTC: true,
+              ssl:{
+                require: true,
+                rejectUnauthorized: false
+              }
             },
             quoteIdentifiers: false,
           };
@@ -59,25 +63,25 @@ export const databaseProviders = [
             password: process.env.POSTGRES_PASSWORD,
             database: process.env.POSTGRES_DB as string,
             host: process.env.POSTGRES_HOST as string,
-            port: process.env.POSTGRES_PORT,
+            port: parseInt(process.env.POSTGRES_PORT),
             dialect: 'postgres' as Dialect,
             dialectOptions: {
-              useUTC: true
+              useUTC: true,
             },
-            quoteIdentifiers: false,
           };
       }
 
       const sequelize = new Sequelize(config);
       //console.log('NODE_ENV: ', process.env.NODE_ENV);
       //console.log('config: ', config);
-      //console.log('sequelize: ', sequelize);
+      console.log('sequelize: ', sequelize.options);
       sequelize.addModels([
         Role,
         User
       ]);
       //await sequelize.sync({force: true});
       return sequelize;
+
     },
   },
 ];

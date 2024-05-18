@@ -1,84 +1,78 @@
-import { 
-    Controller, 
-    Get, 
-    Param, 
-    Body, 
-    Post, 
+import {
+    Controller,
+    Get,
+    Param,
+    Body,
+    Post,
     Patch,
     ValidationPipe,
     UsePipes
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
-import { 
+import {
     InternalServerErrorException,
     HttpException,
     NotFoundException
 } from '@nestjs/common';
 import { UserService } from './user.service';
+import { UserPaginationDto, UserModifiedDto, UserCreateDto } from './user.dto';
+import { StandardParam, StandardParams, StandardResponse } from 'nest-standard-response';
 
 @ApiTags('Accounts')
 @Controller('user')
 export class UserController {
     constructor(private readonly userService: UserService) { }
 
-    @Get()
-    async findAllUser() {
-        const allUsers = await this.userService.findAllUser();
-        if (allUsers instanceof InternalServerErrorException || 
+    @Post('/all-users')
+    @StandardResponse({
+        isPaginated: true,
+    })
+    async findAllUser(
+        @Body() pagination: UserPaginationDto,
+        @StandardParam() standardParam: StandardParams
+    ) {
+        const allUsers = await this.userService.findAllUser(pagination);
+
+        if (allUsers instanceof InternalServerErrorException ||
             allUsers instanceof HttpException
         ) {
             return allUsers as HttpException | InternalServerErrorException;
+        } else{
+            const { data, totalCount } = allUsers;
+            standardParam.setPaginationInfo({ count: totalCount });
+            return data;
         }
-        return allUsers;
     };
 
     @Get('/:id')
-    async findUserById(@Param('id') id: number) {
-        const user = await this.userService.findUserById(id);
+    async findUserById(@Param('id') user_id: number) {
+        const user = await this.userService.findUserById(user_id);
         if (user instanceof InternalServerErrorException
             || user instanceof NotFoundException
         ) {
-            return user as InternalServerErrorException || NotFoundException; 
+            return user as InternalServerErrorException || NotFoundException;
         } else {
             return user;
         }
     };
 
-    @Post()
+    @Post('/new-user')
     @ApiBody({
-        schema: {
-            type: 'object',
-            properties: {
-                username: { type: 'string' },
-                email: { type: 'string' },
-                password: { type: 'string' },
-                role: { type: 'string' },
-                status: { type: 'string' }
-            }
-        }
+        type: UserCreateDto
     })
-    async createUser(@Body() user: any) {
+    async createUser(@Body() user: UserCreateDto) {
         return await this.userService.createUser(user);
     };
 
-    @UsePipes(new ValidationPipe({ 
+    @UsePipes(new ValidationPipe({
         transform: true,
         skipMissingProperties: true
     }))
     @Patch()
     @ApiBody({
-        schema: {
-            type: 'object',
-            properties: {
-                username: { type: 'string' },
-                email: { type: 'string' },
-                password: { type: 'string' },
-                role: { type: 'string' },
-                status: { type: 'string' }
-            }
-        }
+        type: UserModifiedDto
     })
-    async updateUser(@Body() user: any) {
+    async updateUser(@Body() user: UserModifiedDto) {
         return await this.userService.updateUser(user);
     };
 

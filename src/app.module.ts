@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { StandardResponseModule } from 'nest-standard-response';
 import { DatabaseModule } from './database/database.module';
 import { UserModule } from './user/user.module';
+import { RoleModule } from './role/role.module';
 
 @Module({
   imports: [
@@ -14,10 +15,11 @@ import { UserModule } from './user/user.module';
     StandardResponseModule.forRoot({}),
     DatabaseModule,
     UserModule,
+    RoleModule,
   ],
   controllers: [AppController],
   providers: [
-    AppService
+    AppService,
   ],
 })
 export class AppModule {}

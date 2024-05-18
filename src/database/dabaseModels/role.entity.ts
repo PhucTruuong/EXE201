@@ -9,15 +9,15 @@ import {
 import { User } from './user.entity';
 
 @Table({
-    tableName: 'Role',
-    timestamps: true,
+    tableName: 'petcare_role',
+    timestamps: false,
     freezeTableName: true,
 })
 
 export class Role extends Model {
     @ForeignKey(() => User)
     @Column({
-        field: 'RoleId',
+        field: 'role_id',
         primaryKey: true,
         type: DataType.UUID,
         allowNull: false,
@@ -27,18 +27,18 @@ export class Role extends Model {
     role_id: number;
 
     @Column({
-        field: 'RoleName',
-        type: DataType.STRING(50),
+        field: 'role_name',
+        type: DataType.STRING(10),
         allowNull: false,
         validate: {
             notEmpty: true,
-            len: [1, 50],
+            len: [1, 10],
         }
     })
     role_name: string;
 
     @Column({
-        field: 'Status',
+        field: 'role_status',
         type: DataType.BOOLEAN,
         allowNull: false,
         validate: {
@@ -49,7 +49,7 @@ export class Role extends Model {
     role_status: boolean;
 
     @Column({
-        field: 'createdAt',
+        field: 'created_at',
         type: DataType.DATE,
         allowNull: false,
         validate: {
@@ -60,7 +60,7 @@ export class Role extends Model {
     created_date: Date;
 
     @Column({
-        field: 'updateAt',
+        field: 'updated_at',
         type: DataType.DATE,
         allowNull: false,
         validate: {
