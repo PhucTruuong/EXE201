@@ -17,6 +17,7 @@ export class AuthController {
     return await this.authService.login(loginDto)
   }
   @Get('profile')
+  // @UseGuards(JwtAuthGuard)
   @UseGuards(JwtAuthGuard)
   getProfile(
     @Request() req,

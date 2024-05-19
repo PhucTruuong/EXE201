@@ -35,12 +35,15 @@ export class AuthRepository implements IAuth {
             if (!passwordMatch) {
                 throw new UnauthorizedException('Password not match!');
             }
-            const payload: PayloadType = { email: user.email, userId: user.user_id, full_name: user.full_name }; // 1
+            const payload: PayloadType = { email: user.email, userId: user.user_id, full_name: user.full_name ,
+                role: user.role_id
+            }; // 1
             return {
                 user: {
                     user_id: user.user_id,
                     full_name: user.full_name,
                     email: user.email,
+                    role: user.role_id
                 },
                 accessToken: this.jwtService.sign(payload)
             }
