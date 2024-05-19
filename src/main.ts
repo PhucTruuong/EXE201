@@ -23,7 +23,7 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(443);
+  await app.listen(80);
   const server = app.getHttpServer();
   const address = server.address();
   const port = typeof address === 'string' ? address : address?.port;
