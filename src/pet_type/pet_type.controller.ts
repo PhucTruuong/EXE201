@@ -11,7 +11,6 @@ export class PetTypeController {
   constructor(private readonly petTypeService: PetTypeService) { }
 
   @Post('')
-
   async create(@Body() createPetTypeDto: CreatePetTypeDto
 
   ) {

@@ -2,8 +2,10 @@ import {
     Table, 
     Column, 
     Model,
-    DataType, 
+    DataType,
+    HasMany, 
 } from 'sequelize-typescript';
+import { PetBreed } from './pet_breed.entity';
 @Table({
     tableName: 'petcare_pet_type',
     timestamps: false,
@@ -70,4 +72,7 @@ export class PetType extends Model{
         defaultValue: new Date(),
     })
     updated_at: Date;
+    // Define the association
+    @HasMany(() => PetBreed)
+    petBreeds: PetBreed[];
 }

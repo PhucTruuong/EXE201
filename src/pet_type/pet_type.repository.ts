@@ -116,7 +116,7 @@ export class PetTypeRepository implements IPetType {
             return PetTypeUpdated
         } catch (error) {
             console.log(error);
-            throw new InternalServerErrorException("Error delete one pet type", error)
+            throw new InternalServerErrorException("Error update one pet type", error)
         };
     }
 
