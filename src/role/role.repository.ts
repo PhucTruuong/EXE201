@@ -18,7 +18,7 @@ export class RoleRepository implements IRole {
     ) { };
 
     public async findAllRoles(): Promise<object[] | InternalServerErrorException | NotFoundException> {
-        try {
+        //try {
             const allRoles = await this.roleModel.findAll({
                 attributes: [
                     'role_id',
@@ -34,9 +34,9 @@ export class RoleRepository implements IRole {
             } else {
                 return allRoles;
             };
-        } catch (error) {
-            throw new InternalServerErrorException("Error fetching roles", error)
-        };
+        // } catch (error) {
+        //     throw new InternalServerErrorException("Error fetching roles", error)
+        // };
     };
 
     public async findRoleById(role_id: number): Promise<object | InternalServerErrorException | NotFoundException> {
