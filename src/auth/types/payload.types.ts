@@ -1,6 +1,6 @@
 export interface PayloadType {
     email: string;
-    userId: number;
-    role: number;
+    userId: string;
+    role: string;
     full_name: string;
 }

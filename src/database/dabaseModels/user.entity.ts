@@ -6,13 +6,11 @@ import {
     ForeignKey
 } from 'sequelize-typescript';
 import { Role } from './role.entity';
-
 @Table({
     tableName: 'petcare_user',
     timestamps: false,
     freezeTableName: true,
 })
-
 export class User extends Model {
     @Column({
         field: 'user_id',
@@ -22,7 +20,7 @@ export class User extends Model {
         unique: true,
         defaultValue: DataType.UUID,
     })
-    user_id: number;
+    user_id: string;
 
     @Column({
         field: 'full_name',
@@ -86,8 +84,7 @@ export class User extends Model {
         type: DataType.UUID,
         allowNull: false,
     })
-    role_id: number;
-
+    role_id: string;
     @Column({
         field: 'created_at',
         type: DataType.DATE,
