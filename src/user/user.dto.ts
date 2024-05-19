@@ -4,7 +4,8 @@ import {
     Length,
     IsEmail,
     IsString,
-    IsNumberString
+    IsNumberString,
+    IsOptional
 } from "class-validator";
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -51,7 +52,7 @@ export class UserCreateDto {
     readonly phone_number: string;
 
     @IsNotEmpty()
-    @Length(1, 20)
+    @Length(5, 20)
     @IsString()
     @ApiProperty({
         default: "",
@@ -77,18 +78,21 @@ export class UserModifiedDto {
 
     @Length(1, 50)
     @IsString()
+    @IsOptional()
     @ApiProperty({
         default: "",
     })
     readonly full_name?: string;
 
     @IsEmail()
+    @IsOptional()
     @ApiProperty({
         default: "",
     })
     readonly email?: string;
 
     @IsNumberString()
+    @IsOptional()
     @Length(10, 12)
     @ApiProperty({
         default: "",
