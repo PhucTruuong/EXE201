@@ -6,6 +6,8 @@ import { StandardResponseModule } from 'nest-standard-response';
 import { DatabaseModule } from './database/database.module';
 import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
+import { PetModule } from './pet/pet.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { RoleModule } from './role/role.module';
     DatabaseModule,
     UserModule,
     RoleModule,
+    PetModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [

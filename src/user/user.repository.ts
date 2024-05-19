@@ -61,7 +61,8 @@ export class UserRepository implements IUser {
         try {
             const user = await this.userModel.findOne({
                 where: {
-                    user_id: id
+                    user_id: id,
+                  
                 },
                 attributes: [
                     'user_id',
@@ -133,6 +134,7 @@ export class UserRepository implements IUser {
                 return newUser;
             }
         } catch (error) {
+            console.log("Error: ", error);
             throw new InternalServerErrorException("Error while creating user!", error);
         };
     };
