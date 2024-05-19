@@ -24,7 +24,7 @@ export class Role extends Model {
         unique: true,
         defaultValue: DataType.UUID,
     })
-    role_id: number;
+    role_id: string;
 
     @Column({
         field: 'role_name',

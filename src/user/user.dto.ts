@@ -74,7 +74,7 @@ export class UserModifiedDto {
     @ApiProperty({
         default: 0,
     })
-    readonly user_id: number;
+    readonly user_id: string;
 
     @Length(1, 50)
     @IsString()
