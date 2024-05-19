@@ -22,7 +22,7 @@ export class User extends Model {
         unique: true,
         defaultValue: DataType.UUID,
     })
-    user_id: number;
+    user_id: string;
 
     @Column({
         field: 'full_name',
