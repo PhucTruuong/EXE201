@@ -5,6 +5,7 @@ import { Role } from './dabaseModels/role.entity';
 import { User } from './dabaseModels/user.entity';
 import {PetType} from "./dabaseModels/pet_type.entity"
 import { PetBreed } from './dabaseModels/pet_breed.entity';
+import { Pet } from './dabaseModels/pet.entity';
 export const databaseProviders = [
   {
     provide: SEQUELIZE,
@@ -80,7 +81,8 @@ export const databaseProviders = [
         Role,
         User,
         PetType,
-        PetBreed
+        PetBreed,
+        Pet
       ]);
       //await sequelize.sync({force: true});
       return sequelize;
