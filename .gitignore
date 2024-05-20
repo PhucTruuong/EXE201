@@ -6,7 +6,7 @@
 /seeders
 /migrations
 /config
-
+/secrets
 # Logs
 logs
 *.log
