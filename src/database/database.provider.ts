@@ -46,7 +46,7 @@ export const databaseProviders = [
             password: process.env.POSTGRES_PASSWORD_PRODUCTION,
             database: process.env.POSTGRES_DB_PRODUCTION as string,
             host: process.env.POSTGRES_HOST_PRODUCTION as string,
-            port: parseInt(process.env.POSTGRES_PORT),
+            port: parseInt(process.env.POSTGRES_PORT_PRODUCTION),
             dialect: 'postgres' as Dialect,
             dialectOptions: {
               useUTC: true,
