@@ -119,7 +119,7 @@ export class PetRepository implements IPet {
             if (!pet) {
                 throw new NotFoundException("pet  not found");
             }
-            const PetUpdated = await this.petTypeModel.update(
+            const PetUpdated = await this.petModel.update(
 
                 {
                     pet_name: updatePetDto.pet_name,

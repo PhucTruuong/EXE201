@@ -6,6 +6,11 @@ import { User } from './dabaseModels/user.entity';
 import {PetType} from "./dabaseModels/pet_type.entity"
 import { PetBreed } from './dabaseModels/pet_breed.entity';
 import { Pet } from './dabaseModels/pet.entity';
+import { Category } from './dabaseModels/category.entity';
+import { Brand } from './dabaseModels/brand.entity';
+import { Service } from './dabaseModels/service.entity';
+import { Location } from './dabaseModels/location.entity';
+import { City } from './dabaseModels/city.entity';
 export const databaseProviders = [
   {
     provide: SEQUELIZE,
@@ -82,7 +87,13 @@ export const databaseProviders = [
         User,
         PetType,
         PetBreed,
-        Pet
+        Pet,
+        Category,
+        Brand,
+        Service,
+        Location,
+        City,
+
       ]);
       //await sequelize.sync({force: true});
       return sequelize;
