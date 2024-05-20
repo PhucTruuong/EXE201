@@ -8,6 +8,8 @@ import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
 import { PetModule } from './pet/pet.module';
 import { AuthModule } from './auth/auth.module';
+import { PetTypeModule } from './pet_type/pet_type.module';
+import { PetBreedModule } from './pet_breed/pet_breed.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { AuthModule } from './auth/auth.module';
     RoleModule,
     PetModule,
     AuthModule,
+    PetTypeModule,
+    PetBreedModule,
   ],
   controllers: [AppController],
   providers: [

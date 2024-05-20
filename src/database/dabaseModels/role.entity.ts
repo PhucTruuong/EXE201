@@ -4,7 +4,8 @@ import {
     Model,
     DataType, 
     ForeignKey,
-    HasMany
+    HasMany,
+    // HasMany
 } from 'sequelize-typescript';
 import { User } from './user.entity';
 
@@ -15,7 +16,7 @@ import { User } from './user.entity';
 })
 
 export class Role extends Model {
-    @ForeignKey(() => User)
+     @ForeignKey(() => User)
     @Column({
         field: 'role_id',
         primaryKey: true,
@@ -72,4 +73,6 @@ export class Role extends Model {
 
     @HasMany(() => User, { foreignKey: 'role_id' })
     users: User[];
+    // @HasMany(() => User, { foreignKey: 'role_id' })
+    // users: User[];
 }

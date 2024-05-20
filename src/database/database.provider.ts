@@ -3,7 +3,8 @@ import { SEQUELIZE, DEVELOPMENT, TEST, PRODUCTION } from 'constant';
 import { Dialect } from "@sequelize/core";
 import { Role } from './dabaseModels/role.entity';
 import { User } from './dabaseModels/user.entity';
-
+import {PetType} from "./dabaseModels/pet_type.entity"
+import { PetBreed } from './dabaseModels/pet_breed.entity';
 export const databaseProviders = [
   {
     provide: SEQUELIZE,
@@ -77,7 +78,9 @@ export const databaseProviders = [
       console.log('sequelize: ', sequelize.options);
       sequelize.addModels([
         Role,
-        User
+        User,
+        PetType,
+        PetBreed
       ]);
       //await sequelize.sync({force: true});
       return sequelize;
