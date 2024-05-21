@@ -14,10 +14,11 @@ module.exports = {
   }],
   deploy: {
     production: {
+      key: "/home/ubuntu/.ssh/authorized_keys",
       user: "ubuntu", // Username with deployment permissions
       host: "13.229.136.248", // Your EC2 instance IP address
       ref: "origin/main", // Git branch to deploy
-      repo: "git@github.com:PhucTruuong/EXE201.git", // Your Git repository URL
+      repo: "https://github.com/PhucTruuong/EXE201.git", // Your Git repository URL
       path: "/tmp/EXE201", // Deployment path on the VPS (should match working directory)
       'pre-deploy-local': "", // No pre-deployment tasks needed locally
       'post-deploy': 'npm ci && pm2 reload ecosystem.config.js --env production', // Install dependencies and reload PM2
