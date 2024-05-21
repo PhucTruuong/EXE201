@@ -39,7 +39,6 @@ export class BrandController {
   @UseGuards(JwtAdminGuard)
   @Get()
   @ApiBearerAuth('JWT-auth')
-
   @StandardResponse({
     isPaginated: true,
   })

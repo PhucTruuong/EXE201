@@ -1,26 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateLocationDto } from './dto/create-location.dto';
 import { UpdateLocationDto } from './dto/update-location.dto';
+import { LocationPagination } from './dto/pagination-location.dto';
+import { LocationRepository } from './location.repository';
 
 @Injectable()
 export class LocationService {
-  create(createLocationDto: CreateLocationDto) {
-    return 'This action adds a new location';
+  constructor(private readonly locationRepository: LocationRepository) { }
+  public async find(pagination: LocationPagination): Promise<{
+    data: object[],
+    totalCount: number
+  } | InternalServerErrorException | NotFoundException> {
+    return this.locationRepository.find(pagination)
   }
-
-  findAll() {
-    return `This action returns all location`;
+  public async create(createLocationDto: CreateLocationDto): Promise<
+    object | InternalServerErrorException | HttpException | ConflictException | NotFoundException
+  > {
+    return this.locationRepository.create(createLocationDto)
   }
-
-  findOne(id: number) {
-    return `This action returns a #${id} location`;
+  public async findOne(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
+    return this.locationRepository.findOne(id)
   }
-
-  update(id: number, updateLocationDto: UpdateLocationDto) {
-    return `This action updates a #${id} location`;
+  public async update(id: string, updateLocationDto: UpdateLocationDto): Promise<object | InternalServerErrorException | NotFoundException | HttpException> {
+    return this.locationRepository.update(id, updateLocationDto)
   }
-
-  remove(id: number) {
-    return `This action removes a #${id} location`;
+  public async delete(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
+    return this.locationRepository.delete(id)
   }
 }
