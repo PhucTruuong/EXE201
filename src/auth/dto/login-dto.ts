@@ -5,7 +5,8 @@ export class LoginDto {
     @IsEmail()
     @IsNotEmpty()
     @ApiProperty({
-        default: "nam@gmail.com",
+        example: "nam@gmail.com",
+        description:"Email for login"
     })
     email: string;
 

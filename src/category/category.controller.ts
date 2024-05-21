@@ -1,15 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, ConflictException, InternalServerErrorException, HttpException, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, ConflictException, InternalServerErrorException, HttpException, Query, BadRequestException, UseGuards } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { StandardParam, StandardParams, StandardResponse } from 'nest-standard-response';
 import { CategoryPagination } from './dto/category-pagination.dto';
+import { JwtAdminGuard } from 'src/auth/guard/jwt-admin.guard';
 @ApiTags('Category')
 @Controller('api/v1/category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) { }
-
+   
+  @UseGuards(JwtAdminGuard)
   @Post()
   async create(@Body() createCategoryDto: CreateCategoryDto) {
     const category = await this.categoryService.createCategory(createCategoryDto)
@@ -25,7 +27,7 @@ export class CategoryController {
       return category;
     }
   }
-
+  @UseGuards(JwtAdminGuard)
   @Get()
   @StandardResponse({
     isPaginated: true,
@@ -48,7 +50,7 @@ export class CategoryController {
       return data;
     }
   }
-
+  @UseGuards(JwtAdminGuard)
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const category = await this.categoryService.findOneCategory(id)
@@ -61,7 +63,7 @@ export class CategoryController {
       return category;
     }
   }
-
+  @UseGuards(JwtAdminGuard)
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
     const category = await this.categoryService.updateCategory(id, updateCategoryDto);
@@ -76,7 +78,7 @@ export class CategoryController {
       return category;
     }
   }
-
+  @UseGuards(JwtAdminGuard)
   @Delete(':id')
   async remove(@Param('id') id: string) {
     const category = await this.categoryService.deleteCategory(id)

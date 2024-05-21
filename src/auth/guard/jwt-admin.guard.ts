@@ -4,7 +4,7 @@ import { Observable } from "rxjs";
 import { PayloadType } from "../types/payload.types";
 
 @Injectable()
-export class JwtCustomerGuard extends AuthGuard('jwt') {
+export class JwtAdminGuard extends AuthGuard('jwt') {
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         return super.canActivate(context)
     }
@@ -17,7 +17,7 @@ export class JwtCustomerGuard extends AuthGuard('jwt') {
         console.log("user", user);
         // change to admin id 
 
-        if (user.role === "1f03ec61-2b39-49a0-aafc-5dd845b915a8") {
+        if (user.role === "48adee28-24cf-4860-9ae1-c44f5c1d50f8") {
             return user;
         }
         throw err || new UnauthorizedException();
