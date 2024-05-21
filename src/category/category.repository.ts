@@ -90,7 +90,7 @@ export class CategoryRepository implements ICategory {
             }
         } catch (error) {
             console.log(error);
-            throw new InternalServerErrorException("Error delete one pet ", error)
+            throw new InternalServerErrorException("Error delete one category", error)
         };
     }
    async updateCategory(id: string, updateCategoryDto: UpdateCategoryDto): Promise<object | InternalServerErrorException | NotFoundException | HttpException> {
@@ -101,7 +101,7 @@ export class CategoryRepository implements ICategory {
             if (!pet) {
                 throw new NotFoundException("pet  not found");
             }
-            const PetUpdated = await this.categoryModel.update(
+            const CategoryUpdate = await this.categoryModel.update(
 
                 {
                     category_name: updateCategoryDto.category_name,
@@ -112,7 +112,7 @@ export class CategoryRepository implements ICategory {
                     where: { id: id }
                 }
             )
-            return PetUpdated
+            return CategoryUpdate
         } catch (error) {
             console.log(error);
             throw new InternalServerErrorException("Error update one pet ", error)

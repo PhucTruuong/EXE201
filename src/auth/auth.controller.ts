@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, UseGuards, Request, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login-dto';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guard/jwt.guard';
 import { RegisterDto } from './dto/register-auth.dto';
 
@@ -9,8 +9,13 @@ import { RegisterDto } from './dto/register-auth.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
-  
+
   @Post('login')
+  @ApiOperation({ summary: 'Login user' })
+  @ApiResponse({
+    status: 200,
+    description: 'It will give you the access_token in the response',
+  })
   @ApiBody({
     type: LoginDto
   })
@@ -27,15 +32,15 @@ export class AuthController {
   }
   @Post('register')
   @ApiBody({
-    type:RegisterDto
+    type: RegisterDto
   })
-  async register(@Body() registerDto: RegisterDto){
+  async register(@Body() registerDto: RegisterDto) {
     const user = await this.authService.register(registerDto);
     if (user instanceof InternalServerErrorException
-        || user instanceof NotFoundException) {
-        return user as InternalServerErrorException | NotFoundException;
+      || user instanceof NotFoundException) {
+      return user as InternalServerErrorException | NotFoundException;
     } else {
-        return user;
+      return user;
     }
   }
 
