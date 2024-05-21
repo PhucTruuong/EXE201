@@ -14,7 +14,7 @@ module.exports = {
   }],
   deploy: {
     production: {
-      key: "/home/ubuntu/.ssh/id_ed25519.pub",
+      key: "/home/ubuntu/.ssh/authorized_keys",
       user: "ubuntu", // Username with deployment permissions
       host: "13.229.136.248", // Your EC2 instance IP address
       ref: "origin/main", // Git branch to deploy
