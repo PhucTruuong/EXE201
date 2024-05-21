@@ -1,34 +1,90 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, InternalServerErrorException, ConflictException, HttpException, Query } from '@nestjs/common';
 import { PetService } from './pet.service';
 import { CreatePetDto } from './dto/create-pet.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
-
+import { ApiTags } from '@nestjs/swagger';
+import { StandardParam, StandardParams, StandardResponse } from 'nest-standard-response';
+import { PetPagination } from './dto/pet-pagination.dto';
+@ApiTags('Pet')
 @Controller('pet')
 export class PetController {
-  constructor(private readonly petService: PetService) {}
+  constructor(private readonly petService: PetService) { }
 
   @Post()
-  create(@Body() createPetDto: CreatePetDto) {
-    return this.petService.create(createPetDto);
+  async create(@Body() createPetDto: CreatePetDto) {
+    const pet = await this.petService.createPet(createPetDto)
+
+    if (pet instanceof InternalServerErrorException
+      || pet instanceof NotFoundException
+      || pet instanceof ConflictException
+      || pet instanceof HttpException
+    ) {
+      return pet as InternalServerErrorException || NotFoundException || ConflictException || HttpException;
+    } else {
+      return pet;
+    }
   }
 
   @Get()
-  findAll() {
-    return this.petService.findAll();
+  @StandardResponse({
+    isPaginated: true,
+  })
+  async findAll(
+    @Query() pagination: PetPagination,
+    @StandardParam() standardParam: StandardParams
+  ) {
+    const allPet = await this.petService.findAllPet(pagination);
+    if (allPet instanceof InternalServerErrorException ||
+      allPet instanceof HttpException
+    ) {
+      return allPet as HttpException | InternalServerErrorException;
+    } else {
+      const { data, totalCount } = allPet;
+      standardParam.setPaginationInfo({ count: totalCount });
+      return data;
+    }
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.petService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    const pet = await this.petService.findOnePet(id)
+    if (pet instanceof InternalServerErrorException
+      || pet instanceof NotFoundException
+      || pet instanceof HttpException
+    ) {
+      return pet as InternalServerErrorException || NotFoundException || HttpException;
+    } else {
+      return pet;
+    }
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePetDto: UpdatePetDto) {
-    return this.petService.update(+id, updatePetDto);
+  async update(@Param('id') id: string, @Body() updatePetDto: UpdatePetDto) {
+    const pet = await this.petService.updatePet(id, updatePetDto);
+
+    if (pet instanceof InternalServerErrorException
+      || pet instanceof NotFoundException
+      || pet instanceof HttpException
+
+    ) {
+      return pet as InternalServerErrorException || HttpException || NotFoundException;
+    } else {
+      return pet;
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.petService.remove(+id);
+  async remove(@Param('id') id: string) {
+    const pet = await this.petService.deletePet(id)
+
+    if (pet instanceof InternalServerErrorException
+      || pet instanceof NotFoundException
+      || pet instanceof HttpException
+
+    ) {
+      return pet as InternalServerErrorException || HttpException || NotFoundException;
+    } else {
+      return pet;
+    }
   }
 }

@@ -10,6 +10,7 @@ import { PetModule } from './pet/pet.module';
 import { AuthModule } from './auth/auth.module';
 import { PetTypeModule } from './pet_type/pet_type.module';
 import { PetBreedModule } from './pet_breed/pet_breed.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PetBreedModule } from './pet_breed/pet_breed.module';
     AuthModule,
     PetTypeModule,
     PetBreedModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [

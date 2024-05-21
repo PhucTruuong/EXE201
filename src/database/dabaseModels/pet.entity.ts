@@ -28,7 +28,7 @@ export class Pet extends Model {
     type: DataType.DATE,
     allowNull: false,
   })
-  pet_DOB: Date;
+  pet_dob: Date;
 
   @Column({
     type: DataType.FLOAT,
