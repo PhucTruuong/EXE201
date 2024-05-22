@@ -12,6 +12,7 @@ import { AuthProviders } from './auth.provider';
 import { UserModule } from 'src/user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategy/jwt.stategy';
+import { firebaseProviders } from 'src/firebase/firebase.provider';
 
 @Module({
   imports: [
@@ -27,11 +28,13 @@ import { JwtStrategy } from './strategy/jwt.stategy';
   ],
   controllers: [AuthController],
   providers: [AuthService,
+    
     JwtStrategy,
     UserService,
     UserRepository,
     AuthRepository,
     bcryptModule,
+    ...firebaseProviders,
     ...UserProviders,
     ...RoleProviders,
     ...AuthProviders,

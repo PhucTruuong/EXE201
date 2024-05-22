@@ -8,6 +8,11 @@ import { JwtService } from "@nestjs/jwt";
 import { RegisterDto } from "./dto/register-auth.dto";
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from "sequelize";
+// import { FirebaseAdmin, InjectFirebaseAdmin } from "nestjs-firebase";
+import { UserRecord } from "firebase-admin/lib/auth/user-record";
+import * as admin from 'firebase-admin';
+import { TokenDto } from "./dto/token-auth.dto";
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthRepository implements IAuth {
@@ -16,9 +21,9 @@ export class AuthRepository implements IAuth {
         private readonly userModel: typeof User,
         private readonly bcryptUtils: bcryptModule,
         private readonly jwtService: JwtService,
-
+        // @InjectFirebaseAdmin() private readonly firebase: FirebaseAdmin,
+        @Inject('FIREBASE_ADMIN') private readonly firebaseApp: admin.app.App,
     ) {
-
     }
     public async register(registerDto: RegisterDto): Promise<object | InternalServerErrorException | NotFoundException> {
         try {
@@ -90,5 +95,83 @@ export class AuthRepository implements IAuth {
             throw new InternalServerErrorException;
         }
 
+    }
+
+    async loginWithGoogle(tokenDto: TokenDto): Promise<object | InternalServerErrorException | NotFoundException> {
+        console.log("idToken", tokenDto.idToken);
+        const userRecord = await this.verifyGoogle(tokenDto.idToken);
+        console.log(userRecord);
+        const userExists = await this.userModel.findOne({
+            where: { email: userRecord.email }
+        })
+        if (!userExists) {
+            const newUser = await this.userModel.create({
+                user_id: uuidv4(),
+                full_name: userRecord.name,
+                email:userRecord.email,
+                password_hashed:'random',
+                phone_number: '0000000000',
+                account_status: true,
+                role_id: "1f03ec61-2b39-49a0-aafc-5dd845b915a8",
+                created_at: new Date(),
+                updated_at: new Date(),
+                // avatar: userRecord.avatar,
+            })
+            const payload: PayloadType = {
+                email: newUser.email,
+                userId: newUser.user_id,
+                full_name: newUser.full_name,
+                role: newUser.role_id
+            }; // 1
+            return {
+                user: {
+                    user_id: newUser.user_id,
+                    full_name: newUser.full_name,
+                    email: newUser.email,
+                    role: newUser.role_id
+                },
+                accessToken: this.jwtService.sign(payload)
+            }
+
+        }
+        const payload: PayloadType = {
+            email: userExists.email,
+            userId: userExists.user_id,
+            full_name: userExists.full_name,
+            role: userExists.role_id
+        }; // 1
+        return {
+            user: {
+                user_id: userExists.user_id,
+                full_name: userExists.full_name,
+                email: userExists.email,
+                role: userExists.role_id
+            },
+            accessToken: this.jwtService.sign(payload)
+        }
+    }
+
+    private async verifyGoogle(idToken: string) {
+        const decodedUser: UserRecord = await this.verifyTokenFromClient(idToken);
+        const user = {
+            email: decodedUser.email,
+            name: decodedUser.displayName,
+            avatar: decodedUser.photoURL,
+        };
+
+        return user;
+    }
+    private async verifyTokenFromClient(idToken: string) {
+        try {
+            console.log("Verifying ID token:", idToken);
+            const decodedIdToken = await this.firebaseApp.auth().verifyIdToken(idToken);
+            console.log("Decoded ID token:", decodedIdToken);
+            const userRecord = await this.firebaseApp.auth().getUser(decodedIdToken.uid)
+            return userRecord;
+        } catch (error) {
+            console.log(error);
+            throw new InternalServerErrorException()
+
+        }
     }
 }

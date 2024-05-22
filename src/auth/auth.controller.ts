@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, UseGuards, Request, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request, InternalServerErrorException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login-dto';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guard/jwt.guard';
 import { RegisterDto } from './dto/register-auth.dto';
+import { TokenDto } from './dto/token-auth.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -42,6 +43,16 @@ export class AuthController {
     } else {
       return user;
     }
+  }
+  @Post('login-google')
+  @ApiBody({
+    type:TokenDto
+  })
+  async loginWitGoogle(@Body() tokenDto: TokenDto) {
+    if (!tokenDto.idToken) {
+      throw new BadRequestException('idToken is required');
+    }
+    return this.authService.loginWithGoogle(tokenDto)
   }
 
 }
