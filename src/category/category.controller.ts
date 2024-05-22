@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, C
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { StandardParam, StandardParams, StandardResponse } from 'nest-standard-response';
 import { CategoryPagination } from './dto/category-pagination.dto';
 import { JwtAdminGuard } from 'src/auth/guard/jwt-admin.guard';
@@ -10,9 +10,15 @@ import { JwtAdminGuard } from 'src/auth/guard/jwt-admin.guard';
 @Controller('api/v1/category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) { }
-   
-  @UseGuards(JwtAdminGuard)
+ 
   @Post()
+  @UseGuards(JwtAdminGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Create a new category' })
+  @ApiResponse({
+    status: 201,
+    description: 'It will create a new category in the response',
+  })
   async create(@Body() createCategoryDto: CreateCategoryDto) {
     const category = await this.categoryService.createCategory(createCategoryDto)
 
@@ -27,8 +33,14 @@ export class CategoryController {
       return category;
     }
   }
-  @UseGuards(JwtAdminGuard)
   @Get()
+  @UseGuards(JwtAdminGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'list aLL  category' })
+  @ApiResponse({
+    status: 201,
+    description: 'It will list all category in the response',
+  })
   @StandardResponse({
     isPaginated: true,
   })
@@ -50,8 +62,14 @@ export class CategoryController {
       return data;
     }
   }
-  @UseGuards(JwtAdminGuard)
   @Get(':id')
+  @UseGuards(JwtAdminGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'list one detail  category' })
+  @ApiResponse({
+    status: 201,
+    description: 'It will list detail category in the response',
+  })
   async findOne(@Param('id') id: string) {
     const category = await this.categoryService.findOneCategory(id)
     if (category instanceof InternalServerErrorException
@@ -63,8 +81,14 @@ export class CategoryController {
       return category;
     }
   }
-  @UseGuards(JwtAdminGuard)
   @Patch(':id')
+  @UseGuards(JwtAdminGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'update  category' })
+  @ApiResponse({
+    status: 200,
+    description: 'It will update category in the response',
+  })
   async update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
     const category = await this.categoryService.updateCategory(id, updateCategoryDto);
 
@@ -80,6 +104,13 @@ export class CategoryController {
   }
   @UseGuards(JwtAdminGuard)
   @Delete(':id')
+  @UseGuards(JwtAdminGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'delete  category' })
+  @ApiResponse({
+    status: 201,
+    description: 'It will delete category in the response',
+  })
   async remove(@Param('id') id: string) {
     const category = await this.categoryService.deleteCategory(id)
 

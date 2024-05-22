@@ -1,13 +1,13 @@
-import { Table, Column, Model, DataType, HasMany } from 'sequelize-typescript';
-import { Service } from './service.entity';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { Service } from './service.entity'; // Adjust the import path as necessary
+import { User } from './user.entity';
 
 @Table({
-  tableName: 'petcare_category', // Define the table name
+  tableName: 'petcare_feedback',
   timestamps: false, // Disable automatic timestamps
-  freezeTableName: true,
-  underscored: true, 
+  freezeTableName: true, // Prevent Sequelize from pluralizing table name
 })
-export class Category extends Model {
+export class Feedback extends Model {
   @Column({
     type: DataType.UUID,
     primaryKey: true,
@@ -16,18 +16,36 @@ export class Category extends Model {
     defaultValue: DataType.UUIDV4, // Generate UUID by default
   })
   id: string;
-
+  @ForeignKey(() => User)
   @Column({
-    type: DataType.STRING(50),
+    type: DataType.UUID,
     allowNull: false,
   })
-  category_name: string;
+  user_id: string;
+  @BelongsTo(() => User)
+  user: User;
+
+  @ForeignKey(() => Service)
+  @Column({
+    type: DataType.UUID,
+    allowNull: false,
+  })
+  service_id: string;
+
+  @BelongsTo(() => Service)
+  service: Service;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  rating: number;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
   })
-  category_description: string;
+  comment: string;
 
   @Column({
     type: DataType.BOOLEAN,
@@ -49,8 +67,4 @@ export class Category extends Model {
     defaultValue: DataType.NOW, // Set current date as default
   })
   updated_at: Date;
-
-    //1
-    @HasMany(() => Service,{ foreignKey: 'category_id' })
-    services: Service[];
 }

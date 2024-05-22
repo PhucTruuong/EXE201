@@ -35,7 +35,7 @@ export class CategoryRepository implements ICategory {
     }
    async findAllCategory(pagination: CategoryPagination): Promise<InternalServerErrorException | HttpException | { data: object[]; totalCount: number; }> {
         try {
-            const { count, rows: allPet } = await this.categoryModel.findAndCountAll({
+            const { count, rows: allCategory } = await this.categoryModel.findAndCountAll({
                 attributes: [
                     'id',
                     'category_name',
@@ -47,11 +47,11 @@ export class CategoryRepository implements ICategory {
                 limit: pagination.limit,
                 offset: (pagination.page - 1) * pagination.limit
             });
-            if (!allPet || count === 0) {
+            if (!allCategory || count === 0) {
                 return new HttpException('No Pet  found!', HttpStatus.NOT_FOUND);
             } else {
                 return {
-                    data: allPet,
+                    data: allCategory,
                     totalCount: count
                 };
             };

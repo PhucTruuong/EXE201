@@ -12,6 +12,9 @@ import { PetTypeModule } from './pet_type/pet_type.module';
 import { PetBreedModule } from './pet_breed/pet_breed.module';
 import { CategoryModule } from './category/category.module';
 import { BrandModule } from './brand/brand.module';
+import { CityModule } from './city/city.module';
+import { LocationModule } from './location/location.module';
+import { ServiceModule } from './service/service.module';
 
 @Module({
   imports: [
@@ -28,6 +31,9 @@ import { BrandModule } from './brand/brand.module';
     PetBreedModule,
     CategoryModule,
     BrandModule,
+    CityModule,
+    LocationModule,
+    ServiceModule,
   ],
   controllers: [AppController],
   providers: [
