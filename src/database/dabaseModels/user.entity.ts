@@ -48,7 +48,7 @@ export class User extends Model {
     @Column({
         field: 'password_hashed',
         type: DataType.TEXT,
-        allowNull: false,
+        allowNull: true,
         validate: {
             notEmpty: true,
             len: [1, 100],

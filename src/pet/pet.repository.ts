@@ -8,6 +8,7 @@ import { PetType } from 'src/database/dabaseModels/pet_type.entity';
 import { PetBreed } from 'src/database/dabaseModels/pet_breed.entity';
 import { PetPagination } from './dto/pet-pagination.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
+import { RequestWithUser } from 'src/interface/request-interface';
 @Injectable()
 export class PetRepository implements IPet {
     constructor(
@@ -20,7 +21,7 @@ export class PetRepository implements IPet {
         @Inject('PET_BREED_REPOSITORY')
         private readonly petBreedModel: typeof PetBreed,
     ) { }
-    async createPet(createPetDto: CreatePetDto): Promise<object | InternalServerErrorException | HttpException | ConflictException | NotFoundException> {
+    async createPet(createPetDto: CreatePetDto,req: RequestWithUser): Promise<object | InternalServerErrorException | HttpException | ConflictException | NotFoundException> {
         try {
             // check name if exits
             const existingPet = await this.petModel.findOne({
@@ -48,12 +49,11 @@ export class PetRepository implements IPet {
             const newPet = this.petModel.create({
                 id: uuidv4(),
                 pet_name: createPetDto.pet_name,
-                color: createPetDto.color,
                 height: createPetDto.height,
                 weight: createPetDto.weight,
                 pet_dob: createPetDto.pet_dob,
                 pet_type_id: createPetDto.pet_type_id,
-                user_id: createPetDto.user_id,
+                user_id: req.user.userId,
                 pet_breed_id: createPetDto.pet_breed_id,
                 createAt: new Date(),
                 updateAt: new Date(),
@@ -61,7 +61,7 @@ export class PetRepository implements IPet {
             return newPet;
         } catch (error) {
             console.log("error from create pet type", error)
-            throw new InternalServerErrorException("Error create pet type", error)
+            throw new InternalServerErrorException("Error create pet`", error)
         };
     }
    async  findAllPet(pagination: PetPagination): Promise<InternalServerErrorException | HttpException | { data: object[]; totalCount: number; }> {
@@ -123,7 +123,6 @@ export class PetRepository implements IPet {
 
                 {
                     pet_name: updatePetDto.pet_name,
-                    color: updatePetDto.color,
                     height: updatePetDto.height,
                     weight: updatePetDto.weight,
                     pet_dob: updatePetDto.pet_dob,

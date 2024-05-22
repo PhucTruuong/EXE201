@@ -17,7 +17,7 @@ export class JwtAdminServiceGuard extends AuthGuard('jwt') {
         console.log("user", user);
         // change to admin id 
 
-        if (user.role === "48adee28-24cf-4860-9ae1-c44f5c1d50f8" ||"48adee28-24cf-4860-9ae1-c44f5c1d50f8") {
+        if (user.role === "31129e6e-6025-494a-a02d-375441ec603a" ||"d1483ebc-22a6-47d1-b442-9f1a632a62cb") {
             return user;
         }
         throw err || new UnauthorizedException();

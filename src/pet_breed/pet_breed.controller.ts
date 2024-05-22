@@ -1,16 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, InternalServerErrorException, NotFoundException, Query, HttpException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, InternalServerErrorException, NotFoundException, Query, HttpException, UseGuards } from '@nestjs/common';
 import { PetBreedService } from './pet_breed.service';
 import { CreatePetBreedDto } from './dto/create-pet_breed.dto';
 import { UpdatePetBreedDto } from './dto/update-pet_breed.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { StandardParam, StandardParams, StandardResponse } from 'nest-standard-response';
 import { PetBreedPagination } from './dto/pagination-pet-breed.dto';
+import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
 @ApiTags('Pet Breeds')
-@Controller('pet-breed')
+@Controller('api/v1/pet-breed')
 export class PetBreedController {
   constructor(private readonly petBreedService: PetBreedService) { }
 
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: ' Create a new pet breed' })
+  @ApiResponse({
+    status: 201,
+    description: 'It will create a new pet breed in the response',
+  })
+  @ApiBody({
+    type: CreatePetBreedDto
+  })
   async create(@Body() createPetBreedDto: CreatePetBreedDto) {
     const petBreeds = await this.petBreedService.createPetBreed(createPetBreedDto);
 
@@ -23,6 +34,13 @@ export class PetBreedController {
     }
   }
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: ' List all pet breeds' })
+  @ApiResponse({
+    status: 200,
+    description: 'It will list  all  pet breeds in the response',
+  })
   @StandardResponse({
     isPaginated: true,
   })
@@ -43,6 +61,13 @@ export class PetBreedController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: ' List detail pet breed' })
+  @ApiResponse({
+    status: 200,
+    description: 'It will return detail  pet breed in the response',
+  })
   async findOne(@Param('id') id: string) {
     const petBreed = await this.petBreedService.findOnePetBreed(id)
     if (petBreed instanceof InternalServerErrorException
@@ -55,6 +80,16 @@ export class PetBreedController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: ' Update pet breed' })
+  @ApiResponse({
+    status: 200,
+    description: 'It will update a  pet breed in the response',
+  })
+  @ApiBody({
+    type:UpdatePetBreedDto
+  })
   async update(@Param('id') id: string, @Body() updatePetBreedDto: UpdatePetBreedDto) {
     const petBreed = await this.petBreedService.updatePetType(id, updatePetBreedDto);
 
@@ -68,6 +103,13 @@ export class PetBreedController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: ' delete one  pet breed' })
+  @ApiResponse({
+    status: 200,
+    description: 'It will delete one  pet breed in the response',
+  })
   async remove(@Param('id') id: string) {
     const petType = await this.petBreedService.deletePetBreed(id)
 

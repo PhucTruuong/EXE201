@@ -3,6 +3,7 @@ import { CreatePetDto } from './dto/create-pet.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
 import { PetPagination } from './dto/pet-pagination.dto';
 import { PetRepository } from './pet.repository';
+import { RequestWithUser } from 'src/interface/request-interface';
 
 @Injectable()
 export class PetService {
@@ -17,10 +18,10 @@ export class PetService {
     return this.petRepository.findAllPet(pagination);
 
   }
-  public async createPet(createPetDto: CreatePetDto): Promise<
+  public async createPet(createPetDto: CreatePetDto , req: RequestWithUser): Promise<
     object | InternalServerErrorException | HttpException | ConflictException | NotFoundException
   > {
-    return this.petRepository.createPet(createPetDto)
+    return this.petRepository.createPet(createPetDto,req)
   }
   public async findOnePet(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
     return this.petRepository.findOnePet(id)

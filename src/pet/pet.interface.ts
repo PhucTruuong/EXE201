@@ -2,13 +2,14 @@ import { ConflictException, HttpException, InternalServerErrorException, NotFoun
 import { PetPagination } from "./dto/pet-pagination.dto";
 import { CreatePetDto } from "./dto/create-pet.dto";
 import { UpdatePetDto } from "./dto/update-pet.dto";
+import { RequestWithUser } from "src/interface/request-interface";
 
 export interface IPet {
     findAllPet(pagination: PetPagination): Promise<{
         data: object[],
         totalCount: number
     } | InternalServerErrorException | HttpException>;
-    createPet(createPetDto: CreatePetDto): Promise<
+    createPet(createPetDto: CreatePetDto ,req: RequestWithUser): Promise<
         object | InternalServerErrorException | HttpException | ConflictException | NotFoundException
     >
     findOnePet(id: string):Promise<object | InternalServerErrorException | HttpException | NotFoundException>

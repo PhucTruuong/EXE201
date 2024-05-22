@@ -5,6 +5,7 @@ import { CreatePetBreedDto } from "./dto/create-pet_breed.dto";
 import { v4 as uuidv4 } from 'uuid';
 import { PetBreedPagination } from "./dto/pagination-pet-breed.dto";
 import { UpdatePetBreedDto } from "./dto/update-pet_breed.dto";
+import { PetType } from "src/database/dabaseModels/pet_type.entity";
 
 @Injectable()
 
@@ -13,6 +14,8 @@ export class PetBreedRepository implements IPetBreed {
     constructor(
         @Inject('PET_BREED_REPOSITORY')
         private readonly petBreedModel: typeof PetBreed,
+        @Inject('PET_TYPE_REPOSITORY')
+        private readonly petTypeModel: typeof PetType,
     ) { }
     async createPetBreed(createPetType: CreatePetBreedDto): Promise<object | InternalServerErrorException | HttpException | ConflictException> {
         try {
@@ -23,6 +26,12 @@ export class PetBreedRepository implements IPetBreed {
             })
             if (existingPetBreed) {
                 throw new ConflictException("Pet Breeds already exists");
+            }
+            const existingPetType = await this.petTypeModel.findOne({
+                where: {id : createPetType.pet_type_id}
+            })
+            if (!existingPetType) {
+                throw new ConflictException("Pet Type is wrong or not found");
             }
             const newPetBreed = this.petBreedModel.create({
                 id: uuidv4(),

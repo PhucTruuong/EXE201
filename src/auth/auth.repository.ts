@@ -12,7 +12,7 @@ import { Op } from "sequelize";
 import { UserRecord } from "firebase-admin/lib/auth/user-record";
 import * as admin from 'firebase-admin';
 import { TokenDto } from "./dto/token-auth.dto";
-import * as crypto from 'crypto';
+
 
 @Injectable()
 export class AuthRepository implements IAuth {
@@ -47,7 +47,7 @@ export class AuthRepository implements IAuth {
                 email: registerDto.email,
                 phone_number: registerDto.phone_number,
                 account_status: true,
-                role_id: "1f03ec61-2b39-49a0-aafc-5dd845b915a8",
+                role_id: "31129e6e-6025-494a-a02d-375441ec603a",
                 password_hashed: pwd,
                 created_at: new Date(),
                 updated_at: new Date(),
@@ -109,10 +109,9 @@ export class AuthRepository implements IAuth {
                 user_id: uuidv4(),
                 full_name: userRecord.name,
                 email:userRecord.email,
-                password_hashed:'random',
-                phone_number: '0000000000',
+                phone_number:this.generateRandomPhoneNumber, // random phone 12 ch
                 account_status: true,
-                role_id: "1f03ec61-2b39-49a0-aafc-5dd845b915a8",
+                role_id: "31129e6e-6025-494a-a02d-375441ec603a",
                 created_at: new Date(),
                 updated_at: new Date(),
                 // avatar: userRecord.avatar,
@@ -173,5 +172,8 @@ export class AuthRepository implements IAuth {
             throw new InternalServerErrorException()
 
         }
+    }
+    private generateRandomPhoneNumber(): string {
+        return Array.from({ length: 12 }, () => Math.floor(Math.random() * 10)).join('');
     }
 }

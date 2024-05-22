@@ -15,7 +15,7 @@ export class JwtCustomerGuard extends AuthGuard('jwt'){
         
          }
          console.log("user",user);
-         if(user.role === "1f03ec61-2b39-49a0-aafc-5dd845b915a8"){
+         if(user.role === "31129e6e-6025-494a-a02d-375441ec603a"){
             return user;
          }
          throw err || new UnauthorizedException();
