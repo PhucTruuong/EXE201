@@ -15,6 +15,7 @@ import { BrandModule } from './brand/brand.module';
 import { CityModule } from './city/city.module';
 import { LocationModule } from './location/location.module';
 import { ServiceModule } from './service/service.module';
+import { FeedbackModule } from './feedback/feedback.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ServiceModule } from './service/service.module';
     CityModule,
     LocationModule,
     ServiceModule,
+    FeedbackModule,
   ],
   controllers: [AppController],
   providers: [

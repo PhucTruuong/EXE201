@@ -183,4 +183,14 @@ export class UserRepository implements IUser {
             throw new InternalServerErrorException("Error disabling user account");
         };
     };
+   public async checkIfUserExists(id: number){
+        const user = await this.userModel.findOne({
+            where:{user_id:id}
+        })
+        if(user){
+            return true;
+        }else{
+            return false
+        }
+    }
 };
