@@ -2,17 +2,17 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-//import * as fs from 'fs';
+import * as fs from 'fs';
 
 async function bootstrap() {
-  // const httpsOptions = {
-  //   key: fs.readFileSync('./secrets/furever-prkey.key'),
-  //   cert: fs.readFileSync('./secrets/fureverpkey.cer'),
-  // };
+  const httpsOptions = {
+    key: fs.readFileSync('./secrets/furever-prkey.key'),
+    cert: fs.readFileSync('./secrets/fureverpkey.cer'),
+  };
 
   const app = await NestFactory.create(
     AppModule,
-    //{ httpsOptions }
+    { httpsOptions }
   );
   const config = new DocumentBuilder()
     .setTitle('Sales API')
