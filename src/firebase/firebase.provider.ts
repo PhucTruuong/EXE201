@@ -21,6 +21,8 @@ export const firebaseProviders: Provider[] = [
                 client_x509_cert_url: configService.get<string>('CLIENT_CERT_URL'),
                 universe_domain: configService.get<string>('UNIVERSAL_DOMAIN'),
             } as admin.ServiceAccount
+            //console.log(configService.get<string>('PRIVATE_KEY'));
+
             return admin.initializeApp({
                 credential: admin.credential.cert(firebaseConfig),
                 storageBucket: 'gs://petcare-6a561.appspot.com',
