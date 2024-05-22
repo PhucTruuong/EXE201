@@ -16,30 +16,37 @@ import { CityModule } from './city/city.module';
 import { LocationModule } from './location/location.module';
 import { ServiceModule } from './service/service.module';
 import { FeedbackModule } from './feedback/feedback.module';
-
+import { FirebaseModule } from 'nestjs-firebase';
+// import * as path from 'path';
+// import * as servicePath from "../petcare-6a561-firebase-adminsdk-1ctgv-f41da1d8c8.json"
 @Module({
-  imports: [
-    ConfigModule.forRoot({ 
-      isGlobal: true,
-    }),
-    StandardResponseModule.forRoot({}),
-    DatabaseModule,
-    UserModule,
-    RoleModule,
-    PetModule,
-    AuthModule,
-    PetTypeModule,
-    PetBreedModule,
-    CategoryModule,
-    BrandModule,
-    CityModule,
-    LocationModule,
-    ServiceModule,
-    FeedbackModule,
-  ],
+  imports:
+    [
+      FirebaseModule,
+      // FirebaseModule.forRoot({
+      //   googleApplicationCredential: path.resolve(__dirname, '../petcare-6a561-firebase-adminsdk-1ctgv-f41da1d8c8.json'),
+      // }),
+      ConfigModule.forRoot({
+        isGlobal: true,
+      }),
+      StandardResponseModule.forRoot({}),
+      DatabaseModule,
+      UserModule,
+      RoleModule,
+      PetModule,
+      AuthModule,
+      PetTypeModule,
+      PetBreedModule,
+      CategoryModule,
+      BrandModule,
+      CityModule,
+      LocationModule,
+      ServiceModule,
+      FeedbackModule,
+    ],
   controllers: [AppController],
   providers: [
     AppService,
   ],
 })
-export class AppModule {}
+export class AppModule { }

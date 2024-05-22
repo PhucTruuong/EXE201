@@ -1,0 +1,13 @@
+import { ApiProperty } from "@nestjs/swagger";
+import { IsNotEmpty, IsString } from "class-validator";
+
+export class TokenDto {
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty({
+        default: "string",
+        example: "eyJhbGciOiJSUzI1NiIsImtpZCI6IjNjOTNjMWEyNGNhZjgyN2I4ZGRlOWY4MmQyMzE1MzY1MDg4YWU2MTIiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiU291bWEgQXRha2kiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jTGQzUmp0UTNSNXNMbjNRbW5TZnFwMFFRT2FpOXcya3VRR0lvNDd5d0pqTTZmak13PXM5Ni1jIiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL3BldGNhcmUtNmE1NjEiLCJhdWQiOiJwZXRjYXJlLTZhNTYxIiwiYXV0aF90aW1lIjoxNzE2MzYyNDgzLCJ1c2VyX2lkIjoiYk5FQldGWVZESWI1SXBoamFQWEUyRGFxSGZXMiIsInN1YiI6ImJORUJXRllWREliNUlwaGphUFhFMkRhcUhmVzIiLCJpYXQiOjE3MTYzNjI0ODMsImV4cCI6MTcxNjM2NjA4MywiZW1haWwiOiJhdGFraXNvdW1hMzk0QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7Imdvb2dsZS5jb20iOlsiMTEwNzg3NjkwMzI2MjMyNDkxNTM4Il0sImVtYWlsIjpbImF0YWtpc291bWEzOTRAZ21haWwuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoiZ29vZ2xlLmNvbSJ9fQ.jWhxkg3kgd3OAe_7rYPQVaUq4cePv8XneAyU2PyUktL7w2fPvgYy1d8DahN4tldp1oRTMOeMdVXcBRZYHjwNaC4JaB0GMLcAUH9h9Q1KdTpNI3Y1AdXnivbplSGpOaOWrypNp5-Fmq7EfP-sviBfRoltDTY0p_S9aWtobQJJiqJV38plzWHuL-qSUe-4Y6-Qr8FunbSomWHkb4isx52BThdE9O97jANuNYt5H0Qcjm4KaqN7kzKsqNSHGNzByA4id-jN717HphDQMqHIZie79UqOdg-dcctV6unLJKHDndFoVAOBdW6lEwuq9BLqu_hPMai2RhdgQX_J6-LXhallrA",
+        description: "the idtokn when user login with firebase , give this fo backend"
+    })
+    idToken: string;
+}
