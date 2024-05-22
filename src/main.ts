@@ -26,7 +26,6 @@ async function bootstrap() {
         name: "JWT",
         description: "Enter JWT token",
         in: "header",
-
       },
       "JWT-auth"
     )
