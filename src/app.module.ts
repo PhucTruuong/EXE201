@@ -14,6 +14,7 @@ import { CategoryModule } from './category/category.module';
 import { BrandModule } from './brand/brand.module';
 import { CityModule } from './city/city.module';
 import { LocationModule } from './location/location.module';
+import { ServiceModule } from './service/service.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { LocationModule } from './location/location.module';
     BrandModule,
     CityModule,
     LocationModule,
+    ServiceModule,
   ],
   controllers: [AppController],
   providers: [

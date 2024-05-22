@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { Brand } from './brand.entity'; // Adjust the import path as necessary
 import { Category } from './category.entity'; // Adjust the import path as necessary
 import { Location } from './location.entity'; // Adjust the import path as necessary
@@ -17,21 +17,24 @@ export class Service extends Model {
     defaultValue: DataType.UUIDV4, // Generate UUID by default
   })
   id: string;
-
+  @BelongsTo(() => Brand)
+  brand: Brand;
   @ForeignKey(() => Brand)
   @Column({
     type: DataType.UUID,
     allowNull: false,
   })
   brand_id: string;
-
+  @BelongsTo(() => Category)
+  category: Category;
   @ForeignKey(() => Category)
   @Column({
     type: DataType.UUID,
     allowNull: false,
   })
   category_id: string;
-
+  @BelongsTo(() => Location)
+  location: Location;
   @ForeignKey(() => Location)
   @Column({
     type: DataType.UUID,
@@ -83,4 +86,7 @@ export class Service extends Model {
     defaultValue: DataType.NOW, // Set current date as default
   })
   updated_at: Date;
+
+  
+
 }

@@ -5,7 +5,7 @@ import { Service } from './service.entity';
   tableName: 'petcare_brand', // Define the table name
   timestamps: false, // Disable automatic timestamps
   freezeTableName: true, // Prevent Sequelize from pluralizing table name
-  underscored: true, 
+  underscored: true,
 })
 export class Brand extends Model {
   @Column({
@@ -49,6 +49,7 @@ export class Brand extends Model {
     defaultValue: DataType.NOW, // Set current date as default
   })
   updated_at: Date;
-  @HasMany(() => Service)
-  service: Service[];
+
+  @HasMany(() => Service ,{ foreignKey: 'brand_id' })
+  services: Service[];
 }

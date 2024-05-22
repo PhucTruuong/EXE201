@@ -44,13 +44,13 @@ export class LocationRepository implements ILocation {
     }
   async  delete(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
         try {
-            const location = await this.cityModel.findOne({
+            const location = await this.locationModel.findOne({
                 where: { id: id }
             })
             if (!location) {
                 throw new NotFoundException("item  not found");
             }
-            await this.cityModel.destroy({
+            await this.locationModel.destroy({
                 where: { id: id }
             })
             return {
@@ -63,7 +63,7 @@ export class LocationRepository implements ILocation {
     }
   async  find(pagination: LocationPagination): Promise<InternalServerErrorException | NotFoundException | { data: object[]; totalCount: number; }> {
     try {
-        const { count, rows: allBrand } = await this.locationModel.findAndCountAll({
+        const { count, rows: allItem } = await this.locationModel.findAndCountAll({
             attributes: [
                 'id',
                 'location_name',
@@ -74,13 +74,14 @@ export class LocationRepository implements ILocation {
                 'updated_at',
             ],
             limit: pagination.limit,
-            offset: (pagination.page - 1) * pagination.limit
+            offset: (pagination.page - 1) * pagination.limit,
+            include:[{model:City,required:true}]
         });
-        if (!allBrand || count === 0) {
+        if (!allItem || count === 0) {
             return new NotFoundException()
         } else {
             return {
-                data: allBrand,
+                data: allItem,
                 totalCount: count
             };
         };

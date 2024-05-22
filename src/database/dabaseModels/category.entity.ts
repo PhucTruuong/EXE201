@@ -51,6 +51,6 @@ export class Category extends Model {
   updated_at: Date;
 
     //1
-    @HasMany(() => Service)
-    service: Service[];
+    @HasMany(() => Service,{ foreignKey: 'category_id' })
+    services: Service[];
 }

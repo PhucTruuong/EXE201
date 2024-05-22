@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, ForeignKey, HasMany } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, HasMany, BelongsTo } from 'sequelize-typescript';
 import { City } from './city.entity'; // Adjust the import path as necessary
 import { Service } from './service.entity';
 
@@ -49,7 +49,8 @@ export class Location extends Model {
         defaultValue: DataType.NOW, // Set current date as default
     })
     updated_at: Date;
-
+    @BelongsTo(() => City)
+    city: City;
     @ForeignKey(() => City)
     @Column({
         type: DataType.UUID,
@@ -57,6 +58,6 @@ export class Location extends Model {
     })
     city_id: string;
     //
-    @HasMany(() => Service)
-    service: Service[];
+    @HasMany(() => Service,{ foreignKey: 'location_id' })
+    services: Service[];
 }

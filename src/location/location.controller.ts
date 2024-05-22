@@ -8,7 +8,6 @@ import { StandardParam, StandardParams, StandardResponse } from 'nest-standard-r
 import { LocationPagination } from './dto/pagination-location.dto';
 @ApiTags('Location')
 @Controller('api/v1/location')
-
 export class LocationController {
   constructor(private readonly locationService: LocationService) { }
 
@@ -114,22 +113,22 @@ export class LocationController {
   @Delete(':id')
   @UseGuards(JwtAdminServiceGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'List detail  Location' })
+  @ApiOperation({ summary: 'delete  Location' })
   @ApiResponse({
     status: 200,
-    description: 'It will list detail location in the response',
+    description: 'It will delete location in the response',
   })
   async remove(@Param('id') id: string) {
-    const brand = await this.locationService.delete(id)
+    const location = await this.locationService.delete(id)
 
-    if (brand instanceof InternalServerErrorException
-      || brand instanceof NotFoundException
-      || brand instanceof HttpException
+    if (location instanceof InternalServerErrorException
+      || location instanceof NotFoundException
+      || location instanceof HttpException
 
     ) {
-      return brand as InternalServerErrorException || HttpException || NotFoundException;
+      return location as InternalServerErrorException || HttpException || NotFoundException;
     } else {
-      return brand;
+      return location;
     }
   }
 }
