@@ -2,7 +2,7 @@ module.exports = {
   apps: [{
     name: "fureverfriend-app", // Replace with your actual application name
     script: "npm", // Use npm to run the script
-    args: "run start:prod", // Specify the production script (assuming "start:prod")
+    args: "run start:dev", // Specify the production script (assuming "start:prod")
     cwd: "/tmp/EXE201", // Working directory on the VPS where your project is deployed
     watch: ["!./node_modules/**", "./src/**", "./main.ts"], // Watch relevant directories for changes
     instances: 1, // Number of instances to create
