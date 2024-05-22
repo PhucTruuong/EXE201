@@ -4,12 +4,16 @@ import {
     Param,
     Body,
     Post,
+    UseGuards,
     // Patch,
     // ValidationPipe,
     // UsePipes
 } from '@nestjs/common';
 import { 
+    ApiBearerAuth,
     ApiBody, 
+    ApiOperation, 
+    ApiResponse, 
     ApiTags 
 } from '@nestjs/swagger';
 import {
@@ -23,13 +27,21 @@ import {
     CreateRoleDto 
 } from './role.dto';
 import { RoleService } from './role.service';
+import { JwtAdminGuard } from 'src/auth/guard/jwt-admin.guard';
 
 @ApiTags('Role')
-@Controller('role')
+@Controller('api/v1/role')
 export class RoleController {
     constructor(private readonly roleService: RoleService) { };
 
-    @Get('/all-roles')
+    @Get('')
+    @UseGuards(JwtAdminGuard)
+    @ApiBearerAuth('JWT-auth')
+    @ApiOperation({ summary: ' [ADMIN] list all roles' })
+    @ApiResponse({
+      status: 201,
+      description: '[ADMIN] It will list all in the response',
+    })
     async getAllRole() {
         const allRoles = await this.roleService.findAllRole()
         if (allRoles instanceof InternalServerErrorException ||
@@ -40,7 +52,14 @@ export class RoleController {
         }
     }
 
-    @Get('/:id')
+    @Get(':id')
+    @UseGuards(JwtAdminGuard)
+    @ApiBearerAuth('JWT-auth')
+    @ApiOperation({ summary: ' [ADMIN] detail  role' })
+    @ApiResponse({
+      status: 201,
+      description: '[ADMIN] It will detail role in the response',
+    })
     async getARole(@Param('id') role_id: number) {
         const role = await this.roleService.findRoleById(role_id);
         if (role instanceof InternalServerErrorException
@@ -51,7 +70,14 @@ export class RoleController {
         }
     }
 
-    @Post('/new-role')
+    @Post('/')
+    @UseGuards(JwtAdminGuard)
+    @ApiBearerAuth('JWT-auth')
+    @ApiOperation({ summary: ' [ADMIN] create a new roles' })
+    @ApiResponse({
+      status: 201,
+      description: '[ADMIN] It will  create in the response',
+    })
     @ApiBody({
         type: CreateRoleDto
     })

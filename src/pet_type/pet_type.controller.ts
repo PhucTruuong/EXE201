@@ -1,16 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, InternalServerErrorException, HttpException, NotFoundException, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, InternalServerErrorException, HttpException, NotFoundException, Query, UseGuards } from '@nestjs/common';
 import { PetTypeService } from './pet_type.service';
 import { CreatePetTypeDto } from './dto/create-pet_type.dto';
 import { UpdatePetTypeDto } from './dto/update-pet_type.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { StandardParam, StandardParams, StandardResponse } from 'nest-standard-response';
 import { PetTypePagination } from './dto/pet-type-pagination.dto';
+import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
 @ApiTags('Pet Types')
-@Controller('pet-type')
+@Controller('api/v1/pet-type')
 export class PetTypeController {
   constructor(private readonly petTypeService: PetTypeService) { }
 
   @Post('')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: ' Create a new pet type' })
+  @ApiResponse({
+    status: 201,
+    description: ' It will create a new pet type in the response',
+  })
+  @ApiBody({
+    type: CreatePetTypeDto
+  })
   async create(@Body() createPetTypeDto: CreatePetTypeDto
 
   ) {
@@ -26,6 +37,13 @@ export class PetTypeController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: ' List all  pet types' })
+  @ApiResponse({
+    status: 200,
+    description: ' It will list all  pet type in the response',
+  })
   @StandardResponse({
     isPaginated: true,
   })
@@ -45,6 +63,13 @@ export class PetTypeController {
     }
   }
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: '  detail pet type' })
+  @ApiResponse({
+    status: 200,
+    description: ' It will return detail   pet type in the response',
+  })
   async findOne(@Param('id') id: string) {
     const petType = await this.petTypeService.findOnePetType(id)
     if (petType instanceof InternalServerErrorException
@@ -57,6 +82,16 @@ export class PetTypeController {
   };
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Update   pet type' })
+  @ApiResponse({
+    status: 200,
+    description: ' It will update  pet type in the response',
+  })
+  @ApiBody({
+    type:UpdatePetTypeDto
+  })
   async update(@Param('id') id: string, @Body() updatePetTypeDto: UpdatePetTypeDto) {
     const petType = await this.petTypeService.updatePetType(id, updatePetTypeDto);
 
@@ -70,6 +105,13 @@ export class PetTypeController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: ' delete  pet types' })
+  @ApiResponse({
+    status: 200,
+    description: ' It will delete pet type in the response',
+  })
   async remove(@Param('id') id: string) {
     const petType = await this.petTypeService.deletePetType(id)
 

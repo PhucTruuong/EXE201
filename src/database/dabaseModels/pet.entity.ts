@@ -35,13 +35,6 @@ export class Pet extends Model {
     allowNull: false,
   })
   height: number;
-
-  @Column({
-    type: DataType.STRING(20),
-    allowNull: false,
-  })
-  color: string;
-
   @Column({
     type: DataType.FLOAT,
     allowNull: false,

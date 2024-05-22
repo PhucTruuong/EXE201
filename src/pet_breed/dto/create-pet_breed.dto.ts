@@ -1,11 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsString, IsUUID } from "class-validator";
 
 export class CreatePetBreedDto {
     @IsString()
     @IsNotEmpty()
     @ApiProperty({
-        default: "dog",
+        default: "alaska",
+        example:"alaska",
+        description:"name of dog breed exmaple : pug , phuc , alaska"
     })
     breed_name: string;
 
@@ -13,10 +15,12 @@ export class CreatePetBreedDto {
     @IsNotEmpty()
     @ApiProperty({
         default: "dog is cute",
+        example:"pug is angry",
+        description:"describe about this breed pet"
     })
     breed_description: string;
 
-    @IsString()
+    @IsUUID()
     @IsNotEmpty()
     @ApiProperty({
         default: "id of pet type",
