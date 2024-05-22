@@ -1,7 +1,6 @@
 import { Provider } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { getStorage } from 'firebase-admin/storage';
-// import * as serviceAccount from '../../petcare-6a561-firebase-adminsdk-1ctgv-f41da1d8c8.json';
 import { ConfigService } from '@nestjs/config';
 
 export const firebaseProviders: Provider[] = [
