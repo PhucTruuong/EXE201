@@ -30,21 +30,21 @@ export class PetRepository implements IPet {
                 }
             })
             if (existingPet) {
-                throw new ConflictException("Pet  already exists , choose other name");
+                return  new ConflictException("Pet  already exists , choose other name");
             }
             // check pet type
             const existingPetType = await this.petTypeModel.findOne({
                 where: { id: createPetDto.pet_type_id }
             })
             if (!existingPetType) {
-                throw new NotFoundException("Pet Type not found");
+                return  new NotFoundException("Pet Type not found");
             }
             // check pet breed
             const existingPetBreed = await this.petBreedModel.findOne({
                 where: { id: createPetDto.pet_breed_id }
             })
             if (!existingPetBreed) {
-                throw new NotFoundException("Pet  Breed not found");
+                return  new NotFoundException("Pet  Breed not found");
             }
             const newPet = this.petModel.create({
                 id: uuidv4(),
@@ -103,7 +103,7 @@ export class PetRepository implements IPet {
                 where: { id: id }
             })
             if (!pet) {
-                throw new NotFoundException("pet  not found");
+                return  new NotFoundException("pet  not found");
             }
             return pet
         } catch (error) {
@@ -117,7 +117,7 @@ export class PetRepository implements IPet {
                 where: { id:id }
             })
             if (!pet) {
-                throw new NotFoundException("pet  not found");
+                return  new NotFoundException("pet  not found");
             }
             const PetUpdated = await this.petModel.update(
 
@@ -146,7 +146,7 @@ export class PetRepository implements IPet {
                 where: { id: id }
             })
             if (!pet) {
-                throw new NotFoundException("pet  not found");
+                return  new NotFoundException("pet  not found");
             }
             await this.petModel.destroy({
                 where: { id: id }

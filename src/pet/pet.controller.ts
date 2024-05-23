@@ -29,7 +29,6 @@ export class PetController {
     @Req() req: RequestWithUser
   ) {
     const pet = await this.petService.createPet(createPetDto,req)
-    console.log("user", req.user)
     if (pet instanceof InternalServerErrorException
       || pet instanceof NotFoundException
       || pet instanceof ConflictException
@@ -93,7 +92,7 @@ export class PetController {
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: ' [CUSTOMER]  Update pet' })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: '[CUSTOMER ]It will update info a pet in the response',
   })
   @ApiBody({
@@ -118,7 +117,7 @@ export class PetController {
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: '[CUSTOMER]  delete a  pet' })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: '[CUSTOMER] it will delete pet in the response',
   })
   async remove(@Param('id') id: string) {
