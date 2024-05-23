@@ -26,7 +26,7 @@ import { JwtAdminGuard } from 'src/auth/guard/jwt-admin.guard';
 export class UserController {
     constructor(private readonly userService: UserService) { }
 
-    @Get('/all-users')
+    @Get('/')
     @ApiOperation({ summary: 'Tam Thoi se ko co Guard ==> xai tai khoan de login PASSWORD : <123456>' })
     @ApiResponse({
       status: 200,
