@@ -31,7 +31,7 @@ export class AuthController {
   ) {
     return req.user;
   }
-  @Post('register')
+  @Post('register/test')
   @ApiBody({
     type: RegisterDto
   })
