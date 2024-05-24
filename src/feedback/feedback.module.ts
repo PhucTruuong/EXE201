@@ -40,8 +40,6 @@ import { CityRepository } from 'src/city/city.repository';
     LocationRepository,
     BrandRepository,
     CategoryRepository
-   
-
   ],
   imports:[DatabaseModule]
 })

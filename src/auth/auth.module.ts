@@ -19,16 +19,15 @@ import { firebaseProviders } from 'src/firebase/firebase.provider';
     DatabaseModule,
     UserModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || "jwt-secret_nam_vip_pro", signOptions: {
+      secret: process.env.JWT_SECRET || "jwt-secret_nam_vip_pro",
+      signOptions: {
         expiresIn: '7d'
       }
-    },
-
-    )
+    }),
   ],
   controllers: [AuthController],
-  providers: [AuthService,
-    
+  providers: [
+    AuthService,
     JwtStrategy,
     UserService,
     UserRepository,

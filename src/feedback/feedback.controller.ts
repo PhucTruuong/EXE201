@@ -67,7 +67,7 @@ export class FeedbackController {
       standardParam.setPaginationInfo({ count: totalCount });
       return data;
     }
-  }
+  };
 
   @Get(':id')
   @UseGuards(JwtAdminServiceGuard)

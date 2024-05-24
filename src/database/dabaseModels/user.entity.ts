@@ -3,7 +3,8 @@ import {
     Column, 
     Model,
     DataType, 
-    ForeignKey
+    ForeignKey,
+    BelongsTo
 } from 'sequelize-typescript';
 import { Role } from './role.entity';
 @Table({
@@ -78,6 +79,7 @@ export class User extends Model {
     })
     account_status: boolean;
 
+    @BelongsTo(() => Role, { as: 'role' })
     @ForeignKey(() => Role)
     @Column({
         field: 'role_id',
@@ -106,4 +108,11 @@ export class User extends Model {
         defaultValue: new Date(),
     })
     updated_at: Date;
+
+    @Column({
+        field: 'user_avatar',
+        type: DataType.TEXT,
+        allowNull: true,
+    })
+    avatar: string;
 };
