@@ -98,6 +98,9 @@ export class AppointmentController {
     status: 200,
     description: 'It will update appointments in the response',
   })
+  @ApiBody({
+    type: UpdateAppointmentDto
+  })
   async update(@Param('id') id: string, @Body() updateAppointmentDto: UpdateAppointmentDto) {
     const item = await this.appointmentService.update(id, updateAppointmentDto)
 

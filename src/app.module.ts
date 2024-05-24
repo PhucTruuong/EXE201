@@ -18,6 +18,7 @@ import { ServiceModule } from './service/service.module';
 import { FeedbackModule } from './feedback/feedback.module';
 import { FirebaseModule } from 'nestjs-firebase';
 import { AppointmentModule } from './appointment/appointment.module';
+import { BookingModule } from './booking/booking.module';
 // import * as path from 'path';
 // import * as servicePath from "../petcare-6a561-firebase-adminsdk-1ctgv-f41da1d8c8.json"
 @Module({
@@ -45,6 +46,7 @@ import { AppointmentModule } from './appointment/appointment.module';
       ServiceModule,
       FeedbackModule,
       AppointmentModule,
+      BookingModule,
     ],
   controllers: [AppController],
   providers: [
