@@ -50,6 +50,7 @@ export class PetController {
   })
   @StandardResponse({
     isPaginated: true,
+    isSorted: true,
   })
   async findAll(
     @Query() pagination: PetPagination,

@@ -8,6 +8,7 @@ import { PetBreed } from 'src/database/dabaseModels/pet_breed.entity';
 import { PetPagination } from './dto/pet-pagination.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
 import { RequestWithUser } from 'src/interface/request-interface';
+import { parseSortParam } from 'src/utils/helper';
 @Injectable()
 export class PetRepository implements IPet {
     constructor(
@@ -63,6 +64,8 @@ export class PetRepository implements IPet {
     }
     async findAllPet(pagination: PetPagination): Promise<InternalServerErrorException | HttpException | { data: object[]; totalCount: number; }> {
         try {
+            const actualOffset = pagination.offset ? pagination.offset : (pagination.page - 1) * pagination.limit;
+            const order = pagination.sort ? parseSortParam(pagination.sort) : [];
             const { count, rows: allPet } = await this.petModel.findAndCountAll({
                 attributes: [
                     'id',
@@ -78,7 +81,8 @@ export class PetRepository implements IPet {
                     'updated_at',
                 ],
                 limit: pagination.limit,
-                offset: (pagination.page - 1) * pagination.limit
+                offset: actualOffset,
+                order:order
             });
             if (!allPet || count === 0) {
                 return new HttpException('No Pet  found!', HttpStatus.NOT_FOUND);
@@ -172,9 +176,9 @@ export class PetRepository implements IPet {
 
     async findAllPetByUser(req: RequestWithUser, pagination: PetPagination): Promise<{ data: object[]; totalCount: number; } | InternalServerErrorException | NotFoundException> {
         try {
-            console.log("user Reuest" , req.user)
+            console.log("user Reuest", req.user)
             if (!req.user || !req.user.userId) {
-            return  new NotFoundException('User ID not found in request');
+                return new NotFoundException('User ID not found in request');
             }
             const { count, rows: allPet } = await this.petModel.findAndCountAll({
                 where: {

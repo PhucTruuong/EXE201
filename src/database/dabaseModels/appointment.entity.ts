@@ -1,6 +1,7 @@
-import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
 import { Pet } from './pet.entity'; // Adjust the import path as necessary
 import { Service } from './service.entity'; // Adjust the import path as necessary
+import { Booking } from './booking.entity';
 
 @Table({
   tableName: 'petcare_appointment',
@@ -69,4 +70,6 @@ export class Appointment extends Model {
     defaultValue: DataType.NOW, // Set current date as default
   })
   updated_at: Date;
+  @HasMany(() => Booking,{ foreignKey: 'appointment_id' })
+  bookings: Booking[];
 }

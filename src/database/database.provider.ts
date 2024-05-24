@@ -3,7 +3,7 @@ import { SEQUELIZE, DEVELOPMENT, TEST, PRODUCTION } from 'constant';
 import { Dialect } from "@sequelize/core";
 import { Role } from './dabaseModels/role.entity';
 import { User } from './dabaseModels/user.entity';
-import {PetType} from "./dabaseModels/pet_type.entity"
+import { PetType } from "./dabaseModels/pet_type.entity"
 import { PetBreed } from './dabaseModels/pet_breed.entity';
 import { Pet } from './dabaseModels/pet.entity';
 import { Category } from './dabaseModels/category.entity';
@@ -13,6 +13,8 @@ import { Location } from './dabaseModels/location.entity';
 import { City } from './dabaseModels/city.entity';
 import { Feedback } from './dabaseModels/feedbacks.entity';
 import { Appointment } from './dabaseModels/appointment.entity';
+import { Booking } from './dabaseModels/booking.entity';
+import { Payment } from './dabaseModels/payment.entity';
 export const databaseProviders = [
   {
     provide: SEQUELIZE,
@@ -58,7 +60,7 @@ export const databaseProviders = [
             dialect: 'postgres' as Dialect,
             dialectOptions: {
               useUTC: true,
-              ssl:{
+              ssl: {
                 require: true,
                 rejectUnauthorized: false
               }
@@ -97,7 +99,8 @@ export const databaseProviders = [
         City,
         Feedback,
         Appointment,
-
+        Booking,
+        Payment
       ]);
       //await sequelize.sync({force: true});
       return sequelize;

@@ -4,9 +4,11 @@ import {
     Model,
     DataType, 
     ForeignKey,
-    BelongsTo
+    BelongsTo,
+    HasMany
 } from 'sequelize-typescript';
 import { Role } from './role.entity';
+import { Booking } from './booking.entity';
 @Table({
     tableName: 'petcare_user',
     timestamps: false,
@@ -115,4 +117,7 @@ export class User extends Model {
         allowNull: true,
     })
     avatar: string;
+
+    @HasMany(() => Booking,{ foreignKey: 'user_id' })
+    bookings: Booking[];
 };
