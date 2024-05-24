@@ -10,16 +10,16 @@ export class JwtAdminServiceGuard extends AuthGuard('jwt') {
     }
     handleRequest<TUser = PayloadType>(err: any, user: any): TUser {
         //1
+        console.log("user: ", user);
         if (err || !user) {
             throw err || new UnauthorizedException();
-
-        }
-        console.log("user", user);
+        };
         // change to admin id 
 
-        if (user.role === "31129e6e-6025-494a-a02d-375441ec603a" ||"d1483ebc-22a6-47d1-b442-9f1a632a62cb") {
+        if (user.role === "customer" || "admin") {
             return user;
-        }
+        };
+
         throw err || new UnauthorizedException();
     }
 }

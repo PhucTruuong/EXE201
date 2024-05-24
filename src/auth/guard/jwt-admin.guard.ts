@@ -7,19 +7,20 @@ import { PayloadType } from "../types/payload.types";
 export class JwtAdminGuard extends AuthGuard('jwt') {
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         return super.canActivate(context)
-    }
+    };
+
     handleRequest<TUser = PayloadType>(err: any, user: any): TUser {
         //1
+        console.log("user: ", user);
         if (err || !user) {
             throw err || new UnauthorizedException();
-
-        }
-        console.log("user", user);
+        };
         // change to admin id 
 
-        if (user.role === "d1483ebc-22a6-47d1-b442-9f1a632a62cb") {
+        if (user.role === "admin") {
             return user;
-        }
+        };
+
         throw err || new UnauthorizedException();
     }
 }

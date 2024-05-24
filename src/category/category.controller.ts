@@ -32,7 +32,8 @@ export class CategoryController {
     } else {
       return category;
     }
-  }
+  };
+
   @Get()
   @UseGuards(JwtAdminGuard)
   @ApiBearerAuth('JWT-auth')
@@ -61,7 +62,8 @@ export class CategoryController {
       standardParam.setPaginationInfo({ count: totalCount });
       return data;
     }
-  }
+  };
+
   @Get(':id')
   @UseGuards(JwtAdminGuard)
   @ApiBearerAuth('JWT-auth')
@@ -80,7 +82,8 @@ export class CategoryController {
     } else {
       return category;
     }
-  }
+  };
+
   @Patch(':id')
   @UseGuards(JwtAdminGuard)
   @ApiBearerAuth('JWT-auth')
@@ -100,8 +103,9 @@ export class CategoryController {
       return category as InternalServerErrorException || HttpException || NotFoundException;
     } else {
       return category;
-    }
-  }
+    };
+  };
+
   @UseGuards(JwtAdminGuard)
   @Delete(':id')
   @UseGuards(JwtAdminGuard)
@@ -123,5 +127,5 @@ export class CategoryController {
     } else {
       return category;
     }
-  }
+  };
 }
