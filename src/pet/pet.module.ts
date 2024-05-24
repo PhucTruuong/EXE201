@@ -7,12 +7,23 @@ import { PetTypeProviders } from 'src/pet_type/pet_type.providers';
 import { PetBreedProviders } from 'src/pet_breed/pet_breed.providers';
 import { UserProviders } from 'src/user/user.provider';
 import { PetRepository } from './pet.repository';
+import { UserModule } from 'src/user/user.module';
+import { UserRepository } from 'src/user/user.repository';
+import { bcryptModule } from 'src/utils/bcryptModule';
+import { RoleRepository } from 'src/role/role.repository';
+import { RoleProviders } from 'src/role/role.provider';
+import { PetTypeRepository } from 'src/pet_type/pet_type.repository';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule,UserModule],
   controllers: [PetController],
   providers: [PetService,
     PetRepository,
+    UserRepository,
+    bcryptModule,
+    RoleRepository,
+    PetTypeRepository,
+    ...RoleProviders,
     ...PetProviders,
     ...PetTypeProviders,
     ...PetBreedProviders,

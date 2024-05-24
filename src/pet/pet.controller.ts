@@ -28,7 +28,7 @@ export class PetController {
   async create(@Body() createPetDto: CreatePetDto,
     @Req() req: RequestWithUser
   ) {
-    const pet = await this.petService.createPet(createPetDto,req)
+    const pet = await this.petService.createPet(createPetDto, req)
     if (pet instanceof InternalServerErrorException
       || pet instanceof NotFoundException
       || pet instanceof ConflictException
@@ -53,7 +53,7 @@ export class PetController {
   })
   async findAll(
     @Query() pagination: PetPagination,
-    @StandardParam() standardParam: StandardParams
+    @StandardParam() standardParam: StandardParams,
   ) {
     const allPet = await this.petService.findAllPet(pagination);
     if (allPet instanceof InternalServerErrorException ||
@@ -131,6 +131,34 @@ export class PetController {
       return pet as InternalServerErrorException || HttpException || NotFoundException;
     } else {
       return pet;
+    }
+  }
+  @Get('me/pets')
+  @UseGuards(JwtCustomerGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: '[CUSTOMER] List all  pet of user' })
+  @ApiResponse({
+    status: 200,
+    description: '[CUSTOMER] It will lits all pet of user in the response',
+  })
+  @StandardResponse({
+    isPaginated: true,
+  })
+  async findAllPetBYUser(
+    @Query() pagination: PetPagination,
+    @Req() req: RequestWithUser,
+    @StandardParam() standardParam: StandardParams
+  ) {
+    console.log('user' , req.user)
+    const allPet = await this.petService.findAllPetByUser(req, pagination);
+    if (allPet instanceof InternalServerErrorException ||
+      allPet instanceof HttpException
+    ) {
+      return allPet as HttpException | InternalServerErrorException;
+    } else {
+      const { data, totalCount } = allPet;
+      standardParam.setPaginationInfo({ count: totalCount });
+      return data;
     }
   }
 }

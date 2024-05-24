@@ -31,9 +31,19 @@ export class CreateServiceDto {
     location_id:  string;
     @IsString()
     @IsNotEmpty()
+    @ApiProperty({
+        default: "service_name",
+        example: "service_name",
+        description: "Service namemust be string"
+    })
     service_name: string;
     @IsString()
     @IsNotEmpty()
+    @ApiProperty({
+        default: "service_description",
+        example: "service_description",
+        description: "Service namemust be string"
+    })
     service_description: string;
     @IsString()
     @IsNotEmpty()
@@ -51,4 +61,6 @@ export class CreateServiceDto {
         description: "Start time of the service in ISO 8601 format with time zone"
     })
     endTime: string;
+
+
 }

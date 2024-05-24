@@ -36,7 +36,7 @@ export class AuthRepository implements IAuth {
                 }
             });
             if (existingUser) {
-                throw new ConflictException(
+                return  new ConflictException(
                     `The user has the email ${registerDto.email} or the phone number ${registerDto.phone_number} had already exists!`
                 );
             }
@@ -67,7 +67,7 @@ export class AuthRepository implements IAuth {
                 },
             })
             if (!user) {
-                throw new NotFoundException('User not found!');
+                return  new NotFoundException('User not found!');
             }
             const passwordMatch = await this.bcryptUtils.compare(
                 loginDto.password,
@@ -75,7 +75,7 @@ export class AuthRepository implements IAuth {
             )
             console.log("password check", passwordMatch)
             if (!passwordMatch) {
-                throw new UnauthorizedException('Password not match!');
+                return  new UnauthorizedException('Password not match!');
             }
             const payload: PayloadType = {
                 email: user.email, userId: user.user_id, full_name: user.full_name,
