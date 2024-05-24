@@ -1,7 +1,8 @@
-import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, HasMany } from 'sequelize-typescript';
 import { User } from './user.entity';
 import { PetType } from './pet_type.entity';
 import { PetBreed } from './pet_breed.entity';
+import { Appointment } from './appointment.entity';
 
 @Table({
   tableName: 'petcare_pet',
@@ -82,4 +83,7 @@ export class Pet extends Model {
     allowNull: false,
   })
   pet_breed_id: string;
+
+  @HasMany(() => Appointment,{ foreignKey: 'service_id'})
+  appointments: Appointment[];
 }

@@ -12,6 +12,7 @@ import { Service } from './dabaseModels/service.entity';
 import { Location } from './dabaseModels/location.entity';
 import { City } from './dabaseModels/city.entity';
 import { Feedback } from './dabaseModels/feedbacks.entity';
+import { Appointment } from './dabaseModels/appointment.entity';
 export const databaseProviders = [
   {
     provide: SEQUELIZE,
@@ -95,6 +96,7 @@ export const databaseProviders = [
         Location,
         City,
         Feedback,
+        Appointment,
 
       ]);
       //await sequelize.sync({force: true});
