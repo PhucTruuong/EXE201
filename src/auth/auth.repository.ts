@@ -12,19 +12,48 @@ import { Op } from "sequelize";
 import { UserRecord } from "firebase-admin/lib/auth/user-record";
 import * as admin from 'firebase-admin';
 import { TokenDto } from "./dto/token-auth.dto";
-
+import { Role } from "src/database/dabaseModels/role.entity";
 
 @Injectable()
 export class AuthRepository implements IAuth {
-    constructor(
+    constructor( 
         @Inject('AUTH_REPOSITORY')
         private readonly userModel: typeof User,
         private readonly bcryptUtils: bcryptModule,
         private readonly jwtService: JwtService,
         // @InjectFirebaseAdmin() private readonly firebase: FirebaseAdmin,
         @Inject('FIREBASE_ADMIN') private readonly firebaseApp: admin.app.App,
-    ) {
-    }
+    ) {};
+
+    private generateRandomPhoneNumber(): string {
+        return Array.from({ length: 12 }, () => Math.floor(Math.random() * 10)).join('');
+    };
+
+    private async verifyGoogle(idToken: string) {
+        const decodedUser: UserRecord = await this.verifyTokenFromClient(idToken);
+        const user = {
+            email: decodedUser.email,
+            name: decodedUser.displayName,
+            avatar: decodedUser.photoURL,
+        };
+
+        return user;
+    };
+    
+    private async verifyTokenFromClient(idToken: string) {
+        try {
+            console.log("Verifying ID token:", idToken);
+            const decodedIdToken = await this.firebaseApp.auth().verifyIdToken(idToken);
+            console.log("Decoded ID token:", decodedIdToken);
+            
+            const userRecord = await this.firebaseApp.auth().getUser(decodedIdToken.uid)
+            return userRecord;
+        } catch (error) {
+            console.log(error);
+            throw new InternalServerErrorException();
+        }
+    };
+
     public async register(registerDto: RegisterDto): Promise<object | InternalServerErrorException | NotFoundException> {
         try {
             const existingUser = await this.userModel.findOne({
@@ -58,14 +87,26 @@ export class AuthRepository implements IAuth {
             throw new InternalServerErrorException;
         }
 
-    }
+    };
+
     public async login(loginDto: LoginDto): Promise<object | InternalServerErrorException | NotFoundException> {
         try {
             const user = await this.userModel.findOne({
+                attributes: ['user_id', 'full_name', 'email', 'password_hashed'],
                 where: {
                     email: loginDto.email,
                 },
-            })
+                include: [
+                    {
+                        model: Role,
+                        as: 'role',
+                        attributes: ['role_name']
+                    }
+                ]
+            });
+
+            console.log("Role Name: ", user.dataValues.role.role_name);
+
             if (!user) {
                 return  new NotFoundException('User not found!');
             }
@@ -73,20 +114,21 @@ export class AuthRepository implements IAuth {
                 loginDto.password,
                 user.password_hashed
             )
-            console.log("password check", passwordMatch)
+            console.log("password check: ", passwordMatch);
+
             if (!passwordMatch) {
                 return  new UnauthorizedException('Password not match!');
             }
             const payload: PayloadType = {
                 email: user.email, userId: user.user_id, full_name: user.full_name,
-                role: user.role_id
+                role: user.dataValues.role.role_name
             }; // 1
             return {
                 user: {
                     user_id: user.user_id,
                     full_name: user.full_name,
                     email: user.email,
-                    role: user.role_id
+                    role: user.dataValues.role.role_name
                 },
                 accessToken: this.jwtService.sign(payload)
             }
@@ -95,15 +137,17 @@ export class AuthRepository implements IAuth {
             throw new InternalServerErrorException;
         }
 
-    }
+    };
 
     async loginWithGoogle(tokenDto: TokenDto): Promise<object | InternalServerErrorException | NotFoundException> {
         console.log("idToken", tokenDto.idToken);
         const userRecord = await this.verifyGoogle(tokenDto.idToken);
         console.log(userRecord);
+
         const userExists = await this.userModel.findOne({
             where: { email: userRecord.email }
-        })
+        });
+
         if (!userExists) {
             const newUser = await this.userModel.create({
                 user_id: uuidv4(),
@@ -115,13 +159,15 @@ export class AuthRepository implements IAuth {
                 created_at: new Date(),
                 updated_at: new Date(),
                 // avatar: userRecord.avatar,
-            })
+            });
+
             const payload: PayloadType = {
                 email: newUser.email,
                 userId: newUser.user_id,
                 full_name: newUser.full_name,
                 role: newUser.role_id
             }; // 1
+
             return {
                 user: {
                     user_id: newUser.user_id,
@@ -130,15 +176,16 @@ export class AuthRepository implements IAuth {
                     role: newUser.role_id
                 },
                 accessToken: this.jwtService.sign(payload)
-            }
+            };
+        };
 
-        }
         const payload: PayloadType = {
             email: userExists.email,
             userId: userExists.user_id,
             full_name: userExists.full_name,
             role: userExists.role_id
         }; // 1
+
         return {
             user: {
                 user_id: userExists.user_id,
@@ -148,32 +195,5 @@ export class AuthRepository implements IAuth {
             },
             accessToken: this.jwtService.sign(payload)
         }
-    }
-
-    private async verifyGoogle(idToken: string) {
-        const decodedUser: UserRecord = await this.verifyTokenFromClient(idToken);
-        const user = {
-            email: decodedUser.email,
-            name: decodedUser.displayName,
-            avatar: decodedUser.photoURL,
-        };
-
-        return user;
-    }
-    private async verifyTokenFromClient(idToken: string) {
-        try {
-            console.log("Verifying ID token:", idToken);
-            const decodedIdToken = await this.firebaseApp.auth().verifyIdToken(idToken);
-            console.log("Decoded ID token:", decodedIdToken);
-            const userRecord = await this.firebaseApp.auth().getUser(decodedIdToken.uid)
-            return userRecord;
-        } catch (error) {
-            console.log(error);
-            throw new InternalServerErrorException()
-
-        }
-    }
-    private generateRandomPhoneNumber(): string {
-        return Array.from({ length: 12 }, () => Math.floor(Math.random() * 10)).join('');
-    }
+    };
 }

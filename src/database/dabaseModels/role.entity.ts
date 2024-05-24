@@ -5,7 +5,6 @@ import {
     DataType, 
     ForeignKey,
     HasMany,
-    // HasMany
 } from 'sequelize-typescript';
 import { User } from './user.entity';
 
