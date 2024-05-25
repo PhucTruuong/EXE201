@@ -32,6 +32,15 @@ export class PetService {
   public async deletePet(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
     return this.petRepository.deletePet(id)
   }
+  public async checkExists(id: string): Promise<object | InternalServerErrorException | NotFoundException > {
+    return this.petRepository.checkExist(id)
+  }
+   public async findAllPetByUser(req: RequestWithUser,pagination: PetPagination): Promise<{
+    data: object[],
+    totalCount: number
+} | InternalServerErrorException | NotFoundException>{
+  return this.petRepository.findAllPetByUser(req,pagination)
+}
 }
 
 

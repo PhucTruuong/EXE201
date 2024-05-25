@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDateString, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsDateString, IsNotEmpty, IsNumber, IsString, IsUUID } from "class-validator";
 
 export class CreatePetDto {
     @IsString()
@@ -53,7 +53,7 @@ export class CreatePetDto {
     //     description: "id of user"
     // })
     // user_id: string
-    @IsString()
+    @IsUUID()
     @IsNotEmpty()
     @ApiProperty({
         default: "string",
@@ -61,7 +61,7 @@ export class CreatePetDto {
         description: "id of pet type ( pet belongto type)"
     })
     pet_type_id: string
-    @IsString()
+    @IsUUID()
     @IsNotEmpty()
     @ApiProperty({
         default: "string",

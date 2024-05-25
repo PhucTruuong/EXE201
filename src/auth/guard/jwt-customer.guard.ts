@@ -20,6 +20,6 @@ export class JwtCustomerGuard extends AuthGuard('jwt') {
             return user;
         };
         
-        throw err || new UnauthorizedException();
+        throw err || new UnauthorizedException('You are not permissions ! must be Customer');
     }
 }
