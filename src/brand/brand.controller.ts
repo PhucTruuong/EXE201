@@ -1,30 +1,33 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, NotFoundException, ConflictException, InternalServerErrorException, HttpException, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, NotFoundException, ConflictException, InternalServerErrorException, HttpException, Query, BadRequestException, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { BrandService } from './brand.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAdminGuard } from 'src/auth/guard/jwt-admin.guard';
 import { StandardParam, StandardParams, StandardResponse } from 'nest-standard-response';
 import { BrandPagination } from './dto/pagination-brand.dto';
+import { JwtAdminServiceGuard } from 'src/auth/guard/jwt-admin_customer.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Brand')
 @Controller('api/v1/brand')
 export class BrandController {
   constructor(private readonly brandService: BrandService) { }
-
-  @UseGuards(JwtAdminGuard)
-  @ApiBearerAuth('JWT-auth')
   @Post()
+  @UseGuards(JwtAdminServiceGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new brand' })
-  @ApiResponse({
-    status: 201,
-    description: 'It will create a new brand in the response',
-  })
+  @ApiResponse({ status: 201, description: 'Successfully created pet.' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiBody({
     type: CreateBrandDto
   })
-  async create(@Body() createBrandDto: CreateBrandDto) {
-    const brand = await this.brandService.createBrand(createBrandDto)
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('image'))
+  async create(@Body() createBrandDto: CreateBrandDto,
+  @UploadedFile() image: Express.Multer.File,
+) {
+    const brand = await this.brandService.createBrand({...createBrandDto,image})
 
     if (brand instanceof InternalServerErrorException
       || brand instanceof NotFoundException
@@ -36,7 +39,7 @@ export class BrandController {
       return brand;
     }
   }
-  @UseGuards(JwtAdminGuard)
+  @UseGuards(JwtAdminServiceGuard)
   @Get()
   @ApiBearerAuth('JWT-auth')
   @StandardResponse({
@@ -67,7 +70,7 @@ export class BrandController {
     }
   }
   @Get(':id')
-  @UseGuards(JwtAdminGuard)
+  @UseGuards(JwtAdminServiceGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'FInd one  brand' })
   @ApiResponse({

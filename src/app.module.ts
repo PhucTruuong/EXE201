@@ -20,6 +20,9 @@ import { FirebaseModule } from 'nestjs-firebase';
 import { AppointmentModule } from './appointment/appointment.module';
 import { BookingModule } from './booking/booking.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { GatewayModule } from './gateways/gateway.module';
 // import * as path from 'path';
 // import * as servicePath from "../petcare-6a561-firebase-adminsdk-1ctgv-f41da1d8c8.json"
 @Module({
@@ -31,6 +34,9 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
       // }),
       ConfigModule.forRoot({
         isGlobal: true,
+      }),
+      ServeStaticModule.forRoot({
+        rootPath: join(__dirname, '../..', 'client')
       }),
       StandardResponseModule.forRoot({}),
       DatabaseModule,
@@ -49,6 +55,8 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
       AppointmentModule,
       BookingModule,
       CloudinaryModule,
+      GatewayModule
+
     ],
   controllers: [AppController],
   providers: [

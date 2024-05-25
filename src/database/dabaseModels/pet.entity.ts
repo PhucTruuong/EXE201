@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, ForeignKey, HasMany } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, HasMany, BelongsTo } from 'sequelize-typescript';
 import { User } from './user.entity';
 import { PetType } from './pet_type.entity';
 import { PetBreed } from './pet_breed.entity';
@@ -65,11 +65,14 @@ export class Pet extends Model {
 
   @ForeignKey(() => User)
   @Column({
-    type: DataType.UUID,
-    allowNull: false,
+      type: DataType.UUID,
+      allowNull: false,
   })
   user_id: string;
 
+  @BelongsTo(() => User)
+  user: User;
+  
   @ForeignKey(() => PetType)
   @Column({
     type: DataType.UUID,

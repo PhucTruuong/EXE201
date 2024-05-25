@@ -16,7 +16,7 @@ export class JwtAdminServiceGuard extends AuthGuard('jwt') {
         };
         // change to admin id 
 
-        if (user.role === "customer" || "admin") {
+        if (user.role === "host" || "admin") {
             return user;
         };
 

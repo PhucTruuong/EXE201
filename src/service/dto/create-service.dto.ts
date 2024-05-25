@@ -7,7 +7,7 @@ export class CreateServiceDto {
     @IsUUID()
     @ApiProperty({
         default:"uuid",
-        example:"jgfhn=432k=4253b-043343",
+        example:"dfb35e40-2749-451d-8ffd-204b8100f351",
         description:"id of brand"
     })
     brand_id: string;
@@ -16,7 +16,7 @@ export class CreateServiceDto {
     @IsUUID()
     @ApiProperty({
         default:"uuid",
-        example:"jgfhn=432k=4253b-043343",
+        example:"728035dd-e8e4-4494-aa6f-43d8b3775d26",
         description:"id of category"
     })
     category_id: string;
@@ -25,7 +25,7 @@ export class CreateServiceDto {
     @IsUUID()
     @ApiProperty({
         default:"uuid",
-        example:"jgfhn=432k=4253b-043343",
+        example:"70f7c050-e927-4c92-837d-54fedfd3e503",
         description:"id of location"
     })
     location_id:  string;
@@ -48,19 +48,25 @@ export class CreateServiceDto {
     @IsString()
     @IsNotEmpty()
     @ApiProperty({
-        default: "2024-05-22T10:00:00+00:00",
-        example: "2024-05-22T10:00:00+00:00",
+        default: "10:00:00",
+        example: "10:00:00",
         description: "Start time of the service in ISO 8601 format with time zone"
     })
     startTime: string;
     @IsString()
     @IsNotEmpty()
     @ApiProperty({
-        default: "2024-05-22T10:00:00+00:00",
-        example: "2024-05-22T10:00:00+00:00",
+        default: "14:00:00",
+        example: "12:00:00",
         description: "Start time of the service in ISO 8601 format with time zone"
     })
     endTime: string;
 
-
+    @IsNotEmpty()
+    @ApiProperty({
+        type: 'string',
+        format: 'binary',
+        description: 'Image file of the pet'
+    })
+    image: Express.Multer.File;
 }
