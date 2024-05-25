@@ -84,6 +84,12 @@ export class Pet extends Model {
   })
   pet_breed_id: string;
 
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  image: string;
+
   @HasMany(() => Appointment,{ foreignKey: 'service_id'})
   appointments: Appointment[];
 }

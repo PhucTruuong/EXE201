@@ -9,14 +9,14 @@ export interface IPet {
         data: object[],
         totalCount: number
     } | InternalServerErrorException | HttpException>;
-    createPet(createPetDto: CreatePetDto, req: RequestWithUser): Promise<
+    createPet(createPetDto: CreatePetDto & { image: Express.Multer.File }, req: RequestWithUser): Promise<
         object | InternalServerErrorException | HttpException | ConflictException | NotFoundException
     >
     findOnePet(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException>
     updatePet(id: string, updatePetDto: UpdatePetDto): Promise<object | InternalServerErrorException | NotFoundException | HttpException>
     deletePet(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException>;
     checkExist(id: string): Promise<object | InternalServerErrorException | HttpException | ConflictException | NotFoundException>;
-    findAllPetByUser(req: RequestWithUser,pagination: PetPagination): Promise<{
+    findAllPetByUser(req: RequestWithUser, pagination: PetPagination): Promise<{
         data: object[],
         totalCount: number
     } | InternalServerErrorException | NotFoundException>

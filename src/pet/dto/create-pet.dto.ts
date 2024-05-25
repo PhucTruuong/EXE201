@@ -1,11 +1,12 @@
+import { UploadedFile } from "@nestjs/common";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDateString, IsNotEmpty, IsNumber, IsString, IsUUID } from "class-validator";
+import { IsDateString, IsNotEmpty, IsString, IsUUID } from "class-validator";
 
 export class CreatePetDto {
     @IsString()
     @IsNotEmpty()
     @ApiProperty({
-        default: "hong phuc",
+        default: "hong phuc111",
         example: "hong phuc",
         description: "name of pet"
     })
@@ -20,7 +21,7 @@ export class CreatePetDto {
     })
     pet_dob: Date;
 
-    @IsNumber()
+    @IsString()
     @IsNotEmpty()
     @ApiProperty({
         default: 100,
@@ -28,16 +29,8 @@ export class CreatePetDto {
         description: "don vi cm"
     })
     height: number
-    // @IsString()
-    // @IsNotEmpty()
-    // @ApiProperty({
-    //     default: "yellow",
-    //     example:"red",
-    //     description: "color overall of pet"
-    // })
-    // color: string
 
-    @IsNumber()
+    @IsString()
     @IsNotEmpty()
     @ApiProperty({
         default: 67.5,
@@ -45,19 +38,11 @@ export class CreatePetDto {
         description: "weight  of pet"
     })
     weight: number
-    // @IsString()
-    // @IsNotEmpty()
-    // @ApiProperty({
-    //     default: "uuid",
-    //     example:"uuid",
-    //     description: "id of user"
-    // })
-    // user_id: string
     @IsUUID()
     @IsNotEmpty()
     @ApiProperty({
         default: "string",
-        example:"uuid",
+        example: "eba07116-3740-47d1-bac2-8dbf49325655",
         description: "id of pet type ( pet belongto type)"
     })
     pet_type_id: string
@@ -65,8 +50,15 @@ export class CreatePetDto {
     @IsNotEmpty()
     @ApiProperty({
         default: "string",
-        example:"uuid",
+        example: "b071c95b-e608-4342-bf5c-be50089c27e2",
         description: "id of pet breed ( pet belongs to pet breed)"
     })
     pet_breed_id: string
+    @IsNotEmpty()
+    @ApiProperty({
+        type: 'string',
+        format: 'binary',
+        description: 'Image file of the pet'
+    })
+    image: Express.Multer.File;
 }
