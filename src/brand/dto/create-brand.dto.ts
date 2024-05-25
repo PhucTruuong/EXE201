@@ -19,4 +19,12 @@ export class CreateBrandDto {
     })
     brand_description: string;
 
+    @IsNotEmpty()
+    @ApiProperty({
+        type: 'string',
+        format: 'binary',
+        description: 'Image file of the pet'
+    })
+    image: Express.Multer.File;
+
 }

@@ -3,6 +3,7 @@ import { Brand } from './brand.entity'; // Adjust the import path as necessary
 import { Category } from './category.entity'; // Adjust the import path as necessary
 import { Location } from './location.entity'; // Adjust the import path as necessary
 import { Appointment } from './appointment.entity';
+import { User } from './user.entity';
 
 @Table({
   tableName: 'petcare_service',
@@ -15,7 +16,7 @@ export class Service extends Model {
     primaryKey: true,
     allowNull: false,
     unique: true,
-    defaultValue: DataType.UUIDV4, 
+    defaultValue: DataType.UUIDV4,
   })
   id: string;
   @BelongsTo(() => Brand)
@@ -87,10 +88,24 @@ export class Service extends Model {
     defaultValue: DataType.NOW, // Set current date as default
   })
   updated_at: Date;
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  image: string;
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.UUID,
+    allowNull: false,
+  })
+  user_id: string;
 
-  @HasMany(() => Appointment,{ foreignKey: 'service_id' })
+  @BelongsTo(() => User)
+  user: User;
+
+  @HasMany(() => Appointment, { foreignKey: 'service_id' })
   appointments: Appointment[];
 
-  
+
 
 }

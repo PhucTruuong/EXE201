@@ -49,7 +49,11 @@ export class Brand extends Model {
     defaultValue: DataType.NOW, // Set current date as default
   })
   updated_at: Date;
-
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  image: string;
   @HasMany(() => Service ,{ foreignKey: 'brand_id' })
   services: Service[];
 }

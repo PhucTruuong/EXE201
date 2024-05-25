@@ -12,6 +12,8 @@ import { BrandRepository } from 'src/brand/brand.repository';
 import { CategoryRepository } from 'src/category/category.repository';
 import { CityProviders } from 'src/city/city.provider';
 import { CityRepository } from 'src/city/city.repository';
+import { CloudinaryProvider } from 'src/cloudinary/cloudinary.provider';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Module({
   controllers: [ServiceController],
@@ -21,11 +23,15 @@ import { CityRepository } from 'src/city/city.repository';
     ...BrandProviders,
     ...CategoryProviders,
     ...CityProviders,
+
     ServiceRepository,
     CityRepository,
     LocationRepository,
     BrandRepository,
     CategoryRepository,
+    CloudinaryProvider,
+    CloudinaryService,
+
   ],
   imports: [DatabaseModule]
 })

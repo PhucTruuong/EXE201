@@ -1,30 +1,36 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, InternalServerErrorException, NotFoundException, ConflictException, HttpException, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, InternalServerErrorException, NotFoundException, ConflictException, HttpException, Query, BadRequestException, UploadedFile, Req, UseInterceptors } from '@nestjs/common';
 import { ServiceService } from './service.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAdminServiceGuard } from 'src/auth/guard/jwt-admin_customer.guard';
 import { StandardParam, StandardParams, StandardResponse } from 'nest-standard-response';
 import { ServicePagination } from './dto/pagination-service';
+import { RequestWithUser } from 'src/interface/request-interface';
+import { JwtHostGuard } from 'src/auth/guard/jwt-service.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 @ApiTags('Service')
 @Controller('api/v1/service')
 export class ServiceController {
   constructor(private readonly serviceService: ServiceService) { }
 
   @Post()
-  @UseGuards(JwtAdminServiceGuard)
+  @UseGuards(JwtHostGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new Service' })
-  @ApiResponse({
-    status: 201,
-    description: 'It will create a new service in the response',
-  })
+  @ApiResponse({ status: 201, description: 'Successfully created pet.' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiBody({
     type: CreateServiceDto
   })
-  async create(@Body() createServiceDto: CreateServiceDto) {
-    const item = await this.serviceService.create(createServiceDto)
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('image'))
+  async create(@Body() createServiceDto: CreateServiceDto,
+  @UploadedFile() image: Express.Multer.File,
+  @Req() req: RequestWithUser,
 
+  ) {
+    const item = await this.serviceService.create({...createServiceDto,image} ,req)
     if (item instanceof InternalServerErrorException
       || item instanceof NotFoundException
       || item instanceof ConflictException
@@ -117,7 +123,7 @@ export class ServiceController {
     status: 200,
     description: 'It will delete Service in the response',
   })
- async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     const item = await this.serviceService.delete(id)
 
     if (item instanceof InternalServerErrorException

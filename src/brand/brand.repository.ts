@@ -4,13 +4,16 @@ import { ConflictException, HttpException, HttpStatus, Inject, Injectable, Inter
 import { CreateBrandDto } from "./dto/create-brand.dto";
 import { BrandPagination } from "./dto/pagination-brand.dto";
 import { UpdateBrandDto } from "./dto/update-brand.dto";
+import { CloudinaryService } from "src/cloudinary/cloudinary.service";
 @Injectable()
 export class BrandRepository implements IBrand {
     constructor(
         @Inject('BRAND_REPOSITORY')
         private readonly brandModel: typeof Brand,
+        private readonly cloudinaryService: CloudinaryService
+
     ) { }
-    async createBrand(createBrandDto: CreateBrandDto): Promise<object | InternalServerErrorException | HttpException | ConflictException | NotFoundException> {
+    async createBrand(createBrandDto: CreateBrandDto & { image: Express.Multer.File; }): Promise<object | InternalServerErrorException | HttpException | ConflictException | NotFoundException> {
         try {
             const existingBrand = await this.brandModel.findOne({
                 where: {
@@ -20,10 +23,26 @@ export class BrandRepository implements IBrand {
             if (existingBrand) {
                 throw new ConflictException("Brand  already exists , choose other name");
             }
+            let imageUrl = null;
+            if (createBrandDto.image) {
+                try {
+                    const uploadResult = await this.cloudinaryService.uploadFile(createBrandDto.image);
+                    if (!uploadResult) {
+                        console.log("error upload image pet");
+                        return new InternalServerErrorException()
+                    }
+                    imageUrl = uploadResult.secure_url;
+                } catch (error) {
+                    console.log("error from upload", error)
+                    return new InternalServerErrorException()
+                }
+            } else {
+                return new NotFoundException("not have images")
+            }
             const newBrand = await this.brandModel.create({
                 brand_name: createBrandDto.brand_name,
-                brand_description: createBrandDto.brand_description
-
+                brand_description: createBrandDto.brand_description,
+                image: imageUrl,
 
             })
             return newBrand
@@ -39,6 +58,7 @@ export class BrandRepository implements IBrand {
                     'id',
                     'brand_name',
                     'brand_description',
+                    'image',
                     'status',
                     'created_at',
                     'updated_at',
@@ -86,7 +106,7 @@ export class BrandRepository implements IBrand {
                     brand_name: updateBrandDto.brand_name,
                 }
             })
-            if(duplicateName){
+            if (duplicateName) {
                 throw new ConflictException("Duplicate brand name");
             }
             const BrandUpdated = await this.brandModel.update(
@@ -106,7 +126,7 @@ export class BrandRepository implements IBrand {
             throw new InternalServerErrorException("Error update one brand ", error)
         };
     }
-   async  deleteBrand(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
+    async deleteBrand(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
         try {
             const brand = await this.brandModel.findOne({
                 where: { id: id }
@@ -123,7 +143,7 @@ export class BrandRepository implements IBrand {
         } catch (error) {
             console.log(error);
             throw new InternalServerErrorException("Error delete one brand ", error)
-        };  
+        };
     }
 }
 

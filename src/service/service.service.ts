@@ -3,6 +3,7 @@ import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { ServiceRepository } from './service.repository';
 import { ServicePagination } from './dto/pagination-service';
+import { RequestWithUser } from 'src/interface/request-interface';
 
 @Injectable()
 export class ServiceService {
@@ -15,10 +16,10 @@ export class ServiceService {
 } | InternalServerErrorException | NotFoundException>{
   return this.serviceRepository.find(pagination)
 }
-public async create(createServiceDto : CreateServiceDto): Promise<
+public async create(createServiceDto : CreateServiceDto  & {image : Express.Multer.File}  ,req: RequestWithUser): Promise<
     object | InternalServerErrorException | HttpException | ConflictException | NotFoundException
 >{
-  return this.serviceRepository.create(createServiceDto)
+  return this.serviceRepository.create(createServiceDto,req)
 }
 public async findOne(id: string):Promise<object | InternalServerErrorException | HttpException | NotFoundException>{
   return this.serviceRepository.findOne(id)

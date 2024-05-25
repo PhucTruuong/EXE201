@@ -10,10 +10,12 @@ export class CloudinaryService {
   uploadFile(file: Express.Multer.File): Promise<CloudinaryResponse> {
     return new Promise<CloudinaryResponse>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
+        
         (error, result) => {
           if (error) return reject(error);
           resolve(result);
         },
+        
       );
       if (file && file.buffer) {
         console.log("file upload", file)

@@ -7,6 +7,8 @@ import { Category } from "src/database/dabaseModels/category.entity";
 import { ServicePagination } from "./dto/pagination-service";
 import { UpdateServiceDto } from "./dto/update-service.dto";
 import { Location } from "src/database/dabaseModels/location.entity";
+import { RequestWithUser } from "src/interface/request-interface";
+import { CloudinaryService } from "src/cloudinary/cloudinary.service";
 
 export class ServiceRepository implements IService {
     constructor(
@@ -18,18 +20,20 @@ export class ServiceRepository implements IService {
         private readonly brandModel: typeof Brand,
         @Inject('CATEGORY_REPOSITORY')
         private readonly categoryModel: typeof Category,
+        private readonly cloudinaryService: CloudinaryService
     ) {
 
     }
-   async create(createServiceDto: CreateServiceDto): Promise<object | InternalServerErrorException | NotFoundException | HttpException | ConflictException> {
+
+    async create(createServiceDto: CreateServiceDto & { image: Express.Multer.File; }, req: RequestWithUser): Promise<object | InternalServerErrorException | HttpException | ConflictException | NotFoundException> {
         try {
             const existing = await this.serviceModel.findOne({
                 where: {
-                    service_name:createServiceDto.service_name,
+                    service_name: createServiceDto.service_name,
                 }
             })
             if (existing) {
-                throw new ConflictException("Items already exists , choose other name");
+                return new ConflictException("Items already exists , choose other name");
             }
             const existingBrand = await this.brandModel.findOne({
                 where: {
@@ -37,7 +41,7 @@ export class ServiceRepository implements IService {
                 }
             })
             if (!existingBrand) {
-                throw new NotFoundException("Brand not found ");
+                return new NotFoundException("Brand not found ");
             }
             const existingLocation = await this.locationModel.findOne({
                 where: {
@@ -45,7 +49,7 @@ export class ServiceRepository implements IService {
                 }
             })
             if (!existingLocation) {
-                throw new NotFoundException("item not found ");
+                return new NotFoundException("item not found ");
             }
             const existingCategory = await this.categoryModel.findOne({
                 where: {
@@ -53,10 +57,25 @@ export class ServiceRepository implements IService {
                 }
             })
             if (!existingCategory) {
-                throw new NotFoundException("Category not found ");
+                return new NotFoundException("Category not found ");
             }
-        
 
+            let imageUrl = null;
+            if (createServiceDto.image) {
+                try {
+                    const uploadResult = await this.cloudinaryService.uploadFile(createServiceDto.image);
+                    if (!uploadResult) {
+                        console.log("error upload image pet");
+                        return new InternalServerErrorException()
+                    }
+                    imageUrl = uploadResult.secure_url;
+                } catch (error) {
+                    console.log("error from upload" , error)
+                    return new InternalServerErrorException()
+                }
+            } else {
+                return new NotFoundException("not have images")
+            }
             const new_item = await this.serviceModel.create({
                 service_name: createServiceDto.service_name,
                 service_description: createServiceDto.service_description,
@@ -65,15 +84,19 @@ export class ServiceRepository implements IService {
                 brand_id: createServiceDto.brand_id,
                 category_id: createServiceDto.category_id,
                 location_id: createServiceDto.location_id,
-                
+                user_id: req.user.userId,
+                image: imageUrl,
+                createAt: new Date(),
+                updateAt: new Date(),
+
             })
             return new_item
         } catch (error) {
             console.log("error", error)
             throw new InternalServerErrorException("Error create item", error)
-        };  
+        };
     }
-   async find(pagination: ServicePagination): Promise<{ data: object[]; totalCount: number; } | InternalServerErrorException | NotFoundException> {
+    async find(pagination: ServicePagination): Promise<{ data: object[]; totalCount: number; } | InternalServerErrorException | NotFoundException> {
         try {
             const { count, rows: allItem } = await this.serviceModel.findAndCountAll({
                 attributes: [
@@ -82,6 +105,7 @@ export class ServiceRepository implements IService {
                     'service_description',
                     'starttime',
                     'endtime',
+                    'image',
                     // 'brand_id',
                     // 'location_id',
                     // 'category_id',
@@ -93,19 +117,19 @@ export class ServiceRepository implements IService {
                 offset: (pagination.page - 1) * pagination.limit,
                 include: [
                     {
-                        model: Brand, 
-                        as: 'brand', 
-                        attributes: ['id', 'brand_name'] 
+                        model: Brand,
+                        as: 'brand',
+                        attributes: ['id', 'brand_name']
                     },
                     {
-                        model: Location, 
+                        model: Location,
                         as: 'location',
-                        attributes: ['id', 'location_name', 'location_address'] 
+                        attributes: ['id', 'location_name', 'location_address']
                     },
                     {
-                        model: Category, 
+                        model: Category,
                         as: 'category',
-                        attributes: ['id', 'category_name'] 
+                        attributes: ['id', 'category_name']
                     }
                 ]
             });
@@ -122,7 +146,7 @@ export class ServiceRepository implements IService {
             throw new InternalServerErrorException("Error fetching services ", error)
         };
     }
-   async findOne(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
+    async findOne(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
         try {
             const item = await this.serviceModel.findOne({
                 where: { id: id }
@@ -136,7 +160,7 @@ export class ServiceRepository implements IService {
             throw new InternalServerErrorException("Error find item ", error)
         };
     }
-   async update(id: string, updateServiceDto: UpdateServiceDto): Promise<object | InternalServerErrorException | NotFoundException | HttpException> {
+    async update(id: string, updateServiceDto: UpdateServiceDto): Promise<object | InternalServerErrorException | NotFoundException | HttpException> {
         try {
             const item = await this.serviceModel.findOne({
                 where: { id: id }
@@ -149,7 +173,7 @@ export class ServiceRepository implements IService {
                     service_name: updateServiceDto.service_name,
                 }
             })
-            if(duplicateName){
+            if (duplicateName) {
                 throw new ConflictException("Duplicate  name!");
             }
             const updated = await this.serviceModel.update(
@@ -174,7 +198,7 @@ export class ServiceRepository implements IService {
             throw new InternalServerErrorException("Error update item ", error)
         };
     }
-   async delete(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
+    async delete(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
         try {
             const item = await this.serviceModel.findOne({
                 where: { id: id }
