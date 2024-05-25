@@ -13,6 +13,7 @@ async function bootstrap() {
   const app = await NestFactory.create(
     AppModule,
     { httpsOptions }
+
   );
   const config = new DocumentBuilder()
     .setTitle('Sales API')
@@ -44,7 +45,7 @@ async function bootstrap() {
       skipMissingProperties: true,
     }),
   );
-
+  app.enableCors();
   await app.listen(443);
   const server = app.getHttpServer();
   const address = server.address();
