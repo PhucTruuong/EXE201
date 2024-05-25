@@ -1,14 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, InternalServerErrorException, ConflictException, HttpException, Query, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, InternalServerErrorException, ConflictException, HttpException, Query, UseGuards, Req, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { PetService } from './pet.service';
 import { CreatePetDto } from './dto/create-pet.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { StandardParam, StandardParams, StandardResponse } from 'nest-standard-response';
 import { PetPagination } from './dto/pet-pagination.dto';
 import { JwtCustomerGuard } from 'src/auth/guard/jwt-customer.guard';
 import { JwtAdminGuard } from 'src/auth/guard/jwt-admin.guard';
 import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
 import { RequestWithUser } from 'src/interface/request-interface';
+import { FileInterceptor } from '@nestjs/platform-express';
 @ApiTags('Pet')
 @Controller('api/v1/pet')
 export class PetController {
@@ -18,17 +19,19 @@ export class PetController {
   @UseGuards(JwtCustomerGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: ' [CUSTOMER]Create a new pet' })
-  @ApiResponse({
-    status: 201,
-    description: '[CUSTOMER] It will create a new pet in the response',
-  })
+  @ApiResponse({ status: 201, description: 'Successfully created pet.' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiConsumes('multipart/form-data')
   @ApiBody({
-    type: CreatePetDto
+    description: 'Pet details with image',
+    type: CreatePetDto,
   })
+  @UseInterceptors(FileInterceptor('image'))
   async create(@Body() createPetDto: CreatePetDto,
-    @Req() req: RequestWithUser
+    @UploadedFile() image: Express.Multer.File,
+    @Req() req: RequestWithUser,
   ) {
-    const pet = await this.petService.createPet(createPetDto, req)
+    const pet = await this.petService.createPet({ ...createPetDto, image }, req)
     if (pet instanceof InternalServerErrorException
       || pet instanceof NotFoundException
       || pet instanceof ConflictException
@@ -150,7 +153,7 @@ export class PetController {
     @Req() req: RequestWithUser,
     @StandardParam() standardParam: StandardParams
   ) {
-    console.log('user' , req.user)
+    console.log('user', req.user)
     const allPet = await this.petService.findAllPetByUser(req, pagination);
     if (allPet instanceof InternalServerErrorException ||
       allPet instanceof HttpException
