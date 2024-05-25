@@ -1,26 +1,33 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, ConflictException, InternalServerErrorException, HttpException, Query, BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, ConflictException, InternalServerErrorException, HttpException, Query, BadRequestException, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { StandardParam, StandardParams, StandardResponse } from 'nest-standard-response';
 import { CategoryPagination } from './dto/category-pagination.dto';
-import { JwtAdminGuard } from 'src/auth/guard/jwt-admin.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { JwtAdminServiceGuard } from 'src/auth/guard/jwt-admin_customer.guard';
 @ApiTags('Category')
 @Controller('api/v1/category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) { }
  
   @Post()
-  @UseGuards(JwtAdminGuard)
+  @UseGuards(JwtAdminServiceGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new category' })
-  @ApiResponse({
-    status: 201,
-    description: 'It will create a new category in the response',
+  @ApiResponse({ status: 201, description: 'Successfully created pet.' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiBody({
+    type: CreateCategoryDto
   })
-  async create(@Body() createCategoryDto: CreateCategoryDto) {
-    const category = await this.categoryService.createCategory(createCategoryDto)
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('image'))
+  async create(@Body() createCategoryDto: CreateCategoryDto,
+  @UploadedFile() image: Express.Multer.File,
+
+) {
+    const category = await this.categoryService.createCategory({...createCategoryDto,image})
 
     if (category instanceof InternalServerErrorException
 
@@ -35,7 +42,7 @@ export class CategoryController {
   };
 
   @Get()
-  @UseGuards(JwtAdminGuard)
+  @UseGuards(JwtAdminServiceGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'list aLL  category' })
   @ApiResponse({
@@ -65,7 +72,7 @@ export class CategoryController {
   };
 
   @Get(':id')
-  @UseGuards(JwtAdminGuard)
+  @UseGuards(JwtAdminServiceGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'list one detail  category' })
   @ApiResponse({
@@ -85,7 +92,7 @@ export class CategoryController {
   };
 
   @Patch(':id')
-  @UseGuards(JwtAdminGuard)
+  @UseGuards(JwtAdminServiceGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'update  category' })
   @ApiResponse({
@@ -106,9 +113,9 @@ export class CategoryController {
     };
   };
 
-  @UseGuards(JwtAdminGuard)
+
   @Delete(':id')
-  @UseGuards(JwtAdminGuard)
+  @UseGuards(JwtAdminServiceGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'delete  category' })
   @ApiResponse({

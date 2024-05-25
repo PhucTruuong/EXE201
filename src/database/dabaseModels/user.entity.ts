@@ -1,14 +1,16 @@
-import { 
-    Table, 
-    Column, 
+import {
+    Table,
+    Column,
     Model,
-    DataType, 
+    DataType,
     ForeignKey,
     BelongsTo,
     HasMany
 } from 'sequelize-typescript';
 import { Role } from './role.entity';
 import { Booking } from './booking.entity';
+import { Pet } from './pet.entity';
+import { Service } from './service.entity';
 @Table({
     tableName: 'petcare_user',
     timestamps: false,
@@ -118,6 +120,10 @@ export class User extends Model {
     })
     avatar: string;
 
-    @HasMany(() => Booking,{ foreignKey: 'user_id' })
+    @HasMany(() => Booking, { foreignKey: 'user_id' })
     bookings: Booking[];
+    @HasMany(() => Pet, { foreignKey: 'user_id' })
+    pets: Pet[];
+    @HasMany(() => Service, { foreignKey: 'user_id' })
+    services: Service[];
 };

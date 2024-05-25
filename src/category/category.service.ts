@@ -15,7 +15,7 @@ export class CategoryService {
     return this.categoryRepository.findAllCategory(pagination);
   }
 
-  public async createCategory(createCategoryDto: CreateCategoryDto): Promise<object | InternalServerErrorException | HttpException | ConflictException> {
+  public async createCategory(createCategoryDto: CreateCategoryDto & { image: Express.Multer.File } ): Promise<object | InternalServerErrorException | HttpException | ConflictException> {
     return this.categoryRepository.createCategory(createCategoryDto)
   }
   public async findOneCategory(id: string): Promise<object | InternalServerErrorException | HttpException> {

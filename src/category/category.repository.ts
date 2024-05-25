@@ -4,13 +4,16 @@ import { CreateCategoryDto } from "./dto/create-category.dto";
 import { Category } from "src/database/dabaseModels/category.entity";
 import { CategoryPagination } from "./dto/category-pagination.dto";
 import { UpdateCategoryDto } from "./dto/update-category.dto";
+import { CloudinaryService } from "src/cloudinary/cloudinary.service";
 
 export class CategoryRepository implements ICategory {
     constructor(
         @Inject('CATEGORY_REPOSITORY')
-        private readonly categoryModel: typeof Category
+        private readonly categoryModel: typeof Category,
+        private readonly cloudinaryService: CloudinaryService
+
     ) { }
-    async createCategory(createCategoryDto: CreateCategoryDto): Promise<object | InternalServerErrorException | HttpException | ConflictException | NotFoundException> {
+    async createCategory(createCategoryDto: CreateCategoryDto& { image: Express.Multer.File }): Promise<object | InternalServerErrorException | HttpException | ConflictException | NotFoundException> {
 
         try {
             const existingCategory = await this.categoryModel.findOne({
@@ -21,9 +24,26 @@ export class CategoryRepository implements ICategory {
             if (existingCategory) {
                 throw new ConflictException("Category  already exists , choose other name");
             }
+            let imageUrl = null;
+            if (createCategoryDto.image) {
+                try {
+                    const uploadResult = await this.cloudinaryService.uploadFile(createCategoryDto.image);
+                    if (!uploadResult) {
+                        console.log("error upload image pet");
+                        return new InternalServerErrorException()
+                    }
+                    imageUrl = uploadResult.secure_url;
+                } catch (error) {
+                    console.log("error from upload", error)
+                    return new InternalServerErrorException()
+                }
+            } else {
+                return new NotFoundException("not have images")
+            }
             const newCategory = await this.categoryModel.create({
                 category_name: createCategoryDto.category_name,
-                category_description: createCategoryDto.category_description
+                category_description: createCategoryDto.category_description,
+                image: imageUrl,
 
 
             })
@@ -40,6 +60,7 @@ export class CategoryRepository implements ICategory {
                     'id',
                     'category_name',
                     'category_description',
+                    'image',
                     'status',
                     'created_at',
                     'updated_at',

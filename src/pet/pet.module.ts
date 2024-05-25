@@ -13,6 +13,8 @@ import { bcryptModule } from 'src/utils/bcryptModule';
 import { RoleRepository } from 'src/role/role.repository';
 import { RoleProviders } from 'src/role/role.provider';
 import { PetTypeRepository } from 'src/pet_type/pet_type.repository';
+import { CloudinaryProvider } from 'src/cloudinary/cloudinary.provider';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Module({
   imports: [DatabaseModule,UserModule],
@@ -28,6 +30,8 @@ import { PetTypeRepository } from 'src/pet_type/pet_type.repository';
     ...PetTypeProviders,
     ...PetBreedProviders,
     ...UserProviders,
+     CloudinaryProvider,
+     CloudinaryService
   ],
 })
 export class PetModule { }

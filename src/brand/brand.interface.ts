@@ -8,7 +8,7 @@ export interface IBrand {
         data: object[],
         totalCount: number
     } | InternalServerErrorException | HttpException>;
-    createBrand(createBrandDto: CreateBrandDto): Promise<
+    createBrand(createBrandDto: CreateBrandDto & { image: Express.Multer.File }): Promise<
         object | InternalServerErrorException | HttpException | ConflictException | NotFoundException
     >
     findOneBrand(id: string):Promise<object | InternalServerErrorException | HttpException | NotFoundException>

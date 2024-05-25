@@ -5,7 +5,7 @@ import { Service } from './service.entity';
   tableName: 'petcare_category', // Define the table name
   timestamps: false, // Disable automatic timestamps
   freezeTableName: true,
-  underscored: true, 
+  underscored: true,
 })
 export class Category extends Model {
   @Column({
@@ -49,8 +49,12 @@ export class Category extends Model {
     defaultValue: DataType.NOW, // Set current date as default
   })
   updated_at: Date;
-
-    //1
-    @HasMany(() => Service,{ foreignKey: 'category_id' })
-    services: Service[];
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  image: string;
+  //1
+  @HasMany(() => Service, { foreignKey: 'category_id' })
+  services: Service[];
 }

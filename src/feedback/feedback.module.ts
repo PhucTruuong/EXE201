@@ -19,6 +19,8 @@ import { RoleProviders } from 'src/role/role.provider';
 import { RoleRepository } from 'src/role/role.repository';
 import { CityProviders } from 'src/city/city.provider';
 import { CityRepository } from 'src/city/city.repository';
+import { CloudinaryProvider } from 'src/cloudinary/cloudinary.provider';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Module({
   controllers: [FeedbackController],
@@ -39,7 +41,9 @@ import { CityRepository } from 'src/city/city.repository';
     UserRepository,
     LocationRepository,
     BrandRepository,
-    CategoryRepository
+    CategoryRepository,
+    CloudinaryService,
+    CloudinaryProvider
   ],
   imports:[DatabaseModule]
 })

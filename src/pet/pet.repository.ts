@@ -9,6 +9,7 @@ import { PetPagination } from './dto/pet-pagination.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
 import { RequestWithUser } from 'src/interface/request-interface';
 import { parseSortParam } from 'src/utils/helper';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 @Injectable()
 export class PetRepository implements IPet {
     constructor(
@@ -18,10 +19,12 @@ export class PetRepository implements IPet {
         private readonly petTypeModel: typeof PetType,
         @Inject('PET_BREED_REPOSITORY')
         private readonly petBreedModel: typeof PetBreed,
+        private readonly cloudinaryService: CloudinaryService
     ) { }
-    async createPet(createPetDto: CreatePetDto, req: RequestWithUser): Promise<object | InternalServerErrorException | HttpException | ConflictException | NotFoundException> {
+    async createPet(createPetDto: CreatePetDto & {image : Express.Multer.File}, req: RequestWithUser): Promise<object | InternalServerErrorException | HttpException | ConflictException | NotFoundException> {
         try {
             // check name if exits
+            console.log("checking" , createPetDto)
             const existingPet = await this.petModel.findOne({
                 where: {
                     pet_name: createPetDto.pet_name
@@ -44,6 +47,24 @@ export class PetRepository implements IPet {
             if (!existingPetBreed) {
                 return new NotFoundException("Pet  Breed not found");
             }
+
+            let imageUrl = null;
+            if (createPetDto.image) {
+                try {
+                    const uploadResult = await this.cloudinaryService.uploadFile(createPetDto.image);
+                    if (!uploadResult) {
+                        console.log("error upload image pet");
+                        return new InternalServerErrorException()
+                    }
+                    imageUrl = uploadResult.secure_url;
+                    console.log("image", imageUrl);
+                } catch (error) {
+                    console.log("error from upload" , error)
+                    return new InternalServerErrorException()
+                }
+            } else {
+                return new NotFoundException("not have images")
+            }
             const newPet = this.petModel.create({
                 id: uuidv4(),
                 pet_name: createPetDto.pet_name,
@@ -53,6 +74,7 @@ export class PetRepository implements IPet {
                 pet_type_id: createPetDto.pet_type_id,
                 user_id: req.user.userId,
                 pet_breed_id: createPetDto.pet_breed_id,
+                image: imageUrl,
                 createAt: new Date(),
                 updateAt: new Date(),
             })
@@ -75,6 +97,7 @@ export class PetRepository implements IPet {
                     'weight',
                     'status',
                     'user_id',
+                    'image',
                     'pet_type_id',
                     'pet_breed_id',
                     'created_at',
@@ -82,7 +105,7 @@ export class PetRepository implements IPet {
                 ],
                 limit: pagination.limit,
                 offset: actualOffset,
-                order:order
+                order: order
             });
             if (!allPet || count === 0) {
                 return new HttpException('No Pet  found!', HttpStatus.NOT_FOUND);
@@ -192,6 +215,7 @@ export class PetRepository implements IPet {
                     'weight',
                     'status',
                     'user_id',
+                    'image',
                     'pet_type_id',
                     'pet_breed_id',
                     'created_at',

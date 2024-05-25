@@ -18,7 +18,7 @@ export class PetService {
     return this.petRepository.findAllPet(pagination);
 
   }
-  public async createPet(createPetDto: CreatePetDto , req: RequestWithUser): Promise<
+  public async createPet(createPetDto: CreatePetDto & {image : Express.Multer.File} , req: RequestWithUser): Promise<
     object | InternalServerErrorException | HttpException | ConflictException | NotFoundException
   > {
     return this.petRepository.createPet(createPetDto,req)
