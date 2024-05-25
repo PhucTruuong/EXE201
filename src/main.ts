@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import * as fs from 'fs';
+// import * as csurf from 'csurf';
+// import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const httpsOptions = {
@@ -13,11 +15,10 @@ async function bootstrap() {
   const app = await NestFactory.create(
     AppModule,
     { httpsOptions }
-
   );
   const config = new DocumentBuilder()
-    .setTitle('Sales API')
-    .setDescription('Sales API description')
+    .setTitle('Furever Friend API')
+    .setDescription('Furever Friend API Description')
     .setVersion('1.0')
     .addBearerAuth(
       {
@@ -37,6 +38,18 @@ async function bootstrap() {
     swaggerOptions: { defaultModelsExpandDepth: -1 }
   });
 
+  // app.use(cookieParser());
+  // app.use(csurf({ cookie: { sameSite: true } }));
+
+  // app.use((req: any, res: any, next: any) => {
+  //   console.log('CSRF Middleware');
+  //   const token = req.csrfToken();
+  //   console.log('CSRF Token: ', token);
+  //   res.cookie('XSRF-TOKEN', token);
+  //   res.locals.csrfToken = token;
+  //   next();
+  // });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: false, // Disable whitelist
@@ -45,6 +58,7 @@ async function bootstrap() {
       skipMissingProperties: true,
     }),
   );
+  
   app.enableCors({
     origin: [
       'http://localhost:5173/',
