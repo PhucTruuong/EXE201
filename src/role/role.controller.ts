@@ -30,12 +30,12 @@ import { RoleService } from './role.service';
 import { JwtAdminGuard } from 'src/auth/guard/jwt-admin.guard';
 
 @ApiTags('Role')
+@UseGuards(JwtAdminGuard)
 @Controller('api/v1/role')
 export class RoleController {
     constructor(private readonly roleService: RoleService) { };
 
     @Get('')
-    @UseGuards(JwtAdminGuard)
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: ' [ADMIN] list all roles' })
     @ApiResponse({
@@ -53,7 +53,6 @@ export class RoleController {
     }
 
     @Get(':id')
-    @UseGuards(JwtAdminGuard)
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: ' [ADMIN] detail  role' })
     @ApiResponse({
@@ -71,7 +70,6 @@ export class RoleController {
     }
 
     @Post('/')
-    @UseGuards(JwtAdminGuard)
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: ' [ADMIN] create a new roles' })
     @ApiResponse({
