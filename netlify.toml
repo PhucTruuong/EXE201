@@ -1,7 +1,7 @@
 [build]
   command = "npm run start:dev"
   timeout = 20
-  publish = "dist"
+  port = 8100
 
 [dev]
   command = "npm run start:dev"
