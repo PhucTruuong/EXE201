@@ -58,7 +58,7 @@ async function bootstrap() {
       skipMissingProperties: true,
     }),
   );
-  
+
   app.enableCors({
     origin: [
       'http://localhost:5173/',
@@ -66,10 +66,10 @@ async function bootstrap() {
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true
-  }
+  });
 
-  );
-  await app.listen(443);
+  const nestPort = process.env.PORT || 443;
+  await app.listen(nestPort);
   const server = app.getHttpServer();
   const address = server.address();
   const port = typeof address === 'string' ? address : address?.port;
