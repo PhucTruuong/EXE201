@@ -68,7 +68,7 @@ async function bootstrap() {
     credentials: true
   });
 
-  const nestPort = process.env.NEST_PORT || 443;
+  const nestPort = process.env.NEST_PORT || 8100;
   await app.listen(nestPort);
   const server = app.getHttpServer();
   const address = server.address();
