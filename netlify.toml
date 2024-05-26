@@ -1,0 +1,15 @@
+[build]
+  command = "npm run build"
+  timeout = 20
+  publish = "dist"
+
+[dev]
+  command = "npm run start:dev"
+  timeout = 20
+  port = 8100
+
+[build.environment]
+  NODE_ENV = "production"
+
+
+
