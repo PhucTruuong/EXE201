@@ -8,14 +8,14 @@ import { AllExceptionsFilter } from './all-exception.filter';
 // import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
-  // const httpsOptions = {
-  //   key: fs.readFileSync('./secrets/furever-prkey.key'),
-  //   cert: fs.readFileSync('./secrets/fureverpkey.cer'),
-  // };
+  const httpsOptions = {
+    key: fs.readFileSync('./secrets/furever-prkey.key'),
+    cert: fs.readFileSync('./secrets/fureverpkey.cer'),
+  };
 
   const app = await NestFactory.create(
     AppModule,
-    // { httpsOptions }
+    { httpsOptions }
   );
   const config = new DocumentBuilder()
     .setTitle('Furever Friend API')
