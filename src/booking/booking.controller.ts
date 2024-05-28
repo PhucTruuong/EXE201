@@ -55,11 +55,8 @@ export class BookingController {
     @Query() pagination: BookingPagination,
     @StandardParam() standardParam: StandardParams
   ) {
-    if (!pagination.page || !pagination.limit) {
-      throw new BadRequestException('Page and limit query parameters are required');
+    const item = await this.bookingService.find(pagination);
 
-    }
-    const item = await this.bookingService.find(pagination)
     if (item instanceof InternalServerErrorException ||
       item instanceof HttpException ||
       item instanceof BadRequestException
@@ -80,7 +77,7 @@ export class BookingController {
     status: 200,
     description: 'It will list details bookings in the response',
   })
- async findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     const item = await this.bookingService.findOne(id)
     if (item instanceof InternalServerErrorException
       || item instanceof NotFoundException
@@ -103,7 +100,7 @@ export class BookingController {
   @ApiBody({
     type: UpdateBookingDto
   })
- async  update(@Param('id') id: string, @Body() updateBookingDto: UpdateBookingDto) {
+  async update(@Param('id') id: string, @Body() updateBookingDto: UpdateBookingDto) {
     const item = await this.bookingService.update(id, updateBookingDto)
 
     if (item instanceof InternalServerErrorException
@@ -125,19 +122,20 @@ export class BookingController {
     status: 200,
     description: 'It will deletebookings in the response',
   })
-async  remove(@Param('id') id: string) {
-  const item = await this.bookingService.delete(id)
+  async remove(@Param('id') id: string) {
+    const item = await this.bookingService.delete(id)
 
-  if (item instanceof InternalServerErrorException
-    || item instanceof NotFoundException
-    || item instanceof HttpException
+    if (item instanceof InternalServerErrorException
+      || item instanceof NotFoundException
+      || item instanceof HttpException
 
-  ) {
-    return item as InternalServerErrorException || HttpException || NotFoundException;
-  } else {
-    return item;
-  }
-  }
+    ) {
+      return item as InternalServerErrorException || HttpException || NotFoundException;
+    } else {
+      return item;
+    };
+  };
+
   @Get('/me/bookings')
   @UseGuards(JwtCustomerGuard)
   @ApiBearerAuth('JWT-auth')
@@ -147,27 +145,27 @@ async  remove(@Param('id') id: string) {
     description: 'It will get all bookings by user in the response',
   })
   @StandardResponse({
-    isPaginated:true ,
+    isPaginated: true,
     isFiltered: true,
   })
   async getByUser(
     @Query() pagination: BookingPagination,
     @StandardParam() standardParam: StandardParams,
     @Req() req: RequestWithUser) {
-      if (!pagination.page || !pagination.limit) {
-        throw new BadRequestException('Page and limit query parameters are required');
-  
-      }
-      const item = await this.bookingService.findByUser(req,pagination)
-      if (item instanceof InternalServerErrorException ||
-        item instanceof HttpException ||
-        item instanceof BadRequestException
-      ) {
-        return item as HttpException | InternalServerErrorException;
-      } else {
-        const { data, totalCount } = item;
-        standardParam.setPaginationInfo({ count: totalCount });
-        return data;
-      }
-  }
+    if (!pagination.page || !pagination.limit) {
+      throw new BadRequestException('Page and limit query parameters are required');
+
+    }
+    const item = await this.bookingService.findByUser(req, pagination)
+    if (item instanceof InternalServerErrorException ||
+      item instanceof HttpException ||
+      item instanceof BadRequestException
+    ) {
+      return item as HttpException | InternalServerErrorException;
+    } else {
+      const { data, totalCount } = item;
+      standardParam.setPaginationInfo({ count: totalCount });
+      return data;
+    };
+  };
 }
