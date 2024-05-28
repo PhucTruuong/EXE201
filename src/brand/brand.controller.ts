@@ -8,13 +8,17 @@ import { StandardParam, StandardParams, StandardResponse } from 'nest-standard-r
 import { BrandPagination } from './dto/pagination-brand.dto';
 import { JwtAdminServiceGuard } from 'src/auth/guard/jwt-admin_customer.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-
+import { Throttle } from '@nestjs/throttler/dist/throttler.decorator';
+import { LoggerService } from 'src/my-logger/service/logger.service';
 @ApiTags('Brand')
 @Controller('api/v1/brand')
 export class BrandController {
-  constructor(private readonly brandService: BrandService) { }
-  @Post()
+  constructor(private readonly brandService: BrandService) { };
+  private readonly logger = new LoggerService(BrandController.name);
+
+  @Post('/')
   @UseGuards(JwtAdminServiceGuard)
+  @Throttle({ short: { limit: 3, ttl: 2000 }})
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new brand' })
   @ApiResponse({ status: 201, description: 'Successfully created pet.' })
@@ -25,9 +29,9 @@ export class BrandController {
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('image'))
   async create(@Body() createBrandDto: CreateBrandDto,
-  @UploadedFile() image: Express.Multer.File,
-) {
-    const brand = await this.brandService.createBrand({...createBrandDto,image})
+    @UploadedFile() image: Express.Multer.File,
+  ) {
+    const brand = await this.brandService.createBrand({ ...createBrandDto, image });
 
     if (brand instanceof InternalServerErrorException
       || brand instanceof NotFoundException
@@ -38,9 +42,11 @@ export class BrandController {
     } else {
       return brand;
     }
-  }
+  };
+
   @UseGuards(JwtAdminServiceGuard)
-  @Get()
+  @Get('/')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @ApiBearerAuth('JWT-auth')
   @StandardResponse({
     isPaginated: true,
@@ -54,10 +60,12 @@ export class BrandController {
     @Query() pagination: BrandPagination,
     @StandardParam() standardParam: StandardParams
   ) {
+    this.logger.log(`Request all brand`, BrandController.name)
     if (!pagination.page || !pagination.limit) {
       throw new BadRequestException('Page and limit query parameters are required');
-    }
-    const allBrand = await this.brandService.findAllBrand(pagination)
+    };
+    const allBrand = await this.brandService.findAllBrand(pagination);
+
     if (allBrand instanceof InternalServerErrorException ||
       allBrand instanceof HttpException ||
       allBrand instanceof BadRequestException
@@ -67,8 +75,9 @@ export class BrandController {
       const { data, totalCount } = allBrand;
       standardParam.setPaginationInfo({ count: totalCount });
       return data;
-    }
-  }
+    };
+  };
+
   @Get(':id')
   @UseGuards(JwtAdminServiceGuard)
   @ApiBearerAuth('JWT-auth')
@@ -86,8 +95,9 @@ export class BrandController {
       return brand as InternalServerErrorException || NotFoundException || HttpException;
     } else {
       return brand;
-    }
-  }
+    };
+  };
+
   @UseGuards(JwtAdminGuard)
   @Patch(':id')
   @ApiBearerAuth('JWT-auth')
@@ -110,8 +120,9 @@ export class BrandController {
       return brand as InternalServerErrorException || HttpException || NotFoundException;
     } else {
       return brand;
-    }
-  }
+    };
+  };
+
   @UseGuards(JwtAdminGuard)
   @ApiOperation({ summary: 'Delete one  brand' })
   @ApiResponse({
@@ -126,11 +137,10 @@ export class BrandController {
     if (brand instanceof InternalServerErrorException
       || brand instanceof NotFoundException
       || brand instanceof HttpException
-
     ) {
       return brand as InternalServerErrorException || HttpException || NotFoundException;
     } else {
       return brand;
-    }
-  }
-}
+    };
+  };
+};
