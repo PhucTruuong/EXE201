@@ -59,19 +59,23 @@ async function bootstrap() {
     }),
   );
 
-  const options = {
-    origin: [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'http://localhost:8081'
-    ],
+  const whitelist = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:8081'
+  ];
+  
+  app.enableCors({
+    origin: function (origin, callback) {
+      if (!origin || whitelist.indexOf(origin) !== -1) {
+        callback(null, true)
+      } else {
+        callback(new Error('Not allowed by CORS'))
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    preflightContinue: true,
-    optionsSuccessStatus: 204,
     credentials: true,
-  };
-
-  app.enableCors(options);
+  });
 
   const nestPort = process.env.NEST_PORT || 443;
   await app.listen(nestPort);
