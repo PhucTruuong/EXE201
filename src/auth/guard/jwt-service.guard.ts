@@ -7,18 +7,19 @@ import { PayloadType } from "../types/payload.types";
 export class JwtHostGuard extends AuthGuard('jwt'){
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         return super.canActivate(context)
-    }
+    };
+    
     handleRequest<TUser = PayloadType>(err: any, user: any): TUser {
-         //1
-         if(err || !user){
+        //1
+        if (err || !user) {
             throw err || new UnauthorizedException();
-        
-         }
-         console.log("user",user);
-         // change to service id 
-         if(user.role === "host"){
+
+        }
+        console.log("user", user);
+        // change to service id 
+        if (user.role === "host") {
             return user;
-         }
-         throw err || new UnauthorizedException();
+        }
+        throw err || new UnauthorizedException();
     }
 }
