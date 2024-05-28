@@ -73,7 +73,7 @@ async function bootstrap() {
 
   app.enableCors(options);
 
-  const nestPort = process.env.NEST_PORT || 8100;
+  const nestPort = process.env.NEST_PORT || 443;
   await app.listen(nestPort);
   const server = app.getHttpServer();
   const address = server.address();
