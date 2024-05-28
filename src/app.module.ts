@@ -24,45 +24,43 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { GatewayModule } from './gateways/gateway.module';
 import { PaymentModule } from './payment/payment.module';
+import { NotificationModule } from './notification/notification.module';
 // import * as path from 'path';
 // import * as servicePath from "../petcare-6a561-firebase-adminsdk-1ctgv-f41da1d8c8.json"
 @Module({
-  imports:
-    [
-      FirebaseModule,
-      // FirebaseModule.forRoot({
-      //   googleApplicationCredential: path.resolve(__dirname, '../petcare-6a561-firebase-adminsdk-1ctgv-f41da1d8c8.json'),
-      // }),
-      ConfigModule.forRoot({
-        isGlobal: true,
-      }),
-      ServeStaticModule.forRoot({
-        rootPath: join(__dirname, '../..', 'client')
-      }),
-      StandardResponseModule.forRoot({}),
-      DatabaseModule,
-      UserModule,
-      RoleModule,
-      PetModule,
-      AuthModule,
-      PetTypeModule,
-      PetBreedModule,
-      CategoryModule,
-      BrandModule,
-      CityModule,
-      LocationModule,
-      ServiceModule,
-      FeedbackModule,
-      AppointmentModule,
-      BookingModule,
-      CloudinaryModule,
-      GatewayModule,
-      PaymentModule
-
-    ],
-  controllers: [AppController],
-  providers: [
-    AppService,
+  imports: [
+    FirebaseModule,
+    // FirebaseModule.forRoot({
+    //   googleApplicationCredential: path.resolve(__dirname, '../petcare-6a561-firebase-adminsdk-1ctgv-f41da1d8c8.json'),
+    // }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '../..', 'client'),
+    }),
+    StandardResponseModule.forRoot({}),
+    DatabaseModule,
+    UserModule,
+    RoleModule,
+    PetModule,
+    AuthModule,
+    PetTypeModule,
+    PetBreedModule,
+    CategoryModule,
+    BrandModule,
+    CityModule,
+    LocationModule,
+    ServiceModule,
+    FeedbackModule,
+    AppointmentModule,
+    BookingModule,
+    CloudinaryModule,
+    GatewayModule,
+    PaymentModule,
+    NotificationModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

@@ -11,6 +11,7 @@ import { Role } from './role.entity';
 import { Booking } from './booking.entity';
 import { Pet } from './pet.entity';
 import { Service } from './service.entity';
+import { Notification } from './notification.entity';
 @Table({
     tableName: 'petcare_user',
     timestamps: false,
@@ -126,4 +127,6 @@ export class User extends Model {
     pets: Pet[];
     @HasMany(() => Service, { foreignKey: 'user_id' })
     services: Service[];
+    @HasMany(() => Notification, { foreignKey: 'user_id' })
+    notifications: Notification[];
 };

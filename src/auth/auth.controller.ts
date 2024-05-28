@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, UseGuards, Request, InternalServerErrorException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+  InternalServerErrorException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login-dto';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -9,7 +19,7 @@ import { TokenDto } from './dto/token-auth.dto';
 @ApiTags('Authentication')
 @Controller('api/v1/auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Post('login')
   @ApiOperation({ summary: 'Login user' })
@@ -18,41 +28,53 @@ export class AuthController {
     description: 'It will give you the access_token in the response',
   })
   @ApiBody({
-    type: LoginDto
+    type: LoginDto,
   })
   async create(@Body() loginDto: LoginDto) {
-    return await this.authService.login(loginDto)
+    return await this.authService.login(loginDto);
   }
   @Get('profile')
   // @UseGuards(JwtAuthGuard)
   @UseGuards(JwtAuthGuard)
-  getProfile(
-    @Request() req,
-  ) {
+  getProfile(@Request() req) {
     return req.user;
   }
   @Post('register')
   @ApiBody({
-    type: RegisterDto
+    type: RegisterDto,
   })
   async register(@Body() registerDto: RegisterDto) {
     const user = await this.authService.register(registerDto);
-    if (user instanceof InternalServerErrorException
-      || user instanceof NotFoundException) {
+    if (
+      user instanceof InternalServerErrorException ||
+      user instanceof NotFoundException
+    ) {
       return user as InternalServerErrorException | NotFoundException;
     } else {
       return user;
     }
   }
   @Post('login-google')
+  @ApiOperation({ summary: ' Login with Google for Web FIREBASE' })
+  @ApiResponse({ status: 201, description: 'Successfully create accessToken.' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiBody({
-    type:TokenDto
+    type: TokenDto,
   })
   async loginWitGoogle(@Body() tokenDto: TokenDto) {
     if (!tokenDto.idToken) {
       throw new BadRequestException('idToken is required');
     }
-    return this.authService.loginWithGoogle(tokenDto)
+    return this.authService.loginWithGoogle(tokenDto);
   }
 
+  @Post('login-google-mobile')
+  @ApiOperation({
+    summary: ' Login with Google for React Native using Google Auth',
+  })
+  @ApiResponse({ status: 201, description: 'Successfully create accessToken.' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  async loginWitGoogleWithMobile(@Body() userInfo: any) {
+    return this.authService.loginWithGoogleMobile(userInfo);
+  }
 }
