@@ -158,7 +158,7 @@ export class AuthRepository implements IAuth {
                 role_id: "31129e6e-6025-494a-a02d-375441ec603a",
                 created_at: new Date(),
                 updated_at: new Date(),
-                // avatar: userRecord.avatar,
+                 avatar: userRecord.avatar,
             });
 
             const payload: PayloadType = {
