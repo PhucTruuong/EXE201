@@ -23,6 +23,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { GatewayModule } from './gateways/gateway.module';
+import { PaymentModule } from './payment/payment.module';
 // import * as path from 'path';
 // import * as servicePath from "../petcare-6a561-firebase-adminsdk-1ctgv-f41da1d8c8.json"
 @Module({
@@ -55,7 +56,8 @@ import { GatewayModule } from './gateways/gateway.module';
       AppointmentModule,
       BookingModule,
       CloudinaryModule,
-      GatewayModule
+      GatewayModule,
+      PaymentModule
 
     ],
   controllers: [AppController],
