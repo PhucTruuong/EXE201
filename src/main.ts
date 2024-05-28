@@ -2,12 +2,8 @@ import { NestFactory, HttpAdapterHost } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-<<<<<<< HEAD
-// import * as fs from 'fs';
-=======
 import * as fs from 'fs';
 import { AllExceptionsFilter } from './all-exception.filter';
->>>>>>> 793c778a14f45ae4595973146d50cb71cbf225e0
 // import * as csurf from 'csurf';
 // import * as cookieParser from 'cookie-parser';
 
