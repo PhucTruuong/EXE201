@@ -24,11 +24,26 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { GatewayModule } from './gateways/gateway.module';
 import { PaymentModule } from './payment/payment.module';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { MyLoggerModule } from './my-logger/my-logger.module';
 // import * as path from 'path';
 // import * as servicePath from "../petcare-6a561-firebase-adminsdk-1ctgv-f41da1d8c8.json"
 @Module({
   imports:
     [
+      ThrottlerModule.forRoot([
+        {
+          name: 'short',
+          ttl: 2000,
+          limit: 5,
+        },
+        {
+          name: 'long',
+          ttl: 60000,
+          limit: 10,
+        }
+      ]),
       FirebaseModule,
       // FirebaseModule.forRoot({
       //   googleApplicationCredential: path.resolve(__dirname, '../petcare-6a561-firebase-adminsdk-1ctgv-f41da1d8c8.json'),
@@ -57,12 +72,16 @@ import { PaymentModule } from './payment/payment.module';
       BookingModule,
       CloudinaryModule,
       GatewayModule,
-      PaymentModule
-
+      PaymentModule,
+      MyLoggerModule
     ],
   controllers: [AppController],
   providers: [
     AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard
+    }
   ],
 })
 export class AppModule { }

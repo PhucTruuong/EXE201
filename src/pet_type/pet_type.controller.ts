@@ -6,12 +6,15 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nes
 import { StandardParam, StandardParams, StandardResponse } from 'nest-standard-response';
 import { PetTypePagination } from './dto/pet-type-pagination.dto';
 import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
+import { LoggerService } from 'src/my-logger/service/logger.service';
+
 @ApiTags('Pet Types')
 @Controller('api/v1/pet-type')
 export class PetTypeController {
-  constructor(private readonly petTypeService: PetTypeService) { }
+  constructor(private readonly petTypeService: PetTypeService) { };
+  private readonly logger = new LoggerService(PetTypeController.name);
 
-  @Post('')
+  @Post('/')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: ' Create a new pet type' })
@@ -36,7 +39,7 @@ export class PetTypeController {
     }
   }
 
-  @Get()
+  @Get('/')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: ' List all  pet types' })
@@ -93,6 +96,7 @@ export class PetTypeController {
     type:UpdatePetTypeDto
   })
   async update(@Param('id') id: string, @Body() updatePetTypeDto: UpdatePetTypeDto) {
+    this.logger.log(`Request update pet type`, PetTypeController.name)
     const petType = await this.petTypeService.updatePetType(id, updatePetTypeDto);
 
     if (petType instanceof InternalServerErrorException

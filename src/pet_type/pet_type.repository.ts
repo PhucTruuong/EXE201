@@ -34,7 +34,8 @@ export class PetTypeRepository implements IPetType {
             console.log("error from create pet type", error)
             throw new InternalServerErrorException("Error create pet type", error)
         };
-    }
+    };
+
     async findAllPetType(pagination: PetTypePagination): Promise<{ data: object[]; totalCount: number; } | InternalServerErrorException | HttpException> {
         try {
             const { count, rows: allPetType } = await this.petTypeModel.findAndCountAll({
@@ -61,7 +62,8 @@ export class PetTypeRepository implements IPetType {
             console.log(error);
             throw new InternalServerErrorException("Error fetching pet type", error)
         };
-    }
+    };
+
     async findOnePetType(id: string): Promise<object | InternalServerErrorException | HttpException> {
         try {
             const petType = await this.petTypeModel.findOne({
@@ -73,9 +75,10 @@ export class PetTypeRepository implements IPetType {
             return petType
         } catch (error) {
             console.log(error);
-            throw new InternalServerErrorException("Error find one  pet type", error)
+            throw new InternalServerErrorException(error);
         };
-    }
+    };
+
     async deletePetType(id: string): Promise<object | InternalServerErrorException | HttpException> {
         try {
             const petType = await this.petTypeModel.findOne({
@@ -92,9 +95,10 @@ export class PetTypeRepository implements IPetType {
             }
         } catch (error) {
             console.log(error);
-            throw new InternalServerErrorException("Error delete one pet type", error)
+            throw new InternalServerErrorException("Error when deleting pet type", error)
         };
-    }
+    };
+
     async updatePetType(id:string ,updatePetType: UpdatePetTypeDto): Promise<object | InternalServerErrorException | HttpException> {
         try {
             const petType = await this.petTypeModel.findOne({
@@ -113,11 +117,10 @@ export class PetTypeRepository implements IPetType {
                     where: { id: id }
                 }
             )
-            return PetTypeUpdated
+            return PetTypeUpdated;
         } catch (error) {
             console.log(error);
-            throw new InternalServerErrorException("Error update one pet type", error)
+            throw new InternalServerErrorException("Error when updating pet type", error);
         };
-    }
-
-}
+    };
+};

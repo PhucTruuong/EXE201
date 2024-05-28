@@ -1,8 +1,9 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, HttpAdapterHost } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import * as fs from 'fs';
+import { AllExceptionsFilter } from './all-exception.filter';
 // import * as csurf from 'csurf';
 // import * as cookieParser from 'cookie-parser';
 
@@ -37,6 +38,9 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document, {
     swaggerOptions: { defaultModelsExpandDepth: -1 }
   });
+
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new AllExceptionsFilter(httpAdapter))
 
   // app.use(cookieParser());
   // app.use(csurf({ cookie: { sameSite: true } }));
