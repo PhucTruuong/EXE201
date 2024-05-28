@@ -7,7 +7,6 @@
 /migrations
 /config
 /secrets
-/logs
 
 # Logs
 logs
