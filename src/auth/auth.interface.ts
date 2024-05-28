@@ -7,4 +7,5 @@ export interface IAuth{
     login(loginDto:LoginDto):Promise<object | InternalServerErrorException | NotFoundException>;
     register(registerDto :RegisterDto):Promise<object | InternalServerErrorException | NotFoundException>;
     loginWithGoogle(tokenDto: TokenDto) : Promise<object | InternalServerErrorException | NotFoundException>;
+    loginWithGoogleMobile(userInfo: any) : Promise<object | InternalServerErrorException | NotFoundException>;
 }

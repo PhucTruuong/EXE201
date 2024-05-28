@@ -27,54 +27,55 @@ import { PaymentModule } from './payment/payment.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { MyLoggerModule } from './my-logger/my-logger.module';
+import { NotificationModule } from './notification/notification.module';
 // import * as path from 'path';
 // import * as servicePath from "../petcare-6a561-firebase-adminsdk-1ctgv-f41da1d8c8.json"
 @Module({
-  imports:
-    [
-      ThrottlerModule.forRoot([
-        {
-          name: 'short',
-          ttl: 2000,
-          limit: 5,
-        },
-        {
-          name: 'long',
-          ttl: 60000,
-          limit: 10,
-        }
-      ]),
-      FirebaseModule,
-      // FirebaseModule.forRoot({
-      //   googleApplicationCredential: path.resolve(__dirname, '../petcare-6a561-firebase-adminsdk-1ctgv-f41da1d8c8.json'),
-      // }),
-      ConfigModule.forRoot({
-        isGlobal: true,
-      }),
-      ServeStaticModule.forRoot({
-        rootPath: join(__dirname, '../..', 'client')
-      }),
-      StandardResponseModule.forRoot({}),
-      DatabaseModule,
-      UserModule,
-      RoleModule,
-      PetModule,
-      AuthModule,
-      PetTypeModule,
-      PetBreedModule,
-      CategoryModule,
-      BrandModule,
-      CityModule,
-      LocationModule,
-      ServiceModule,
-      FeedbackModule,
-      AppointmentModule,
-      BookingModule,
-      CloudinaryModule,
-      GatewayModule,
-      PaymentModule,
-      MyLoggerModule
-    ],
+  imports: [
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 2000,
+        limit: 5,
+      },
+      {
+        name: 'long',
+        ttl: 60000,
+        limit: 10,
+      }
+    ]),
+    FirebaseModule,
+    // FirebaseModule.forRoot({
+    //   googleApplicationCredential: path.resolve(__dirname, '../petcare-6a561-firebase-adminsdk-1ctgv-f41da1d8c8.json'),
+    // }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '../..', 'client'),
+    }),
+    StandardResponseModule.forRoot({}),
+    DatabaseModule,
+    UserModule,
+    RoleModule,
+    PetModule,
+    AuthModule,
+    PetTypeModule,
+    PetBreedModule,
+    CategoryModule,
+    BrandModule,
+    CityModule,
+    LocationModule,
+    ServiceModule,
+    FeedbackModule,
+    AppointmentModule,
+    BookingModule,
+    CloudinaryModule,
+    GatewayModule,
+    PaymentModule,
+    NotificationModule,
+    MyLoggerModule
+  ],
   controllers: [AppController],
   providers: [
     AppService,
@@ -84,4 +85,4 @@ import { MyLoggerModule } from './my-logger/my-logger.module';
     }
   ],
 })
-export class AppModule { }
+export class AppModule {}
