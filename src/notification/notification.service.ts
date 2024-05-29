@@ -10,13 +10,15 @@ import { NotificationRepository } from './notification.repository';
 export class NotificationService {
   constructor(
     private readonly notificationRepository: NotificationRepository,
-  ) {}
+   ) {}
   public async create(
     createINotificationDto: CreateNotificationDto,
   ): Promise<object | InternalServerErrorException | NotFoundException> {
     return this.notificationRepository.create(createINotificationDto);
   }
-  public async find(): Promise<object | InternalServerErrorException> {
-    return this.notificationRepository.find();
+  public async find(
+    userId: string,
+  ): Promise<object | InternalServerErrorException> {
+    return this.notificationRepository.find(userId);
   }
 }

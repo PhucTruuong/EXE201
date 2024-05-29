@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param} from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -13,9 +13,9 @@ export class NotificationController {
     return this.notificationService.create(createNotificationDto);
   }
 
-  @Get()
-  findAll() {
-    return this.notificationService.find();
+  @Get(':userId')
+  findAll(@Param('userId') userId : string) {
+    return this.notificationService.find(userId);
   }
 
 }
