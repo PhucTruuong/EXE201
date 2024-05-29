@@ -10,7 +10,7 @@ import { User } from './user.entity'; // Adjust the import path as necessary
 
 @Table({
   tableName: 'petcare_notification', // Define the table name
-  timestamps: true, // Enable automatic timestamps for createdAt and updatedAt
+  timestamps: false, 
   freezeTableName: true, // Prevent Sequelize from pluralizing table name
 })
 export class Notification extends Model {
