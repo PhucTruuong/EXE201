@@ -21,11 +21,19 @@ import { CityProviders } from 'src/city/city.provider';
 import { CityRepository } from 'src/city/city.repository';
 import { CloudinaryProvider } from 'src/cloudinary/cloudinary.provider';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { NotificationGateWay } from 'src/notification/notification.gateway';
+import { NotificationProviders } from 'src/notification/notification.providers';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationRepository } from 'src/notification/notification.repository';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   controllers: [FeedbackController],
   providers: [FeedbackService,
+    NotificationService,
     bcryptModule,
+    NotificationGateWay,
+    ...NotificationProviders,
     ...FeedbackProviders,
     ...ServiceProviders,
     ...UserProviders,
@@ -34,6 +42,8 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
     ...CategoryProviders,
     ...RoleProviders,
     ...CityProviders,
+    JwtService,
+    NotificationRepository,
     CityRepository,
     RoleRepository,
     feedbackRepository,

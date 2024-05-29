@@ -1,26 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
+import { NotificationRepository } from './notification.repository';
 
 @Injectable()
 export class NotificationService {
-  create(createNotificationDto: CreateNotificationDto) {
-    return 'This action adds a new notification';
+  constructor(
+    private readonly notificationRepository: NotificationRepository,
+  ) {}
+  public async create(
+    createINotificationDto: CreateNotificationDto,
+  ): Promise<object | InternalServerErrorException | NotFoundException> {
+    return this.notificationRepository.create(createINotificationDto);
   }
-
-  findAll() {
-    return `This action returns all notification`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} notification`;
-  }
-
-  update(id: number, updateNotificationDto: UpdateNotificationDto) {
-    return `This action updates a #${id} notification`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} notification`;
+  public async find(): Promise<object | InternalServerErrorException> {
+    return this.notificationRepository.find();
   }
 }

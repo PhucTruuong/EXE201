@@ -12,6 +12,8 @@ import { NotificationService } from './notification.service';
 import { Socket, Namespace } from 'socket.io';
 import { WsJwtGuard } from 'src/auth/guard/jwt-ws.guard';
 import { Server } from 'http';
+import { Notification } from 'src/database/dabaseModels/notification.entity';
+
 
 @UsePipes(new ValidationPipe())
 @WebSocketGateway({
@@ -50,5 +52,9 @@ export class NotificationGateWay
         this.server.emit('message 2');
       }
     }, 2000);
+  }
+  
+  emitNotification(notification: Notification) {
+    this.io.emit('new-notification', notification);
   }
 }

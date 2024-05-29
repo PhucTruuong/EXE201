@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body} from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
+import { ApiTags } from '@nestjs/swagger';
 
-@Controller('notification')
+@ApiTags("Notifications")
+@Controller('api/v1/notification')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
@@ -14,21 +15,7 @@ export class NotificationController {
 
   @Get()
   findAll() {
-    return this.notificationService.findAll();
+    return this.notificationService.find();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.notificationService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateNotificationDto: UpdateNotificationDto) {
-    return this.notificationService.update(+id, updateNotificationDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.notificationService.remove(+id);
-  }
 }
