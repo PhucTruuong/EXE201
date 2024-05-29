@@ -30,9 +30,11 @@ export class NotificationRepository implements INotification {
       throw new InternalServerErrorException('Error creating notification');
     }
   }
-  find(): Promise<object | InternalServerErrorException> {
+  find(userId: string): Promise<object | InternalServerErrorException> {
     try {
-      const notifications = this.notificationModel.findAll();
+      const notifications = this.notificationModel.findAll({
+        where: { user_id: userId },
+      });
       return notifications;
     } catch (error) {
       console.log(error);
