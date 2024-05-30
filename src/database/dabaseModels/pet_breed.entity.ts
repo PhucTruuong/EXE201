@@ -1,14 +1,20 @@
 // Import necessary modules from Sequelize
-import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  ForeignKey,
+  BelongsTo,
+} from 'sequelize-typescript';
 import { PetType } from './pet_type.entity';
 
 // Define the DogBreed model
 @Table({
   tableName: 'petcare_pet_breed', // Define the table name
   timestamps: false, // Enable timestamps (created_at, updated_at)
-  underscored: true, 
+  underscored: true,
   freezeTableName: true,
-
 })
 export class PetBreed extends Model {
   @Column({
@@ -24,7 +30,6 @@ export class PetBreed extends Model {
     type: DataType.STRING(100),
     allowNull: false,
     unique: true,
-
   })
   breed_name: string;
 
@@ -58,11 +63,10 @@ export class PetBreed extends Model {
   // Define the foreign key
   @ForeignKey(() => PetType)
   @Column({
-      type: DataType.UUID,
-      allowNull: false,
+    type: DataType.UUID,
+    allowNull: false,
   })
   pet_type_id: string;
-
-  // Define the association
+  @BelongsTo(() => PetType)
   petType: PetType;
 }

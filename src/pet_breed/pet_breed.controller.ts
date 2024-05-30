@@ -79,6 +79,28 @@ export class PetBreedController {
     }
   }
 
+  @Get('pet-type/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: ' List detail pet breed base on pet-type' })
+  @ApiResponse({
+    status: 200,
+    description: 'It will return detail  pet breed in the response',
+  })
+  async findByPetType(@Param('id') id: string) {
+    const petBreed = await this.petBreedService.getPetBreedByPetType(id)
+    if (petBreed instanceof InternalServerErrorException
+      || petBreed instanceof NotFoundException
+    ) {
+      return petBreed as InternalServerErrorException || NotFoundException;
+    } else {
+      return petBreed;
+    }
+  }
+
+
+
+
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
