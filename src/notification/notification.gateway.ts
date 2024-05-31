@@ -9,11 +9,17 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { NotificationService } from './notification.service';
-import { Socket, Namespace,Server } from 'socket.io';
+import { Socket, Namespace, Server } from 'socket.io';
 import { WsJwtGuard } from 'src/auth/guard/jwt-ws.guard';
 import { Notification } from 'src/database/dabaseModels/notification.entity';
+import { PayloadType } from 'src/auth/types/payload.types';
+import { JwtService } from '@nestjs/jwt';
+import { CreateNotificationDto } from './dto/create-notification.dto';
 export interface NotificationDto {
   userId: string;
+}
+export interface socketMetaPayLoad extends PayloadType {
+  socketId: string;
 }
 @UsePipes(new ValidationPipe())
 @WebSocketGateway({
@@ -24,27 +30,50 @@ export interface NotificationDto {
     allowedHeaders: ['my-custom-header'],
     credentials: true,
   },
+  crossOriginIsolated: true,
 })
 @UseGuards(WsJwtGuard)
 export class NotificationGateWay
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   private readonly logger = new Logger(NotificationGateWay.name);
-  constructor(private readonly notificationServices: NotificationService) {}
+  constructor(
+    private readonly notificationServices: NotificationService,
+    private readonly jwtService: JwtService,
+  ) {}
   @WebSocketServer() io: Namespace;
   server: Server;
+  socketMap = new Map<string, socketMetaPayLoad>();
   afterInit(): void {
     this.logger.log('Web socket initialization');
   }
-  handleConnection(client: Socket) {
+
+  //******** Start  */
+  async handleConnection(client: Socket) {
     const sockets = this.io.sockets;
+    const token = client.handshake.query.token as string;
+    const payload = (await this.jwtService.verify(token, {
+      secret: 'jwt-secret_nam_vip_pro',
+    })) as any;
+
+    this.socketMap.set(payload.userId, {
+      ...payload,
+      socketId: client.id,
+    });
+    console.log('socketMap', this.socketMap);
     this.io.emit('hello', ` from || ${client.id}`);
     this.logger.log(`WS Client with id ${client.id} connected`);
     this.logger.debug(`Number of connect sockets:: ${sockets.size} `);
+    // handle authentication
+    // console.log('token Socket', token);
+    // if(!token){
+    //   client.disconnect(true)
+    //   this.logger.log(`Disconnect due to authorization`);
+    // }
   }
   handleDisconnect(client: Socket) {
     const sockets = this.io.sockets;
-
+    this.socketMap.delete(client.id);
     this.logger.log(`Disconnect Client with id ${client.id} connected`);
     this.logger.debug(`Number of connect sockets:: ${sockets.size} `);
   }
@@ -86,13 +115,39 @@ export class NotificationGateWay
   }
   /// bring data from client
   emitNotification(notification: Notification) {
-    try {
-      this.io.emit('new-notification', notification);
-      if (notification.user_id) {
-        this.io.emit('notifications-list',{userId : notification.user_id});
-      }
-    } catch (error) {
-      console.error('Error emitting notification:', error);
+    this.io.emit('new-notification', notification);
+  }
+  @SubscribeMessage('currentUsers')
+  getCurrentUser(client: Socket) {
+    client.emit('currentUsers', Array.from(this.socketMap.values()));
+  }
+
+  
+  async emitDemoNotification(
+    userId: string,
+    notification: CreateNotificationDto,
+  ) {
+    const socketMeta = this.socketMap.get(userId);
+    const notificationUser =
+      await this.notificationServices.create(notification);
+    if (socketMeta) {
+      this.io
+        .to(socketMeta?.socketId)
+        .emit('notifications-user', notificationUser);
+    } else {
+      console.log('user is not online');
+    }
+  }
+
+  async emitListNotifications(userId: string) {
+    const socketMeta = this.socketMap.get(userId);
+    const notifications = await this.notificationServices.find(userId);
+    if (socketMeta) {
+      this.io
+        .to(socketMeta?.socketId)
+        .emit('notifications-lists', notifications);
+    } else {
+      console.log('user is not online');
     }
   }
 }

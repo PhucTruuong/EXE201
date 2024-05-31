@@ -8,6 +8,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
   BadRequestException,
+  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login-dto';
@@ -15,6 +16,9 @@ import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guard/jwt.guard';
 import { RegisterDto } from './dto/register-auth.dto';
 import { TokenDto } from './dto/token-auth.dto';
+import { sendSuccessResponse } from 'src/constants/sendSucessResponse';
+import { Response } from 'express';
+import HttpStatusCodes from 'src/constants/HttpStatusCodes';
 
 @ApiTags('Authentication')
 @Controller('api/v1/auth')
@@ -30,8 +34,9 @@ export class AuthController {
   @ApiBody({
     type: LoginDto,
   })
-  async create(@Body() loginDto: LoginDto) {
-    return await this.authService.login(loginDto);
+  async create(@Body() loginDto: LoginDto, @Res() res: Response) {
+    const data = await this.authService.login(loginDto);
+    return sendSuccessResponse(res, HttpStatusCodes.OK, data);
   }
   @Get('profile')
   // @UseGuards(JwtAuthGuard)

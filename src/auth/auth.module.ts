@@ -14,6 +14,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategy/jwt.stategy';
 import { firebaseProviders } from 'src/firebase/firebase.provider';
 import { WsJwtGuard } from './guard/jwt-ws.guard';
+import { NotificationGateWay } from 'src/notification/notification.gateway';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationProviders } from 'src/notification/notification.providers';
+import { NotificationRepository } from 'src/notification/notification.repository';
 
 @Module({
   imports: [
@@ -35,6 +39,10 @@ import { WsJwtGuard } from './guard/jwt-ws.guard';
     UserRepository,
     AuthRepository,
     bcryptModule,
+    NotificationGateWay,
+    NotificationService,
+    NotificationRepository,
+    ...NotificationProviders,
     ...firebaseProviders,
     ...UserProviders,
     ...RoleProviders,

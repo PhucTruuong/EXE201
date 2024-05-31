@@ -13,34 +13,31 @@ async function bootstrap() {
     cert: fs.readFileSync('./secrets/fureverpkey.cer'),
   };
 
-  const app = await NestFactory.create(
-    AppModule,
-    { httpsOptions }
-  );
+  const app = await NestFactory.create(AppModule, { httpsOptions });
   const config = new DocumentBuilder()
     .setTitle('Furever Friend API')
     .setDescription('Furever Friend API Description')
     .setVersion('1.0')
     .addBearerAuth(
       {
-        type: "http",
-        scheme: "bearer",
-        bearerFormat: "JWT",
-        name: "JWT",
-        description: "Enter JWT token",
-        in: "header",
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
       },
-      "JWT-auth"
+      'JWT-auth',
     )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document, {
-    swaggerOptions: { defaultModelsExpandDepth: -1 }
+    swaggerOptions: { defaultModelsExpandDepth: -1 },
   });
 
   const { httpAdapter } = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new AllExceptionsFilter(httpAdapter))
+  app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
 
   // app.use(cookieParser());
   // app.use(csurf({ cookie: { sameSite: true } }));
@@ -68,15 +65,15 @@ async function bootstrap() {
     'http://localhost:443',
     'http://localhost:8081',
     'https://api.fureverfriend.id.vn',
-    'https://fureverfriend.id.vn'
+    'https://fureverfriend.id.vn',
   ];
-  
+
   app.enableCors({
     origin: function (origin, callback) {
       if (!origin || whitelist.indexOf(origin) !== -1) {
-        callback(null, true)
+        callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'))
+        callback(new Error('Not allowed by CORS'));
       }
     },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -89,6 +86,6 @@ async function bootstrap() {
   const address = server.address();
   const port = typeof address === 'string' ? address : address?.port;
   console.log(`NestJS application is running on port ${port}`);
-};
+}
 
 bootstrap();

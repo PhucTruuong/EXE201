@@ -74,7 +74,7 @@ import { NotificationModule } from './notification/notification.module';
     GatewayModule,
     PaymentModule,
     NotificationModule,
-    MyLoggerModule
+    MyLoggerModule,
   ],
   controllers: [AppController],
   providers: [

@@ -6,6 +6,7 @@ import { NotificationRepository } from './notification.repository';
 import { NotificationProviders } from './notification.providers';
 import { NotificationGateWay } from './notification.gateway';
 import { JwtService } from '@nestjs/jwt';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   controllers: [NotificationController],
@@ -16,7 +17,7 @@ import { JwtService } from '@nestjs/jwt';
     ...NotificationProviders,
     NotificationGateWay,
   ],
-  imports: [DatabaseModule],
+  imports: [DatabaseModule,AuthModule],
   exports: [],
 })
 export class NotificationModule {}
