@@ -15,6 +15,7 @@ import { Feedback } from './dabaseModels/feedbacks.entity';
 import { Appointment } from './dabaseModels/appointment.entity';
 import { Booking } from './dabaseModels/booking.entity';
 import { Payment } from './dabaseModels/payment.entity';
+import { Notification } from './dabaseModels/notification.entity';
 export const databaseProviders = [
   {
     provide: SEQUELIZE,
@@ -100,7 +101,8 @@ export const databaseProviders = [
         Feedback,
         Appointment,
         Booking,
-        Payment
+        Payment,
+        Notification
       ]);
       //await sequelize.sync({force: true});
       return sequelize;

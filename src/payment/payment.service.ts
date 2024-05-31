@@ -1,26 +1,23 @@
-import { Injectable } from '@nestjs/common';
-import { CreatePaymentDto } from './dto/create-payment.dto';
-import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { PaymentRepository } from './payment.repository';
+import { Request } from 'express';
 
 @Injectable()
 export class PaymentService {
-  create(createPaymentDto: CreatePaymentDto) {
-    return 'This action adds a new payment';
-  }
+  constructor(private readonly paymentRepository: PaymentRepository
 
-  findAll() {
-    return `This action returns all payment`;
+  ){}
+  create() {
+    return this.paymentRepository.create()
   }
-
-  findOne(id: number) {
-    return `This action returns a #${id} payment`;
+  createByMomo() {
+    return this.paymentRepository.createByMomo()
   }
-
-  update(id: number, updatePaymentDto: UpdatePaymentDto) {
-    return `This action updates a #${id} payment`;
+  callbackZaloPay(req:Request): Promise<object | InternalServerErrorException>{
+       return this.paymentRepository.callbackZaloPay(req)
   }
-
-  remove(id: number) {
-    return `This action removes a #${id} payment`;
+  checkOrderStatus(req:Request): Promise<object | InternalServerErrorException>{
+    return this.paymentRepository.checkStatusOrder(req)
   }
+  
 }

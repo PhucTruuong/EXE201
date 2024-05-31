@@ -1,4 +1,4 @@
-import { ConflictException, HttpException, InternalServerErrorException } from "@nestjs/common";
+import { ConflictException, HttpException, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { PetBreedPagination } from "./dto/pagination-pet-breed.dto";
 import { CreatePetBreedDto } from "./dto/create-pet_breed.dto";
 import { UpdatePetBreedDto } from "./dto/update-pet_breed.dto";
@@ -15,4 +15,5 @@ export interface IPetBreed {
     findOnePetBreed(id: string):Promise<object | InternalServerErrorException | HttpException>
     updatePetBreed(id: string,updatePetType: UpdatePetBreedDto): Promise<object | InternalServerErrorException | HttpException>
     deletePetBreed(id: string): Promise<object | InternalServerErrorException | HttpException>
+    getPetBreedByPetType(id:string): Promise<object | InternalServerErrorException | NotFoundException >
 }
