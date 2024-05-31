@@ -61,19 +61,28 @@ export class feedbackRepository implements IFeedBack {
         comment: createFeedbackDto.comment,
         rating: createFeedbackDto.rating,
       });
-      const newNotification = await this.notificationService.create({
-        user_id: req.user.userId,
-        title: 'New Feedback Created',
-        description: `You have created a feedback for service`,
-        type: 'info',
-      });
-      if (newNotification instanceof Notification) {
-        console.log("socket start:::")
-        this.notificationGateway.emitNotification(newNotification);
-      } else {
-        // Handle notification creation failure
-        console.error('Failed to create notification:', newNotification);
-      }
+      // const newNotification = await this.notificationService.create({
+      //   user_id: req.user.userId,
+      //   title: 'New Feedback Created',
+      //   description: `You have created a feedback for service`,
+      //   type: 'info',
+      // });
+      // if (newNotification instanceof Notification) {
+      //   console.log("socket start:::")
+      //   this.notificationGateway.emitNotification(newNotification);
+      // } else {
+      //   // Handle notification creation failure
+      //   console.error('Failed to create notification:', newNotification);
+      // }
+
+      await this.notificationGateway.emitDemoNotification(req.user.userId,
+        {
+          user_id: req.user.userId,
+          title: 'New Feedback Created',
+          description: `You have created a feedback for service`,
+          type: 'info',
+        }
+      )
       return new_item;
     } catch (error) {
       console.log(error);

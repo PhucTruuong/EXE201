@@ -1,19 +1,48 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, InternalServerErrorException, ConflictException, HttpException, Query, UseGuards, Req, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  NotFoundException,
+  InternalServerErrorException,
+  ConflictException,
+  HttpException,
+  Query,
+  UseGuards,
+  Req,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { PetService } from './pet.service';
 import { CreatePetDto } from './dto/create-pet.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { StandardParam, StandardParams, StandardResponse } from 'nest-standard-response';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  StandardParam,
+  StandardParams,
+  StandardResponse,
+} from 'nest-standard-response';
 import { PetPagination } from './dto/pet-pagination.dto';
 import { JwtCustomerGuard } from 'src/auth/guard/jwt-customer.guard';
 import { JwtAdminGuard } from 'src/auth/guard/jwt-admin.guard';
 import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
 import { RequestWithUser } from 'src/interface/request-interface';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { CreatePetMobileDto } from './dto/create-pet-mobile.dto';
 @ApiTags('Pet')
 @Controller('api/v1/pet')
 export class PetController {
-  constructor(private readonly petService: PetService) { }
+  constructor(private readonly petService: PetService) {}
 
   @Post()
   @UseGuards(JwtCustomerGuard)
@@ -27,17 +56,57 @@ export class PetController {
     type: CreatePetDto,
   })
   @UseInterceptors(FileInterceptor('image'))
-  async create(@Body() createPetDto: CreatePetDto,
+  async create(
+    @Body() createPetDto: CreatePetDto,
     @UploadedFile() image: Express.Multer.File,
     @Req() req: RequestWithUser,
   ) {
-    const pet = await this.petService.createPet({ ...createPetDto, image }, req)
-    if (pet instanceof InternalServerErrorException
-      || pet instanceof NotFoundException
-      || pet instanceof ConflictException
-      || pet instanceof HttpException
+    const pet = await this.petService.createPet(
+      { ...createPetDto, image },
+      req,
+    );
+    if (
+      pet instanceof InternalServerErrorException ||
+      pet instanceof NotFoundException ||
+      pet instanceof ConflictException ||
+      pet instanceof HttpException
     ) {
-      return pet as InternalServerErrorException || NotFoundException || ConflictException || HttpException;
+      return (
+        (pet as InternalServerErrorException) ||
+        NotFoundException ||
+        ConflictException ||
+        HttpException
+      );
+    } else {
+      return pet;
+    }
+  }
+  @Post('mobile')
+  @UseGuards(JwtCustomerGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: ' [CUSTOMER]Create a new pet for mobile' })
+  @ApiResponse({ status: 201, description: 'Successfully created pet.' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiBody({
+    type: CreatePetMobileDto,
+  })
+  async createPet(
+    @Body() createPetDto: CreatePetMobileDto,
+    @Req() req: RequestWithUser,
+  ) {
+    const pet = await this.petService.createPetMobile(createPetDto, req);
+    if (
+      pet instanceof InternalServerErrorException ||
+      pet instanceof NotFoundException ||
+      pet instanceof ConflictException ||
+      pet instanceof HttpException
+    ) {
+      return (
+        (pet as InternalServerErrorException) ||
+        NotFoundException ||
+        ConflictException ||
+        HttpException
+      );
     } else {
       return pet;
     }
@@ -60,7 +129,8 @@ export class PetController {
     @StandardParam() standardParam: StandardParams,
   ) {
     const allPet = await this.petService.findAllPet(pagination);
-    if (allPet instanceof InternalServerErrorException ||
+    if (
+      allPet instanceof InternalServerErrorException ||
       allPet instanceof HttpException
     ) {
       return allPet as HttpException | InternalServerErrorException;
@@ -80,12 +150,17 @@ export class PetController {
     description: '[ALL ROLE] It will detail a new pet in the response',
   })
   async findOne(@Param('id') id: string) {
-    const pet = await this.petService.findOnePet(id)
-    if (pet instanceof InternalServerErrorException
-      || pet instanceof NotFoundException
-      || pet instanceof HttpException
+    const pet = await this.petService.findOnePet(id);
+    if (
+      pet instanceof InternalServerErrorException ||
+      pet instanceof NotFoundException ||
+      pet instanceof HttpException
     ) {
-      return pet as InternalServerErrorException || NotFoundException || HttpException;
+      return (
+        (pet as InternalServerErrorException) ||
+        NotFoundException ||
+        HttpException
+      );
     } else {
       return pet;
     }
@@ -100,17 +175,21 @@ export class PetController {
     description: '[CUSTOMER ]It will update info a pet in the response',
   })
   @ApiBody({
-    type: UpdatePetDto
+    type: UpdatePetDto,
   })
   async update(@Param('id') id: string, @Body() updatePetDto: UpdatePetDto) {
     const pet = await this.petService.updatePet(id, updatePetDto);
 
-    if (pet instanceof InternalServerErrorException
-      || pet instanceof NotFoundException
-      || pet instanceof HttpException
-
+    if (
+      pet instanceof InternalServerErrorException ||
+      pet instanceof NotFoundException ||
+      pet instanceof HttpException
     ) {
-      return pet as InternalServerErrorException || HttpException || NotFoundException;
+      return (
+        (pet as InternalServerErrorException) ||
+        HttpException ||
+        NotFoundException
+      );
     } else {
       return pet;
     }
@@ -125,14 +204,18 @@ export class PetController {
     description: '[CUSTOMER] it will delete pet in the response',
   })
   async remove(@Param('id') id: string) {
-    const pet = await this.petService.deletePet(id)
+    const pet = await this.petService.deletePet(id);
 
-    if (pet instanceof InternalServerErrorException
-      || pet instanceof NotFoundException
-      || pet instanceof HttpException
-
+    if (
+      pet instanceof InternalServerErrorException ||
+      pet instanceof NotFoundException ||
+      pet instanceof HttpException
     ) {
-      return pet as InternalServerErrorException || HttpException || NotFoundException;
+      return (
+        (pet as InternalServerErrorException) ||
+        HttpException ||
+        NotFoundException
+      );
     } else {
       return pet;
     }
@@ -151,11 +234,12 @@ export class PetController {
   async findAllPetBYUser(
     @Query() pagination: PetPagination,
     @Req() req: RequestWithUser,
-    @StandardParam() standardParam: StandardParams
+    @StandardParam() standardParam: StandardParams,
   ) {
-    console.log('user', req.user)
+    console.log('user', req.user);
     const allPet = await this.petService.findAllPetByUser(req, pagination);
-    if (allPet instanceof InternalServerErrorException ||
+    if (
+      allPet instanceof InternalServerErrorException ||
       allPet instanceof HttpException
     ) {
       return allPet as HttpException | InternalServerErrorException;
