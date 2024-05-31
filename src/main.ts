@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 // import * as fs from 'fs';
+import { urlencoded, json } from 'express';
+
 import { AllExceptionsFilter } from './all-exception.filter';
 // import * as csurf from 'csurf';
 // import * as cookieParser from 'cookie-parser';
@@ -13,9 +15,10 @@ async function bootstrap() {
   //   cert: fs.readFileSync('./secrets/fureverpkey.cer'),
   // };
 
-  const app = await NestFactory.create(AppModule,
+  const app = await NestFactory.create(
+    AppModule,
     //  { httpsOptions }
-    );
+  );
   const config = new DocumentBuilder()
     .setTitle('Furever Friend API')
     .setDescription('Furever Friend API Description')
@@ -81,7 +84,8 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
-
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ extended: true, limit: '50mb' }));
   const nestPort = process.env.NEST_PORT || 443;
   await app.listen(nestPort);
   const server = app.getHttpServer();
