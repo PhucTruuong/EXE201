@@ -73,6 +73,7 @@ export class PetRepository implements IPet {
           const myCloud = await cloudinary.uploader.upload(createPetDto.image, {
             folder: 'pets',
             crop: 'scale',
+            
           });
           uploadedImageUrl = myCloud.secure_url;
         } catch (error) {
