@@ -23,13 +23,15 @@ export interface socketMetaPayLoad extends PayloadType {
 }
 @UsePipes(new ValidationPipe())
 @WebSocketGateway({
-  namespace: 'notification',
-  cors: {
-    origin: 'http://localhost:3000',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['my-custom-header'],
-    credentials: true,
-  },
+  // transports: ['websocket'],
+  namespace: 'api/notification',
+  // cors: {
+  //   origin: ['http://localhost:3000', 'https://fureverfriend.id.vn'],
+  //   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  //   allowedHeaders: [''],
+  //   credentials: true,
+  // },
+  cors: true,
   crossOriginIsolated: true,
 })
 @UseGuards(WsJwtGuard)
@@ -122,7 +124,6 @@ export class NotificationGateWay
     client.emit('currentUsers', Array.from(this.socketMap.values()));
   }
 
-  
   async emitDemoNotification(
     userId: string,
     notification: CreateNotificationDto,

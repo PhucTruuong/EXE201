@@ -146,16 +146,15 @@ export class BookingController {
   })
   @StandardResponse({
     isPaginated: true,
-    isFiltered: true,
   })
   async getByUser(
     @Query() pagination: BookingPagination,
     @StandardParam() standardParam: StandardParams,
     @Req() req: RequestWithUser) {
-    if (!pagination.page || !pagination.limit) {
-      throw new BadRequestException('Page and limit query parameters are required');
+    // if (!pagination.page || !pagination.limit) {
+    //   throw new BadRequestException('Page and limit query parameters are required');
 
-    }
+    // }
     const item = await this.bookingService.findByUser(req, pagination)
     if (item instanceof InternalServerErrorException ||
       item instanceof HttpException ||

@@ -1,8 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsOptional } from "class-validator";
 
 export class PetPagination {
-    @IsNotEmpty()
+    // @IsNotEmpty()
     // @IsInt()
     @IsOptional()
     @IsNotEmpty()
@@ -11,23 +11,23 @@ export class PetPagination {
     })
     readonly page?: number;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     // @IsInt()
     @IsOptional()
-    @IsNotEmpty()
+    // @IsNotEmpty()
     @ApiProperty({
         default: 10
     })
     readonly limit?: number;
-    @IsOptional()
-    @ApiProperty({
-        default: 0,
-    })
-    readonly offset?: number;
-    @IsOptional()
-    @IsString()
-    @ApiProperty({
-        default:"none"
-    })
-    readonly sort?: string;
+    // @IsOptional()
+    // @ApiProperty({
+    //     default: 0,
+    // })
+    // readonly offset?: number;
+    // @IsOptional()
+    // @IsString()
+    // @ApiProperty({
+    //     default:"none"
+    // })
+    // readonly sort?: string;
 };

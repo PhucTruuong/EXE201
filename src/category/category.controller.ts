@@ -56,9 +56,9 @@ export class CategoryController {
     @Query() pagination: CategoryPagination,
     @StandardParam() standardParam: StandardParams
   ) {
-    if (!pagination.page || !pagination.limit) {
-      throw new BadRequestException('Page and limit query parameters are required');
-    }
+    // if (!pagination.page || !pagination.limit) {
+    //   throw new BadRequestException('Page and limit query parameters are required');
+    // }
     const allCategory = await this.categoryService.findAllCategory(pagination)
     if (allCategory instanceof InternalServerErrorException ||
       allCategory instanceof HttpException

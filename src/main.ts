@@ -71,6 +71,7 @@ async function bootstrap() {
     'http://localhost:8081',
     'https://api.fureverfriend.id.vn',
     'https://fureverfriend.id.vn',
+    'http://localhost:8000'
   ];
 
   app.enableCors({

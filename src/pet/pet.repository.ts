@@ -72,7 +72,7 @@ export class PetRepository implements IPet {
         try {
           const myCloud = await cloudinary.uploader.upload(createPetDto.image, {
             folder: 'pets',
-            crop: "scale"
+            crop: 'scale',
           });
           uploadedImageUrl = myCloud.secure_url;
         } catch (error) {
@@ -182,11 +182,9 @@ export class PetRepository implements IPet {
     | { data: object[]; totalCount: number }
   > {
     try {
-      const actualOffset = pagination.offset
-        ? pagination.offset
-        : (pagination.page - 1) * pagination.limit;
-      const order = pagination.sort ? parseSortParam(pagination.sort) : [];
-      const { count, rows: allPet } = await this.petModel.findAndCountAll({
+      const limit = pagination?.limit ?? null;
+      const page = pagination?.page ?? 1;
+      const findOptions: any = {
         attributes: [
           'id',
           'pet_name',
@@ -201,10 +199,13 @@ export class PetRepository implements IPet {
           'created_at',
           'updated_at',
         ],
-        limit: pagination.limit,
-        offset: actualOffset,
-        order: order,
-      });
+      };
+      if (limit !== null) {
+        findOptions.limit = limit;
+        findOptions.offset = (page - 1) * limit;
+      }
+      const { count, rows: allPet } =
+        await this.petModel.findAndCountAll(findOptions);
       if (!allPet || count === 0) {
         return new HttpException('No Pet  found!', HttpStatus.NOT_FOUND);
       } else {
@@ -249,6 +250,19 @@ export class PetRepository implements IPet {
       if (!pet) {
         return new NotFoundException('pet  not found');
       }
+      let uploadedImageUrl;
+      if (updatePetDto.image) {
+        try {
+          const myCloud = await cloudinary.uploader.upload(updatePetDto.image, {
+            folder: 'pets',
+            crop: 'scale',
+          });
+          uploadedImageUrl = myCloud.secure_url;
+        } catch (error) {
+          console.error('Image upload error:', error);
+          return new InternalServerErrorException('Upload failed');
+        }
+      }
       const PetUpdated = await this.petModel.update(
         {
           pet_name: updatePetDto.pet_name,
@@ -257,6 +271,7 @@ export class PetRepository implements IPet {
           pet_dob: updatePetDto.pet_dob,
           pet_type_id: updatePetDto.pet_type_id,
           pet_breed_id: updatePetDto.pet_breed_id,
+          image: uploadedImageUrl,
           updateAt: new Date(),
         },
         {
@@ -318,11 +333,12 @@ export class PetRepository implements IPet {
     | NotFoundException
   > {
     try {
-      console.log('user Reuest', req.user);
       if (!req.user || !req.user.userId) {
         return new NotFoundException('User ID not found in request');
       }
-      const { count, rows: allPet } = await this.petModel.findAndCountAll({
+      const limit = pagination?.limit ?? null;
+      const page = pagination?.page ?? 1;
+      const findOptions: any = {
         where: {
           user_id: req.user.userId,
         },
@@ -340,9 +356,13 @@ export class PetRepository implements IPet {
           'created_at',
           'updated_at',
         ],
-        limit: pagination.limit,
-        offset: (pagination.page - 1) * pagination.limit,
-      });
+      };
+      const { count, rows: allPet } =
+        await this.petModel.findAndCountAll(findOptions);
+      if (limit !== null) {
+        findOptions.limit = limit;
+        findOptions.offset = (page - 1) * limit;
+      }
       if (!allPet || count === 0) {
         return new HttpException('No Pet  found!', HttpStatus.NOT_FOUND);
       } else {
