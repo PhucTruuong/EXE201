@@ -9,6 +9,7 @@ import { ServicePagination } from './dto/pagination-service';
 import { RequestWithUser } from 'src/interface/request-interface';
 import { JwtHostGuard } from 'src/auth/guard/jwt-service.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
 @ApiTags('Service')
 @Controller('api/v1/service')
 export class ServiceController {
@@ -43,7 +44,7 @@ export class ServiceController {
   }
 
   @Get()
-  @UseGuards(JwtAdminServiceGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'List all  Service' })
   @ApiResponse({
@@ -74,7 +75,7 @@ export class ServiceController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAdminServiceGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'List detail  Service' })
   @ApiResponse({
