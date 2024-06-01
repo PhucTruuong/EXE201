@@ -124,46 +124,40 @@ export class ServiceRepository implements IService {
       const page = pagination?.page ?? 1;
       const findOptions: any = {
         attributes: [
-          'id',
-          'service_name',
-          'service_description',
-          'starttime',
-          'endtime',
-          'image',
-          'status',
-          'created_at',
-          'updated_at',
-        ],
-        include: [
-          {
-            model: Brand,
-            as: 'brand',
-            attributes: ['id', 'brand_name', 'brand_description', 'image'],
-          },
-          {
-            model: Location,
-            as: 'location',
-            attributes: ['id', 'location_name', 'location_address'],
-          },
-          {
-            model: Category,
-            as: 'category',
-            attributes: [
-              'id',
-              'category_name',
-              'category_description',
-              'image',
-            ],
-          },
-        ],
-      };
-      if (limit !== null) {
+            'id',
+            'service_name',
+            'service_description',
+            'starttime',
+            'endtime',
+            'image',
+            'status',
+            'created_at',
+            'updated_at',
+          ],
+          include: [
+            {
+              model: Brand,
+              as: 'brand',
+              attributes: ['id', 'brand_name','brand_description','image'],
+            },
+            {
+              model: Location,
+              as: 'location',
+              attributes: ['id', 'location_name', 'location_address'],
+            },
+            {
+              model: Category,
+              as: 'category',
+              attributes: ['id', 'category_name','category_description','image'],
+            },
+          ],
+      }
+       if (limit !== null) {
         findOptions.limit = limit;
         findOptions.offset = (page - 1) * limit;
       }
-      const { count, rows: allItem } =
-        await this.serviceModel.findAndCountAll(findOptions);
-
+      const { count, rows: allItem } = await this.serviceModel.findAndCountAll(findOptions);
+      
       if (!allItem || count === 0) {
         return new NotFoundException();
       } else {

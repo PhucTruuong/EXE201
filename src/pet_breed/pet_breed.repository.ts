@@ -65,20 +65,31 @@ export class PetBreedRepository implements IPetBreed {
     | { data: object[]; totalCount: number }
   > {
     try {
+      const limit = pagination?.limit ?? null;
+      const page = pagination?.page ?? 1;
+      const findOptions: any = {
+        attributes: [
+          'id',
+          'breed_name',
+          'breed_description',
+          'pet_type_id',
+          'status',
+          'created_at',
+          'updated_at',
+        ],
+        include: [
+          {
+            model: PetType,
+            attributes: ['id', 'pet_type_id', 'type_name', 'type_description'],
+          },
+        ],
+      };
       const { count, rows: allPetBreed } =
-        await this.petBreedModel.findAndCountAll({
-          attributes: [
-            'id',
-            'breed_name',
-            'breed_description',
-            'pet_type_id',
-            'status',
-            'created_at',
-            'updated_at',
-          ],
-          limit: pagination.limit,
-          offset: (pagination.page - 1) * pagination.limit,
-        });
+        await this.petBreedModel.findAndCountAll(findOptions);
+      if (limit !== null) {
+        findOptions.limit = limit;
+        findOptions.offset = (page - 1) * limit;
+      }
       if (!allPetBreed || count === 0) {
         return new HttpException('No Pet Type found!', HttpStatus.NOT_FOUND);
       } else {
@@ -173,10 +184,6 @@ export class PetBreedRepository implements IPetBreed {
     id: string,
   ): Promise<object | InternalServerErrorException | NotFoundException> {
     try {
-
-
-
-
       const petBreeds = await this.petBreedModel.findAll({
         where: {
           pet_type_id: id,
@@ -188,10 +195,7 @@ export class PetBreedRepository implements IPetBreed {
       return petBreeds;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException(
-        'Error find pet breed',
-        error,
-      );
+      throw new InternalServerErrorException('Error find pet breed', error);
     }
   }
 }
