@@ -22,7 +22,8 @@ export class UserRepository implements IUser {
         private readonly userModel: typeof User,
         private readonly bcryptUtils: bcryptModule,
         @Inject('ROLE_REPOSITORY')
-        private readonly roleModels: typeof Role
+        private readonly roleModels: typeof Role,
+
     ) {
     };
 

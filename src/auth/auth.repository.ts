@@ -20,6 +20,9 @@ import { UserRecord } from 'firebase-admin/lib/auth/user-record';
 import * as admin from 'firebase-admin';
 import { TokenDto } from './dto/token-auth.dto';
 import { Role } from 'src/database/dabaseModels/role.entity';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationGateWay } from 'src/notification/notification.gateway';
+
 
 @Injectable()
 export class AuthRepository implements IAuth {
@@ -28,6 +31,9 @@ export class AuthRepository implements IAuth {
     private readonly userModel: typeof User,
     private readonly bcryptUtils: bcryptModule,
     private readonly jwtService: JwtService,
+    private readonly notificationService: NotificationService,
+    private readonly notificationGateway: NotificationGateWay,
+
     // @InjectFirebaseAdmin() private readonly firebase: FirebaseAdmin,
     @Inject('FIREBASE_ADMIN') private readonly firebaseApp: admin.app.App,
   ) {}
@@ -122,7 +128,6 @@ export class AuthRepository implements IAuth {
       });
 
       console.log('Role Name: ', user.dataValues.role.role_name);
-
       if (!user) {
         return new NotFoundException('User not found!');
       }
