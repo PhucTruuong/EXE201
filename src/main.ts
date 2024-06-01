@@ -37,7 +37,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document, {
+  SwaggerModule.setup('swagger', app, document, {
     swaggerOptions: { defaultModelsExpandDepth: -1 },
   });
 
@@ -84,14 +84,15 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
+
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb' }));
-  const nestPort = process.env.NEST_PORT || 443;
+  const nestPort = process.env.NEST_PORT || 8000;
   await app.listen(nestPort);
   const server = app.getHttpServer();
   const address = server.address();
   const port = typeof address === 'string' ? address : address?.port;
   console.log(`NestJS application is running on port ${port}`);
-}
+};
 
 bootstrap();
