@@ -85,15 +85,15 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
+  app.use(morgan())
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb' }));
-  app.use(morgan())
-  const nestPort = process.env.NEST_PORT || 443;
+  const nestPort = process.env.NEST_PORT || 8000;
   await app.listen(nestPort);
   const server = app.getHttpServer();
   const address = server.address();
   const port = typeof address === 'string' ? address : address?.port;
   console.log(`NestJS application is running on port ${port}`);
-}
+};
 
 bootstrap();
