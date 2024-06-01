@@ -75,14 +75,12 @@ export class feedbackRepository implements IFeedBack {
       //   console.error('Failed to create notification:', newNotification);
       // }
 
-      await this.notificationGateway.emitDemoNotification(req.user.userId,
-        {
-          user_id: req.user.userId,
-          title: 'New Feedback Created',
-          description: `You have created a feedback for service`,
-          type: 'info',
-        }
-      )
+      await this.notificationGateway.emitDemoNotification(req.user.userId, {
+        user_id: req.user.userId,
+        title: 'New Feedback Created',
+        description: `You have created a feedback for service`,
+        type: 'info',
+      });
       return new_item;
     } catch (error) {
       console.log(error);
@@ -120,30 +118,37 @@ export class feedbackRepository implements IFeedBack {
     | NotFoundException
   > {
     try {
-      const { count, rows: allItem } = await this.feedBackModel.findAndCountAll(
-        {
-          attributes: [
-            'id',
-            'comment',
-            'rating',
-            'status',
-            'created_at',
-            'updated_at',
-          ],
-          limit: pagination.limit,
-          offset: (pagination.page - 1) * pagination.limit,
-          include: [
-            {
-              model: this.serviceModel,
-              as: 'service',
-            },
-            {
-              model: this.userModel,
-              as: 'user',
-            },
-          ],
-        },
-      );
+      const limit = pagination?.limit ?? null;
+      const page = pagination?.page ?? 1;
+
+      const findOptions: any = {
+        attributes: [
+          'id',
+          'comment',
+          'rating',
+          'status',
+          'created_at',
+          'updated_at',
+        ],
+        limit: pagination.limit,
+        offset: (pagination.page - 1) * pagination.limit,
+        include: [
+          {
+            model: this.serviceModel,
+            as: 'service',
+          },
+          {
+            model: this.userModel,
+            as: 'user',
+          },
+        ],
+      };
+      if (limit !== null) {
+        findOptions.limit = limit;
+        findOptions.offset = (page - 1) * limit;
+      }
+      const { count, rows: allItem } =
+        await this.feedBackModel.findAndCountAll(findOptions);
       if (!allItem || count === 0) {
         return new NotFoundException();
       } else {
