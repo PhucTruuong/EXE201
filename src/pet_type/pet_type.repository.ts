@@ -64,7 +64,6 @@ export class PetTypeRepository implements IPetType {
           'type_name',
           'type_description',
           'status',
-          'image',
           'created_at',
           'updated_at',
         ],
