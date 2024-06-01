@@ -4,7 +4,8 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 // import * as fs from 'fs';
 import { urlencoded, json } from 'express';
-import * as   morgan from "morgan"
+import * as morgan from 'morgan';
+import * as bodyParser from 'body-parser';
 import { AllExceptionsFilter } from './all-exception.filter';
 // import * as csurf from 'csurf';
 // import * as cookieParser from 'cookie-parser';
@@ -71,7 +72,7 @@ async function bootstrap() {
     'http://localhost:8081',
     'https://api.fureverfriend.id.vn',
     'https://fureverfriend.id.vn',
-    'http://localhost:8000'
+    'http://localhost:8000',
   ];
 
   app.enableCors({
@@ -85,15 +86,16 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
-  app.use(morgan())
+  app.use(morgan());
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb' }));
+  app.use(bodyParser());
   const nestPort = process.env.NEST_PORT || 8000;
   await app.listen(nestPort);
   const server = app.getHttpServer();
   const address = server.address();
   const port = typeof address === 'string' ? address : address?.port;
   console.log(`NestJS application is running on port ${port}`);
-};
+}
 
 bootstrap();
