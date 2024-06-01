@@ -23,18 +23,14 @@ export interface socketMetaPayLoad extends PayloadType {
 }
 @UsePipes(new ValidationPipe())
 @WebSocketGateway({
-  // transports: ['websocket'],
   namespace: 'api/notification',
-
-  transports: ['websocket'],
-
-  // cors: {
-  //   origin: ['http://localhost:3000', 'https://fureverfriend.id.vn'],
-  //   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  //   allowedHeaders: [''],
-  //   credentials: true,
-  // },
-  cors: true,
+  // transports: ['websocket'],
+  cors: {
+    origin: '*', // Allow all origins
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    // allowedHeaders: ['Content-Type', 'Authorization'],
+    // credentials: true,
+  },
   crossOriginIsolated: true,
 })
 @UseGuards(WsJwtGuard)
@@ -47,7 +43,7 @@ export class NotificationGateWay
     private readonly jwtService: JwtService,
   ) {}
   @WebSocketServer() io: Namespace;
-  server: Server;
+  // server: Server;
   socketMap = new Map<string, socketMetaPayLoad>();
   afterInit(): void {
     this.logger.log('Web socket initialization');
@@ -65,53 +61,23 @@ export class NotificationGateWay
       ...payload,
       socketId: client.id,
     });
-    console.log('socketMap', this.socketMap);
+    console.log("socket maop" , this.socketMap)
     this.io.emit('hello', ` from || ${client.id}`);
     this.logger.log(`WS Client with id ${client.id} connected`);
     this.logger.debug(`Number of connect sockets:: ${sockets.size} `);
-    // handle authentication
-    // console.log('token Socket', token);
-    // if(!token){
-    //   client.disconnect(true)
-    //   this.logger.log(`Disconnect due to authorization`);
-    // }
   }
   handleDisconnect(client: Socket) {
-    const sockets = this.io.sockets;
+    this.socketMap.forEach((value, key) => {
+      if (value.socketId === client.id) {
+        this.socketMap.delete(key);
+      }
+    });
     this.socketMap.delete(client.id);
     this.logger.log(`Disconnect Client with id ${client.id} connected`);
-    this.logger.debug(`Number of connect sockets:: ${sockets.size} `);
+    this.logger.debug(`Number of connect sockets:: ${this.io.sockets.size} `);
   }
-  // return data for client with notifications
-  @SubscribeMessage('list-notifications')
-  async handleListNotifications(
-    @MessageBody() notificationDto: { userId: string },
-    // client:Socket
-  ): Promise<void> {
-    try {
-      console.log('Received userId:', notificationDto.userId);
-      const notifications = await this.notificationServices.find(
-        notificationDto.userId,
-      );
-      console.log('Retrieved notifications:', notifications);
-      if (this.io && this.io.to(notificationDto.userId)) {
-        this.io
-          // .to(client.id)
-          .emit('notifications-list', notifications);
-      }
-    } catch (error) {
-      this.logger.error('Failed to list notifications', error);
-      if (this.io && this.io.to(notificationDto.userId)) {
-        this.io
-          // .to(client.id)
-          .emit('notifications-list-error', 'Failed to list notifications');
-      }
-    }
-  }
-  /// bring data from client
-  emitNotification(notification: Notification) {
-    this.io.emit('new-notification', notification);
-  }
+
+
   @SubscribeMessage('currentUsers')
   getCurrentUser(client: Socket) {
     client.emit('currentUsers', Array.from(this.socketMap.values()));
@@ -126,7 +92,7 @@ export class NotificationGateWay
       await this.notificationServices.create(notification);
     if (socketMeta) {
       this.io
-        .to(socketMeta?.socketId)
+         .to(socketMeta.socketId)
         .emit('notifications-user', notificationUser);
     } else {
       console.log('user is not online');
@@ -145,3 +111,38 @@ export class NotificationGateWay
     }
   }
 }
+
+
+
+
+
+
+
+
+// test
+  // return data for client with notifications
+  // @SubscribeMessage('list-notifications')
+  // async handleListNotifications(
+  //   @MessageBody() notificationDto: { userId: string },
+  //   // client:Socket
+  // ): Promise<void> {
+  //   try {
+  //     console.log('Received userId:', notificationDto.userId);
+  //     const notifications = await this.notificationServices.find(
+  //       notificationDto.userId,
+  //     );
+  //     console.log('Retrieved notifications:', notifications);
+  //     if (this.io && this.io.to(notificationDto.userId)) {
+  //       this.io
+  //         // .to(client.id)
+  //         .emit('notifications-list', notifications);
+  //     }
+  //   } catch (error) {
+  //     this.logger.error('Failed to list notifications', error);
+  //     if (this.io && this.io.to(notificationDto.userId)) {
+  //       this.io
+  //         // .to(client.id)
+  //         .emit('notifications-list-error', 'Failed to list notifications');
+  //     }
+  //   }
+  // }
