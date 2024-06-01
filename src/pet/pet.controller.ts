@@ -122,7 +122,6 @@ export class PetController {
   })
   @StandardResponse({
     isPaginated: true,
-    isSorted: true,
   })
   async findAll(
     @Query() pagination: PetPagination,
@@ -236,7 +235,6 @@ export class PetController {
     @Req() req: RequestWithUser,
     @StandardParam() standardParam: StandardParams,
   ) {
-    console.log('user', req.user);
     const allPet = await this.petService.findAllPetByUser(req, pagination);
     if (
       allPet instanceof InternalServerErrorException ||

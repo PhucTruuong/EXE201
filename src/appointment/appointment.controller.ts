@@ -1,18 +1,48 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, InternalServerErrorException, NotFoundException, ConflictException, HttpException, Query, BadRequestException, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  InternalServerErrorException,
+  NotFoundException,
+  ConflictException,
+  HttpException,
+  Query,
+  BadRequestException,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
-import { StandardParam, StandardParams, StandardResponse } from 'nest-standard-response';
+import {
+  StandardParam,
+  StandardParams,
+  StandardResponse,
+} from 'nest-standard-response';
 import { AppointmentPagination } from './dto/pagination-appointment.dto';
 import { JwtAdminGuard } from 'src/auth/guard/jwt-admin.guard';
 import { RequestWithUser } from 'src/interface/request-interface';
 import { JwtCustomerGuard } from 'src/auth/guard/jwt-customer.guard';
+import { sendSuccessResponse } from 'src/constants/sendSucessResponse';
+import HttpStatusCodes from 'src/constants/HttpStatusCodes';
+import { Response } from 'express';
 @ApiTags('Appointments')
 @Controller('api/v1/appointment')
 export class AppointmentController {
-  constructor(private readonly appointmentService: AppointmentService) { }
+  constructor(private readonly appointmentService: AppointmentService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -23,18 +53,27 @@ export class AppointmentController {
     description: 'It will create a new appointment in the response',
   })
   @ApiBody({
-    type: CreateAppointmentDto
+    type: CreateAppointmentDto,
   })
-  async create(@Body() createAppointmentDto: CreateAppointmentDto) {
-    const item = await this.appointmentService.create(createAppointmentDto)
-    if (item instanceof InternalServerErrorException
-      || item instanceof NotFoundException
-      || item instanceof ConflictException
-      || item instanceof HttpException
+  async create(
+    @Body() createAppointmentDto: CreateAppointmentDto,
+    @Res() res: Response,
+  ) {
+    const item = await this.appointmentService.create(createAppointmentDto);
+    if (
+      item instanceof InternalServerErrorException ||
+      item instanceof NotFoundException ||
+      item instanceof ConflictException ||
+      item instanceof HttpException
     ) {
-      return item as InternalServerErrorException || NotFoundException || ConflictException || HttpException;
+      return (
+        (item as InternalServerErrorException) ||
+        NotFoundException ||
+        ConflictException ||
+        HttpException
+      );
     } else {
-      return item;
+      sendSuccessResponse(res, HttpStatusCodes.CREATED, item);
     }
   }
 
@@ -51,14 +90,16 @@ export class AppointmentController {
   })
   async findAll(
     @Query() pagination: AppointmentPagination,
-    @StandardParam() standardParam: StandardParams
+    @StandardParam() standardParam: StandardParams,
   ) {
-    if (!pagination.page || !pagination.limit) {
-      throw new BadRequestException('Page and limit query parameters are required');
-
-    }
-    const item = await this.appointmentService.find(pagination)
-    if (item instanceof InternalServerErrorException ||
+    // if (!pagination.page || !pagination.limit) {
+    //   throw new BadRequestException(
+    //     'Page and limit query parameters are required',
+    //   );
+    // }
+    const item = await this.appointmentService.find(pagination);
+    if (
+      item instanceof InternalServerErrorException ||
       item instanceof HttpException ||
       item instanceof BadRequestException
     ) {
@@ -66,7 +107,7 @@ export class AppointmentController {
     } else {
       const { data, totalCount } = item;
       standardParam.setPaginationInfo({ count: totalCount });
-      return data;
+      return data
     }
   }
 
@@ -78,15 +119,20 @@ export class AppointmentController {
     status: 200,
     description: 'It will list details appointments in the response',
   })
-  async findOne(@Param('id') id: string) {
-    const item = await this.appointmentService.findOne(id)
-    if (item instanceof InternalServerErrorException
-      || item instanceof NotFoundException
-      || item instanceof HttpException
+  async findOne(@Param('id') id: string, @Res() res: Response) {
+    const item = await this.appointmentService.findOne(id);
+    if (
+      item instanceof InternalServerErrorException ||
+      item instanceof NotFoundException ||
+      item instanceof HttpException
     ) {
-      return item as InternalServerErrorException || NotFoundException || HttpException;
+      return (
+        (item as InternalServerErrorException) ||
+        NotFoundException ||
+        HttpException
+      );
     } else {
-      return item;
+     return sendSuccessResponse(res, HttpStatusCodes.OK, item);
     }
   }
 
@@ -99,19 +145,27 @@ export class AppointmentController {
     description: 'It will update appointments in the response',
   })
   @ApiBody({
-    type: UpdateAppointmentDto
+    type: UpdateAppointmentDto,
   })
-  async update(@Param('id') id: string, @Body() updateAppointmentDto: UpdateAppointmentDto) {
-    const item = await this.appointmentService.update(id, updateAppointmentDto)
+  async update(
+    @Param('id') id: string,
+    @Body() updateAppointmentDto: UpdateAppointmentDto,
+    @Res() res: Response
+  ) {
+    const item = await this.appointmentService.update(id, updateAppointmentDto);
 
-    if (item instanceof InternalServerErrorException
-      || item instanceof NotFoundException
-      || item instanceof HttpException
-
+    if (
+      item instanceof InternalServerErrorException ||
+      item instanceof NotFoundException ||
+      item instanceof HttpException
     ) {
-      return item as InternalServerErrorException || HttpException || NotFoundException;
+      return (
+        (item as InternalServerErrorException) ||
+        HttpException ||
+        NotFoundException
+      );
     } else {
-      return item;
+      return sendSuccessResponse(res,HttpStatusCodes.OK,item);
     }
   }
 
@@ -124,14 +178,18 @@ export class AppointmentController {
     description: 'It will delete appointments in the response',
   })
   async remove(@Param('id') id: string) {
-    const item = await this.appointmentService.delete(id)
+    const item = await this.appointmentService.delete(id);
 
-    if (item instanceof InternalServerErrorException
-      || item instanceof NotFoundException
-      || item instanceof HttpException
-
+    if (
+      item instanceof InternalServerErrorException ||
+      item instanceof NotFoundException ||
+      item instanceof HttpException
     ) {
-      return item as InternalServerErrorException || HttpException || NotFoundException;
+      return (
+        (item as InternalServerErrorException) ||
+        HttpException ||
+        NotFoundException
+      );
     } else {
       return item;
     }
@@ -147,8 +205,8 @@ export class AppointmentController {
   async getByUser(@Req() req: RequestWithUser) {
     const item = await this.appointmentService.findByUser(req);
     if (item instanceof InternalServerErrorException || NotFoundException) {
-      return item as InternalServerErrorException || NotFoundException
+      return (item as InternalServerErrorException) || NotFoundException;
     }
-    return item
+    return item;
   }
 }

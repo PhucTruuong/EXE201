@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsOptional } from "class-validator";
 
 export class AppointmentPagination {
-    @IsNotEmpty()
+    // @IsNotEmpty()
     // @IsInt()
     @IsOptional()
     @IsNotEmpty()
@@ -11,10 +11,10 @@ export class AppointmentPagination {
     })
     readonly page?: number;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     // @IsInt()
     @IsOptional()
-    @IsNotEmpty()
+    // @IsNotEmpty()
     @ApiProperty({ 
         default: 10 
     })
