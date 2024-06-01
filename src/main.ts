@@ -2,7 +2,9 @@ import { NestFactory, HttpAdapterHost } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-//import * as fs from 'fs';
+// import * as fs from 'fs';
+import { urlencoded, json } from 'express';
+
 import { AllExceptionsFilter } from './all-exception.filter';
 // import * as csurf from 'csurf';
 // import * as cookieParser from 'cookie-parser';
@@ -13,8 +15,9 @@ async function bootstrap() {
   //   cert: fs.readFileSync('./secrets/fureverpkey.cer'),
   // };
 
-  const app = await NestFactory.create(AppModule,
-    //{ httpsOptions }
+  const app = await NestFactory.create(
+    AppModule,
+    //  { httpsOptions }
   );
   const config = new DocumentBuilder()
     .setTitle('Furever Friend API')
@@ -34,7 +37,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document, {
+  SwaggerModule.setup('swagger', app, document, {
     swaggerOptions: { defaultModelsExpandDepth: -1 },
   });
 
@@ -82,12 +85,14 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const nestPort = process.env.NEST_PORT || 443;
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ extended: true, limit: '50mb' }));
+  const nestPort = process.env.NEST_PORT || 8000;
   await app.listen(nestPort);
   const server = app.getHttpServer();
   const address = server.address();
   const port = typeof address === 'string' ? address : address?.port;
   console.log(`NestJS application is running on port ${port}`);
-}
+};
 
 bootstrap();
