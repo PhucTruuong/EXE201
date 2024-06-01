@@ -25,6 +25,9 @@ export interface socketMetaPayLoad extends PayloadType {
 @WebSocketGateway({
   // transports: ['websocket'],
   namespace: 'api/notification',
+
+  transports: ['websocket'],
+
   // cors: {
   //   origin: ['http://localhost:3000', 'https://fureverfriend.id.vn'],
   //   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -78,16 +81,6 @@ export class NotificationGateWay
     this.socketMap.delete(client.id);
     this.logger.log(`Disconnect Client with id ${client.id} connected`);
     this.logger.debug(`Number of connect sockets:: ${sockets.size} `);
-  }
-
-  @SubscribeMessage('test')
-  async test(socket: Socket, @MessageBody() data) {
-    console.log('Hello', data);
-    setTimeout(() => {
-      if (this.server) {
-        this.server.emit('message 2');
-      }
-    }, 2000);
   }
   // return data for client with notifications
   @SubscribeMessage('list-notifications')
