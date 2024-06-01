@@ -4,7 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 // import * as fs from 'fs';
 import { urlencoded, json } from 'express';
-
+import * as   morgan from "morgan"
 import { AllExceptionsFilter } from './all-exception.filter';
 // import * as csurf from 'csurf';
 // import * as cookieParser from 'cookie-parser';
@@ -87,6 +87,7 @@ async function bootstrap() {
   });
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb' }));
+  app.use(morgan())
   const nestPort = process.env.NEST_PORT || 443;
   await app.listen(nestPort);
   const server = app.getHttpServer();

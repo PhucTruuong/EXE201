@@ -1,15 +1,42 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, InternalServerErrorException, NotFoundException, Query, HttpException, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  InternalServerErrorException,
+  NotFoundException,
+  Query,
+  HttpException,
+  UseGuards,
+  Res,
+} from '@nestjs/common';
 import { PetBreedService } from './pet_breed.service';
 import { CreatePetBreedDto } from './dto/create-pet_breed.dto';
 import { UpdatePetBreedDto } from './dto/update-pet_breed.dto';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { StandardParam, StandardParams, StandardResponse } from 'nest-standard-response';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  StandardParam,
+  StandardParams,
+  StandardResponse,
+} from 'nest-standard-response';
 import { PetBreedPagination } from './dto/pagination-pet-breed.dto';
 import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
+import { sendSuccessResponse } from 'src/constants/sendSucessResponse';
+import HttpStatusCodes from 'src/constants/HttpStatusCodes';
+import { Response } from 'express';
 @ApiTags('Pet Breeds')
 @Controller('api/v1/pet-breed')
 export class PetBreedController {
-  constructor(private readonly petBreedService: PetBreedService) { }
+  constructor(private readonly petBreedService: PetBreedService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -20,17 +47,22 @@ export class PetBreedController {
     description: 'It will create a new pet breed in the response',
   })
   @ApiBody({
-    type: CreatePetBreedDto
+    type: CreatePetBreedDto,
   })
-  async create(@Body() createPetBreedDto: CreatePetBreedDto) {
-    const petBreeds = await this.petBreedService.createPetBreed(createPetBreedDto);
+  async create(
+    @Body() createPetBreedDto: CreatePetBreedDto,
+    @Res() res: Response,
+  ) {
+    const petBreeds =
+      await this.petBreedService.createPetBreed(createPetBreedDto);
 
-    if (petBreeds instanceof InternalServerErrorException
-      || petBreeds instanceof NotFoundException
+    if (
+      petBreeds instanceof InternalServerErrorException ||
+      petBreeds instanceof NotFoundException
     ) {
-      return petBreeds as InternalServerErrorException || NotFoundException;
+      return (petBreeds as InternalServerErrorException) || NotFoundException;
     } else {
-      return petBreeds;
+      return sendSuccessResponse(res, HttpStatusCodes.CREATED, petBreeds);
     }
   }
   @Get()
@@ -46,10 +78,11 @@ export class PetBreedController {
   })
   async findAll(
     @Query() pagination: PetBreedPagination,
-    @StandardParam() standardParam: StandardParams
+    @StandardParam() standardParam: StandardParams,
   ) {
     const allPetBreeds = await this.petBreedService.findAllPetBreed(pagination);
-    if (allPetBreeds instanceof InternalServerErrorException ||
+    if (
+      allPetBreeds instanceof InternalServerErrorException ||
       allPetBreeds instanceof HttpException
     ) {
       return allPetBreeds as HttpException | InternalServerErrorException;
@@ -68,14 +101,15 @@ export class PetBreedController {
     status: 200,
     description: 'It will return detail  pet breed in the response',
   })
-  async findOne(@Param('id') id: string) {
-    const petBreed = await this.petBreedService.findOnePetBreed(id)
-    if (petBreed instanceof InternalServerErrorException
-      || petBreed instanceof NotFoundException
+  async findOne(@Param('id') id: string, @Res() res: Response) {
+    const petBreed = await this.petBreedService.findOnePetBreed(id);
+    if (
+      petBreed instanceof InternalServerErrorException ||
+      petBreed instanceof NotFoundException
     ) {
-      return petBreed as InternalServerErrorException || NotFoundException;
+      return (petBreed as InternalServerErrorException) || NotFoundException;
     } else {
-      return petBreed;
+      return sendSuccessResponse(res, HttpStatusCodes.OK, petBreed);
     }
   }
 
@@ -87,19 +121,17 @@ export class PetBreedController {
     status: 200,
     description: 'It will return detail  pet breed in the response',
   })
-  async findByPetType(@Param('id') id: string) {
-    const petBreed = await this.petBreedService.getPetBreedByPetType(id)
-    if (petBreed instanceof InternalServerErrorException
-      || petBreed instanceof NotFoundException
+  async findByPetType(@Param('id') id: string, @Res() res: Response) {
+    const petBreed = await this.petBreedService.getPetBreedByPetType(id);
+    if (
+      petBreed instanceof InternalServerErrorException ||
+      petBreed instanceof NotFoundException
     ) {
-      return petBreed as InternalServerErrorException || NotFoundException;
+      return (petBreed as InternalServerErrorException) || NotFoundException;
     } else {
-      return petBreed;
+      return sendSuccessResponse(res, HttpStatusCodes.OK, petBreed);
     }
   }
-
-
-
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
@@ -110,17 +142,25 @@ export class PetBreedController {
     description: 'It will update a  pet breed in the response',
   })
   @ApiBody({
-    type:UpdatePetBreedDto
+    type: UpdatePetBreedDto,
   })
-  async update(@Param('id') id: string, @Body() updatePetBreedDto: UpdatePetBreedDto) {
-    const petBreed = await this.petBreedService.updatePetType(id, updatePetBreedDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updatePetBreedDto: UpdatePetBreedDto,
+    @Res() res: Response,
+  ) {
+    const petBreed = await this.petBreedService.updatePetType(
+      id,
+      updatePetBreedDto,
+    );
 
-    if (petBreed instanceof InternalServerErrorException
-      || petBreed instanceof NotFoundException
+    if (
+      petBreed instanceof InternalServerErrorException ||
+      petBreed instanceof NotFoundException
     ) {
-      return petBreed as InternalServerErrorException || NotFoundException;
+      return (petBreed as InternalServerErrorException) || NotFoundException;
     } else {
-      return petBreed;
+      return sendSuccessResponse(res, HttpStatusCodes.OK, petBreed);
     }
   }
 
@@ -132,15 +172,16 @@ export class PetBreedController {
     status: 200,
     description: 'It will delete one  pet breed in the response',
   })
-  async remove(@Param('id') id: string) {
-    const petType = await this.petBreedService.deletePetBreed(id)
+  async remove(@Param('id') id: string, @Res() res: Response ) {
+    const petBreed = await this.petBreedService.deletePetBreed(id);
 
-    if (petType instanceof InternalServerErrorException
-      || petType instanceof NotFoundException
+    if (
+      petBreed instanceof InternalServerErrorException ||
+      petBreed instanceof NotFoundException
     ) {
-      return petType as InternalServerErrorException || NotFoundException;
+      return (petBreed as InternalServerErrorException) || NotFoundException;
     } else {
-      return petType;
+      return sendSuccessResponse(res, HttpStatusCodes.OK, petBreed);
     }
   }
 }

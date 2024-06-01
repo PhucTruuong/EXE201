@@ -1,6 +1,5 @@
 import { Logger, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import {
-  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
@@ -9,9 +8,8 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { NotificationService } from './notification.service';
-import { Socket, Namespace, Server } from 'socket.io';
+import { Socket, Namespace } from 'socket.io';
 import { WsJwtGuard } from 'src/auth/guard/jwt-ws.guard';
-import { Notification } from 'src/database/dabaseModels/notification.entity';
 import { PayloadType } from 'src/auth/types/payload.types';
 import { JwtService } from '@nestjs/jwt';
 import { CreateNotificationDto } from './dto/create-notification.dto';
@@ -23,8 +21,8 @@ export interface socketMetaPayLoad extends PayloadType {
 }
 @UsePipes(new ValidationPipe())
 @WebSocketGateway({
-  namespace: 'api/notification',
-  // transports: ['websocket'],
+  namespace: 'api/v1/notification',
+  transports: ['websocket'],
   cors: {
     origin: '*', // Allow all origins
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
