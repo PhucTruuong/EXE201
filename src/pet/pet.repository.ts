@@ -47,8 +47,10 @@ export class PetRepository implements IPet {
       const existingPet = await this.petModel.findOne({
         where: {
           pet_name: createPetDto.pet_name,
+          user_id: req.user.userId,
         },
       });
+      console.log("exits",existingPet)
       if (existingPet) {
         return new ConflictException('Pet  already exists , choose other name');
       }
@@ -73,7 +75,6 @@ export class PetRepository implements IPet {
           const myCloud = await cloudinary.uploader.upload(createPetDto.image, {
             folder: 'pets',
             crop: 'scale',
-            
           });
           uploadedImageUrl = myCloud.secure_url;
         } catch (error) {
@@ -117,6 +118,8 @@ export class PetRepository implements IPet {
       const existingPet = await this.petModel.findOne({
         where: {
           pet_name: createPetDto.pet_name,
+          user_id: req.user.userId,
+
         },
       });
       if (existingPet) {
@@ -228,6 +231,28 @@ export class PetRepository implements IPet {
     try {
       const pet = await this.petModel.findOne({
         where: { id: id },
+        attributes: [
+          'id',
+          'pet_name',
+          'pet_dob',
+          'height',
+          'weight',
+          'status',
+          'user_id',
+          'image',
+          'created_at',
+          'updated_at',
+        ],
+        include: [
+          {
+            model: PetBreed,
+            attributes: ['id', 'breed_name', 'breed_description'],
+          },
+          {
+            model: PetType,
+            attributes: ['id', 'type_name', 'type_description'],
+          },
+        ],
       });
       if (!pet) {
         return new NotFoundException('pet  not found');
