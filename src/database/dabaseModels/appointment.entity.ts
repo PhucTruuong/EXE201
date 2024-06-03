@@ -1,12 +1,20 @@
-import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  ForeignKey,
+  BelongsTo,
+  HasMany,
+} from 'sequelize-typescript';
 import { Pet } from './pet.entity'; // Adjust the import path as necessary
 import { Service } from './service.entity'; // Adjust the import path as necessary
 import { Booking } from './booking.entity';
 
 @Table({
   tableName: 'petcare_appointment',
-  timestamps: false, 
-  freezeTableName: true, 
+  timestamps: false,
+  freezeTableName: true,
 })
 export class Appointment extends Model {
   @Column({
@@ -14,7 +22,7 @@ export class Appointment extends Model {
     primaryKey: true,
     allowNull: false,
     unique: true,
-    defaultValue: DataType.UUIDV4, 
+    defaultValue: DataType.UUIDV4,
   })
   id: string;
 
@@ -63,13 +71,12 @@ export class Appointment extends Model {
     defaultValue: DataType.NOW, // Set current date as default
   })
   created_at: Date;
-
   @Column({
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW, // Set current date as default
   })
   updated_at: Date;
-  @HasMany(() => Booking,{ foreignKey: 'appointment_id' })
+  @HasMany(() => Booking, { foreignKey: 'appointment_id' })
   bookings: Booking[];
 }
