@@ -7,8 +7,8 @@ export class PaymentService {
   constructor(private readonly paymentRepository: PaymentRepository
 
   ){}
-  create() {
-    return this.paymentRepository.create()
+  create(booking:any) {
+    return this.paymentRepository.create(booking)
   }
   createByMomo() {
     return this.paymentRepository.createByMomo()
