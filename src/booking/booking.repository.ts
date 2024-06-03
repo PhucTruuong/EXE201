@@ -14,6 +14,7 @@ import { Booking } from 'src/database/dabaseModels/booking.entity';
 import { Appointment } from 'src/database/dabaseModels/appointment.entity';
 import { User } from 'src/database/dabaseModels/user.entity';
 import { PaymentService } from 'src/payment/payment.service';
+import { Service } from 'src/database/dabaseModels/service.entity';
 
 export class BookingRepository implements IBooking {
   constructor(
@@ -21,6 +22,9 @@ export class BookingRepository implements IBooking {
     private readonly bookingModel: typeof Booking,
     @Inject('APPOINTMENT_REPOSITORY')
     private readonly appointmentModel: typeof Appointment,
+
+    @Inject('SERVICE_REPOSITORY')
+    private readonly serviceModel: typeof Service,
     @Inject('USER_REPOSITORY')
     private readonly userModel: typeof User,
     private readonly paymentService: PaymentService,
@@ -38,28 +42,31 @@ export class BookingRepository implements IBooking {
     try {
       const existAppointment = await this.appointmentModel.findOne({
         where: { id: createBookingDto.appointment_id },
+        include: {
+          model: this.serviceModel,
+          as: 'service',
+          attributes:['id']
+        },
       });
       if (!existAppointment) {
         return new NotFoundException('Appointment Not Found');
       }
+      const service = await this.serviceModel.findOne({
+        where:{id: existAppointment.service_id}
+      })
       const bookings = await this.bookingModel.create({
         user_id: req.user.userId,
         appointment_id: createBookingDto.appointment_id,
         booking_date: createBookingDto.booking_date,
-        status_string:"not_paid"
+        status_string: 'not_paid',
       });
-      const data = await this.paymentService.create(bookings);
-      return { ...data ,bookings};
+      const data = await this.paymentService.create(bookings, service?.price);
+      return { ...data, bookings };
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error create booking', error);
     }
   }
-
-   
-
-
-
 
   async delete(
     id: string,

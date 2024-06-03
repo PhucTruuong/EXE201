@@ -55,7 +55,11 @@ export class Service extends Model {
     allowNull: true,
   })
   service_description: string;
-
+  @Column({
+    type: DataType.FLOAT,
+    allowNull: false,
+  })
+  price: number;
   @Column({
     type: DataType.TIME,
     allowNull: false,

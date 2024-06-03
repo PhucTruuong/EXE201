@@ -7,7 +7,6 @@ import { Inject, InternalServerErrorException } from '@nestjs/common';
 import { Request } from 'express';
 import * as qs from 'qs';
 import { Booking } from 'src/database/dabaseModels/booking.entity';
-import { where } from 'sequelize';
 const config = {
   app_id: '2553',
   key1: 'PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL',
@@ -25,7 +24,7 @@ export class PaymentRepository implements IPayment {
     private readonly bookingModel: typeof Booking,
   ) {}
 
-  async create(booking: any): Promise<object> {
+  async create(booking: any,price: number): Promise<object> {
     const embed_data = {
       merchantinfo: 'embeddata123',
       redirecturl: 'https://fureverfriend.id.vn/api/',
@@ -41,7 +40,7 @@ export class PaymentRepository implements IPayment {
       app_time: Date.now(), // miliseconds
       item: JSON.stringify(items),
       embed_data: JSON.stringify(embed_data),
-      amount: 50000,
+      amount: price,
       description: `FueverFriend- Petcare - Payment for the booking #${transID}`,
       bank_code: '',
       callback_url:

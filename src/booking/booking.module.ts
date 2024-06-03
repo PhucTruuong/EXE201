@@ -9,6 +9,7 @@ import { UserProviders } from 'src/user/user.provider';
 import { PaymentModule } from 'src/payment/payment.module';
 import { PaymentService } from 'src/payment/payment.service';
 import { PaymentRepository } from 'src/payment/payment.repository';
+import { ServiceProviders } from 'src/service/service.providers';
 
 @Module({
   controllers: [BookingController],
@@ -18,7 +19,8 @@ import { PaymentRepository } from 'src/payment/payment.repository';
     BookingRepository
     , ...BookingProviders,
     ...AppointmentProviders,
-    ...UserProviders
+    ...UserProviders,
+    ...ServiceProviders,
   ],
   imports: [DatabaseModule,PaymentModule
   ]

@@ -8,8 +8,8 @@ export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
   @Post('zalo-pay')
-  create(@Body() booking:any) {
-    return this.paymentService.create(booking);
+  create(@Body() booking:any, price:number) {
+    return this.paymentService.create(booking,price);
   }
   @Post('momo')
   createByMomo() {
