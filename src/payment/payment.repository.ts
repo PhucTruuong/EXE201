@@ -2,11 +2,12 @@ import { IPayment } from './payment.interface';
 import axios from 'axios';
 import * as CryptoJS from 'crypto-js';
 import * as moment from 'moment';
-import { v4 as uuidv4 } from 'uuid';
 import * as crypto from 'crypto';
-import { InternalServerErrorException } from '@nestjs/common';
+import { Inject, InternalServerErrorException } from '@nestjs/common';
 import { Request } from 'express';
 import * as qs from 'qs';
+import { Booking } from 'src/database/dabaseModels/booking.entity';
+import { where } from 'sequelize';
 const config = {
   app_id: '2553',
   key1: 'PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL',
@@ -19,27 +20,32 @@ interface CallbackResult {
   returnmessage: string;
 }
 export class PaymentRepository implements IPayment {
-  async create(): Promise<object> {
+  constructor(
+    @Inject('BOOKING_REPOSITORY')
+    private readonly bookingModel: typeof Booking,
+  ) {}
+
+  async create(booking: any): Promise<object> {
     const embed_data = {
       merchantinfo: 'embeddata123',
-      redirecturl: 'https://3cb5-14-168-69-208.ngrok-free.app/api',
+      redirecturl: 'https://fureverfriend.id.vn/api/',
     };
 
-    const items = [{}];
+    const items = [booking];
     const transID = Math.floor(Math.random() * 1000000);
 
     const order = {
       app_id: config.app_id,
       app_trans_id: `${moment().format('YYMMDD')}_${transID}`, // translation missing: vi.docs.shared.sample_code.comments.app_trans_id
-      app_user: 'user123',
+      app_user: 'FueverFriend- Petcare',
       app_time: Date.now(), // miliseconds
       item: JSON.stringify(items),
       embed_data: JSON.stringify(embed_data),
       amount: 50000,
-      description: `Lazada - Payment for the order #${transID}`,
-      bank_code: 'zalopayapp',
+      description: `FueverFriend- Petcare - Payment for the booking #${transID}`,
+      bank_code: '',
       callback_url:
-        'https://3cb5-14-168-69-208.ngrok-free.app/api/v1/payment/callback',
+        'https://fureverfriend.id.vn/api/v1/payment/callback',
       mac: '',
     };
 
@@ -91,14 +97,19 @@ export class PaymentRepository implements IPayment {
         result.returncode = -1;
         result.returnmessage = 'mac not equal';
       } else {
-        // thanh toán thành công
-        // merchant cập nhật trạng thái cho đơn hàng
         const dataJson = JSON.parse(dataStr);
-        console.log(
-          "update order's status = success where apptransid =",
-          dataJson['apptransid'],
+        // update status
+        console.log('dataJson =', dataJson);
+        // Extract id and status_string
+        const items = JSON.parse(dataJson.item);
+        const itemId = items[0].id;
+        
+        await this.bookingModel.update(
+          {
+            status_string: 'paid',
+          },
+          { where: { id: itemId } },
         );
-
         result.returncode = 1;
         result.returnmessage = 'success';
       }
@@ -214,9 +225,9 @@ export class PaymentRepository implements IPayment {
     const data =
       postData.app_id + '|' + postData.app_trans_id + '|' + config.key1; // appid|app_trans_id|key1
     postData.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
-   
-   console.log("post Data" , postData)
-   
+
+    console.log('post Data', postData);
+
     const postConfig = {
       method: 'post',
       url: 'https://sb-openapi.zalopay.vn/v2/query',

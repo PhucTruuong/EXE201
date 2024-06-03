@@ -13,6 +13,7 @@ import { UpdateBookingDto } from './dto/update-booking.dto';
 import { Booking } from 'src/database/dabaseModels/booking.entity';
 import { Appointment } from 'src/database/dabaseModels/appointment.entity';
 import { User } from 'src/database/dabaseModels/user.entity';
+import { PaymentService } from 'src/payment/payment.service';
 
 export class BookingRepository implements IBooking {
   constructor(
@@ -22,6 +23,7 @@ export class BookingRepository implements IBooking {
     private readonly appointmentModel: typeof Appointment,
     @Inject('USER_REPOSITORY')
     private readonly userModel: typeof User,
+    private readonly paymentService: PaymentService,
   ) {}
   async create(
     createBookingDto: CreateBookingDto,
@@ -44,13 +46,21 @@ export class BookingRepository implements IBooking {
         user_id: req.user.userId,
         appointment_id: createBookingDto.appointment_id,
         booking_date: createBookingDto.booking_date,
+        status_string:"not_paid"
       });
-      return bookings;
+      const data = await this.paymentService.create(bookings);
+      return { ...data ,bookings};
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error create booking', error);
     }
   }
+
+   
+
+
+
+
   async delete(
     id: string,
   ): Promise<

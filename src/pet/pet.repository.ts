@@ -16,7 +16,6 @@ import { PetBreed } from 'src/database/dabaseModels/pet_breed.entity';
 import { PetPagination } from './dto/pet-pagination.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
 import { RequestWithUser } from 'src/interface/request-interface';
-import { parseSortParam } from 'src/utils/helper';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { CreatePetMobileDto } from './dto/create-pet-mobile.dto';
 import { v2 as cloudinary } from 'cloudinary';

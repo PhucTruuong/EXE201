@@ -1,4 +1,4 @@
-import { Controller, Post, Req } from '@nestjs/common';
+import { Body, Controller, Post, Req } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
@@ -8,8 +8,8 @@ export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
   @Post('zalo-pay')
-  create() {
-    return this.paymentService.create();
+  create(@Body() booking:any) {
+    return this.paymentService.create(booking);
   }
   @Post('momo')
   createByMomo() {
