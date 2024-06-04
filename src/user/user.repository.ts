@@ -29,41 +29,88 @@ export class UserRepository implements IUser {
 
     public async findAllUser(pagination: UserPaginationDto): Promise<{
         data: object[],
-        totalCount: number
+        totalCount: number, isPaginated: boolean
     } | InternalServerErrorException | HttpException> {
         try {
-            const { count, rows: allUsers } = await this.userModel.findAndCountAll({
-                attributes: [
-                    'user_id',
-                    'full_name',
-                    'email',
-                    'phone_number'
-                ],
-                limit: pagination.limit,
-                offset: (pagination.page - 1) * pagination.limit
-            });
+            console.log("Pagination: ", pagination);
 
-            console.log(allUsers);
+            if (pagination.page === undefined || pagination.limit === undefined) {
+                console.log("No pagination");
+                const allUsers = await this.userModel.findAll({
+                    attributes: [
+                        'user_id',
+                        'full_name',
+                        'email',
+                        'phone_number'
+                    ],
+                    include: [
+                        {
+                            model: Role,
+                            as: 'role',
+                            attributes: ['role_name'],
+                            where: {
+                                role_name: {
+                                    [Op.notLike]: '%admin%'
+                                },
+                            },
+                        },
+                    ],
+                });
 
-            if (!allUsers || count === 0) {
-                return new HttpException('No user found!', HttpStatus.NOT_FOUND);
-            } else {
                 return {
                     data: allUsers,
-                    totalCount: count
+                    totalCount: 1,
+                    isPaginated: false
                 };
-            };
+
+            } else {
+                console.log("With pagination");
+                const { count, rows: allUsers } = await this.userModel.findAndCountAll({
+                    attributes: [
+                        'user_id',
+                        'full_name',
+                        'email',
+                        'phone_number'
+                    ],
+                    include: [
+                        {
+                            model: Role,
+                            as: 'role',
+                            attributes: ['role_name'],
+                            where: {
+                                role_name: {
+                                    [Op.notLike]: '%admin%'
+                                },
+                            },
+                        }
+                    ],
+                    limit: pagination.limit,
+                    offset: (pagination.page - 1) * pagination.limit
+                });
+
+                const numberOfPage = Math.ceil(count / pagination.limit);
+
+                if (!allUsers || count === 0) {
+                    return new HttpException('No user found!', HttpStatus.NOT_FOUND);
+                } else {
+                    return {
+                        data: allUsers,
+                        totalCount: numberOfPage,
+                        isPaginated: true
+                    };
+                };
+            }
         } catch (error) {
-            throw new InternalServerErrorException("Error fetching users", error)
+            throw new InternalServerErrorException(error.message)
         };
     };
 
-    public async findUserById(id: number): Promise<object | InternalServerErrorException | NotFoundException> {
+    public async findUserById(id: string): Promise<object | InternalServerErrorException | NotFoundException> {
         try {
             const user = await this.userModel.findOne({
                 where: {
                     user_id: id,
-                  
+
                 },
                 attributes: [
                     'user_id',
@@ -184,13 +231,13 @@ export class UserRepository implements IUser {
             throw new InternalServerErrorException("Error disabling user account");
         };
     };
-   public async checkIfUserExists(id: number){
+    public async checkIfUserExists(id: number) {
         const user = await this.userModel.findOne({
-            where:{user_id:id}
+            where: { user_id: id }
         })
-        if(user){
+        if (user) {
             return true;
-        }else{
+        } else {
             return false
         }
     }

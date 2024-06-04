@@ -10,7 +10,14 @@ import {
     UseGuards,
     Query
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiBody,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+    ApiQuery
+} from '@nestjs/swagger';
 import {
     InternalServerErrorException,
     HttpException,
@@ -27,10 +34,13 @@ export class UserController {
     constructor(private readonly userService: UserService) { }
 
     @Get('/')
-    @ApiOperation({ summary: 'Tam Thoi se ko co Guard ==> xai tai khoan de login PASSWORD : <123456>' })
+    @UseGuards(JwtAdminGuard)
+    @ApiBearerAuth('JWT-auth')
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiOperation({ summary: 'Admin will list all  users in the response' })
     @ApiResponse({
-      status: 200,
-      description: '[ADMIN] It will list all  users in the response',
+        status: 200,
+        description: '[ADMIN] It will list all  users in the response',
     })
     @StandardResponse({
         isPaginated: true,
@@ -45,11 +55,14 @@ export class UserController {
             allUsers instanceof HttpException
         ) {
             return allUsers as HttpException | InternalServerErrorException;
-        } else{
+        } else {
             const { data, totalCount } = allUsers;
-            standardParam.setPaginationInfo({ count: totalCount });
+            standardParam.setPaginationInfo({ 
+                count: totalCount,
+                limit: data.length,
+            });
             return data;
-        }
+        };
     };
 
     @Get(':id')
@@ -57,10 +70,10 @@ export class UserController {
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: ' [ADMIN] detail users' })
     @ApiResponse({
-      status: 200,
-      description: '[ADMIN] It will detail users in the response',
+        status: 200,
+        description: '[ADMIN] It will detail users in the response',
     })
-    async findUserById(@Param('id') user_id: number) {
+    async findUserById(@Param('id') user_id: string) {
         const user = await this.userService.findUserById(user_id);
         if (user instanceof InternalServerErrorException
             || user instanceof NotFoundException
@@ -71,13 +84,13 @@ export class UserController {
         }
     };
 
-    @Post('')
+    @Post('/')
     @UseGuards(JwtAdminGuard)
     @ApiBearerAuth('JWT-auth')
-    @ApiOperation({ summary: ' [ADMIN] create a anew user ' })
+    @ApiOperation({ summary: ' [ADMIN] create a new user ' })
     @ApiResponse({
-      status: 201,
-      description: '[ADMIN] It will create a new user in the response',
+        status: 201,
+        description: '[ADMIN] It will create a new user in the response',
     })
     @ApiBody({
         type: UserCreateDto
@@ -95,8 +108,8 @@ export class UserController {
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: ' [ADMIN] Update users  ' })
     @ApiResponse({
-      status: 201,
-      description: '[ADMIN] It will update all in the response',
+        status: 201,
+        description: '[ADMIN] It will update all in the response',
     })
     @ApiBody({
         type: UserModifiedDto
@@ -110,8 +123,8 @@ export class UserController {
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({ summary: ' [ADMIN] disable accounts' })
     @ApiResponse({
-      status: 200,
-      description: '[ADMIN] It will  disable account iun  all in the response',
+        status: 200,
+        description: '[ADMIN] It will  disable account iun  all in the response',
     })
     async disableUserAccount(@Param('id') id: number) {
         return await this.userService.disableUserAccount(id);

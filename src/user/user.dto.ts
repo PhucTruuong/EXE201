@@ -10,15 +10,17 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UserPaginationDto {
-    @IsNotEmpty()
+    //@IsNotEmpty()
     @ApiProperty({
         default: 1,
+        required: false
     })
     readonly page: number;
 
-    @IsNotEmpty()
+    //@IsNotEmpty()
     @ApiProperty({ 
-        default: 10 
+        default: 10,
+        required: false
     })
     readonly limit: number;
 };

@@ -22,7 +22,9 @@ import { ServiceProviders } from 'src/service/service.providers';
     ...UserProviders,
     ...ServiceProviders,
   ],
-  imports: [DatabaseModule,PaymentModule
+  imports: [
+    DatabaseModule,
+    PaymentModule
   ]
 })
 export class BookingModule { }

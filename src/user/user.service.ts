@@ -14,12 +14,13 @@ export class UserService {
 
     public async findAllUser(pagination: UserPaginationDto): Promise<{
         data: object[],
-        totalCount: number
+        totalCount: number,
+        isPaginated: boolean
     } | InternalServerErrorException | HttpException> {
         return this.userRepository.findAllUser(pagination);
     }
 
-    public async findUserById(id: number): Promise<object | NotFoundException | InternalServerErrorException> {
+    public async findUserById(id: string): Promise<object | NotFoundException | InternalServerErrorException> {
         return this.userRepository.findUserById(id);
     }
 
