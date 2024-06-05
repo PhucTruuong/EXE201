@@ -17,7 +17,6 @@ import { Op } from 'sequelize';
 import { RequestWithUser } from 'src/interface/request-interface';
 import { NotificationService } from 'src/notification/notification.service';
 import { NotificationGateWay } from 'src/notification/notification.gateway';
-import { Notification } from 'src/database/dabaseModels/notification.entity';
 
 export class feedbackRepository implements IFeedBack {
   constructor(

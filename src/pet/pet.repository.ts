@@ -19,6 +19,7 @@ import { RequestWithUser } from 'src/interface/request-interface';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { CreatePetMobileDto } from './dto/create-pet-mobile.dto';
 import { v2 as cloudinary } from 'cloudinary';
+import { NotificationGateWay } from 'src/notification/notification.gateway';
 
 @Injectable()
 export class PetRepository implements IPet {
@@ -30,6 +31,7 @@ export class PetRepository implements IPet {
     @Inject('PET_BREED_REPOSITORY')
     private readonly petBreedModel: typeof PetBreed,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly notificationGateway: NotificationGateWay,
   ) {}
   async createPetMobile(
     createPetDto: CreatePetMobileDto,
@@ -49,7 +51,7 @@ export class PetRepository implements IPet {
           user_id: req.user.userId,
         },
       });
-      console.log("exits",existingPet)
+      console.log('exits', existingPet);
       if (existingPet) {
         return new ConflictException('Pet  already exists , choose other name');
       }
@@ -94,6 +96,13 @@ export class PetRepository implements IPet {
         createAt: new Date(),
         updateAt: new Date(),
       });
+
+      await this.notificationGateway.emitDemoNotification(req.user.userId, {
+        user_id: req.user.userId,
+        title: 'New Feedback Created',
+        description: `You have create a new pet profile <..>`,
+        type: 'info',
+      });
       return newPet;
     } catch (error) {
       console.log('error from create pet', error);
@@ -118,7 +127,6 @@ export class PetRepository implements IPet {
         where: {
           pet_name: createPetDto.pet_name,
           user_id: req.user.userId,
-
         },
       });
       if (existingPet) {
@@ -155,6 +163,12 @@ export class PetRepository implements IPet {
           console.log('error from upload', error);
           return new InternalServerErrorException();
         }
+        await this.notificationGateway.emitDemoNotification(req.user.userId, {
+          user_id: req.user.userId,
+          title: 'New Feedback Created',
+          description: `You have create a new pet profile <..>`,
+          type: 'info',
+        });
       } else {
         return new NotFoundException('not have images');
       }

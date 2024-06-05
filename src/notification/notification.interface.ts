@@ -9,4 +9,5 @@ export interface INotification {
     createINotificationDto: CreateNotificationDto,
   ): Promise<object | InternalServerErrorException | NotFoundException>;
   find(userId: string): Promise<object| InternalServerErrorException>;
+  update(id: string): Promise<object| InternalServerErrorException>;
 }

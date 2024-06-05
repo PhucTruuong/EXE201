@@ -1,5 +1,6 @@
-import { Logger, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Logger, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import {
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
@@ -9,10 +10,11 @@ import {
 } from '@nestjs/websockets';
 import { NotificationService } from './notification.service';
 import { Socket, Server } from 'socket.io';
-import { WsJwtGuard } from 'src/auth/guard/jwt-ws.guard';
 import { PayloadType } from 'src/auth/types/payload.types';
 import { JwtService } from '@nestjs/jwt';
 import { CreateNotificationDto } from './dto/create-notification.dto';
+import { RequestWithUser } from 'src/interface/request-interface';
+import { WsJwtGuard } from 'src/auth/guard/jwt-ws.guard';
 export interface NotificationDto {
   userId: string;
 }
@@ -22,14 +24,14 @@ export interface socketMetaPayLoad extends PayloadType {
 @UsePipes(new ValidationPipe())
 @WebSocketGateway({
   namespace: 'api/v1/notification',
-  transports: ['websocket'],
+  // transports: ['websocket'],
   cors: {
     origin: '*', // Allow all origins
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   },
   crossOriginIsolated: true,
 })
-@UseGuards(WsJwtGuard)
+// @UseGuards(WsJwtGuard)
 export class NotificationGateWay
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -46,36 +48,49 @@ export class NotificationGateWay
   }
 
   async handleConnection(client: Socket) {
-    // const sockets = this.io.sockets;
-    const token = client.handshake.headers.authorization as string;
-    const payload = (await this.jwtService.verify(token, {
-      secret: 'jwt-secret_nam_vip_pro',
-    })) as any;
-
-    this.socketMap.set(payload.userId, {
-      ...payload,
-      socketId: client.id,
-    });
-    console.log("socket maop" , this.socketMap)
-    this.io.emit('hello', ` from || ${client.id}`);
-    this.logger.log(`WS Client with id ${client.id} connected`);
-    this.logger.debug(`Number of connect sockets:: `);
+    try {
+      const authHeader = client.handshake.headers.authorization;
+      if (authHeader && (authHeader as string).split(' ')[1]) {
+        console.log(authHeader);
+      }
+      const token = (authHeader as string).split(' ')[1];
+      const payload = (await this.jwtService.verify(token, {
+        secret: 'jwt-secret_nam_vip_pro',
+      })) as any;
+      if (!this.socketMap.has(payload.userId)) {
+        this.socketMap.set(payload.userId, {
+          ...payload,
+          socketId: client.id,
+        });
+        this.logger.log(`WS Client with id ::  ${client.id} connected`);
+        this.logger.debug(
+          `Number of connected sockets:: ${this.socketMap.size}`,
+        );
+      } else {
+        this.logger.warn(
+          `User with id :: ${payload.userId} is already connected.`,
+        );
+      }
+    } catch (error) {
+      console.log('error');
+      client.emit('unauthorized', 'You are not authenticated');
+      client.disconnect();
+    }
   }
+
   handleDisconnect(client: Socket) {
+    let disconnectedUserId: string | null = null;
     this.socketMap.forEach((value, key) => {
       if (value.socketId === client.id) {
-        this.socketMap.delete(key);
+        disconnectedUserId = key;
       }
     });
-    this.socketMap.delete(client.id);
-    this.logger.log(`Disconnect Client with id ${client.id} connected`);
-    this.logger.debug(`Number of connect sockets::`);
-  }
 
-
-  @SubscribeMessage('currentUsers')
-  getCurrentUser(client: Socket) {
-    client.emit('currentUsers', Array.from(this.socketMap.values()));
+    if (disconnectedUserId) {
+      this.socketMap.delete(disconnectedUserId);
+      this.logger.log(`WS Client with id :: ${client.id} disconnected`);
+      this.logger.debug(`Number of connected sockets:: ${this.socketMap.size}`);
+    }
   }
 
   async emitDemoNotification(
@@ -94,9 +109,13 @@ export class NotificationGateWay
     }
   }
 
-  async emitListNotifications(userId: string) {
-    const socketMeta = this.socketMap.get(userId);
-    const notifications = await this.notificationServices.find(userId);
+  @UseGuards(WsJwtGuard)
+  @SubscribeMessage('notifications-lists')
+  async emitListNotifications(@Req() req :RequestWithUser) {
+    const socketMeta = this.socketMap.get(req.user.userId);
+    const notifications = await this.notificationServices.find(
+      socketMeta.userId,
+    );
     if (socketMeta) {
       this.io
         .to(socketMeta?.socketId)
@@ -105,39 +124,20 @@ export class NotificationGateWay
       console.log('user is not online');
     }
   }
+  //update for me
+  @SubscribeMessage('update-notification')
+  async handleUpdateNotification(@MessageBody() data: { id: string }) {
+    try {
+      const updatedNotification = await this.notificationServices.update(
+        data.id,
+      );
+      return { event: 'update-notification', data: updatedNotification };
+    } catch (error) {
+      this.logger.error('Failed to update notification', error);
+      return {
+        event: 'update-notification-error',
+        data: 'Failed to update notification',
+      };
+    }
+  }
 }
-
-
-
-
-
-
-
-
-// test
-  // return data for client with notifications
-  // @SubscribeMessage('list-notifications')
-  // async handleListNotifications(
-  //   @MessageBody() notificationDto: { userId: string },
-  //   // client:Socket
-  // ): Promise<void> {
-  //   try {
-  //     console.log('Received userId:', notificationDto.userId);
-  //     const notifications = await this.notificationServices.find(
-  //       notificationDto.userId,
-  //     );
-  //     console.log('Retrieved notifications:', notifications);
-  //     if (this.io && this.io.to(notificationDto.userId)) {
-  //       this.io
-  //         // .to(client.id)
-  //         .emit('notifications-list', notifications);
-  //     }
-  //   } catch (error) {
-  //     this.logger.error('Failed to list notifications', error);
-  //     if (this.io && this.io.to(notificationDto.userId)) {
-  //       this.io
-  //         // .to(client.id)
-  //         .emit('notifications-list-error', 'Failed to list notifications');
-  //     }
-  //   }
-  // }
