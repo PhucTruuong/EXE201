@@ -15,9 +15,15 @@ import { RoleProviders } from 'src/role/role.provider';
 import { PetTypeRepository } from 'src/pet_type/pet_type.repository';
 import { CloudinaryProvider } from 'src/cloudinary/cloudinary.provider';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { NotificationGateWay } from 'src/notification/notification.gateway';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationProviders } from 'src/notification/notification.providers';
+import { NotificationModule } from 'src/notification/notification.module';
+import { JwtModule } from '@nestjs/jwt';
+import { NotificationRepository } from 'src/notification/notification.repository';
 
 @Module({
-  imports: [DatabaseModule,UserModule],
+  imports: [DatabaseModule,UserModule,NotificationModule,JwtModule],
   controllers: [PetController],
   providers: [PetService,
     PetRepository,
@@ -25,6 +31,10 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
     bcryptModule,
     RoleRepository,
     PetTypeRepository,
+    NotificationGateWay,
+    NotificationService,
+    NotificationRepository,
+    ...NotificationProviders,
     ...RoleProviders,
     ...PetProviders,
     ...PetTypeProviders,

@@ -38,11 +38,11 @@ export class AuthRepository implements IAuth {
     @Inject('FIREBASE_ADMIN') private readonly firebaseApp: admin.app.App,
   ) {}
 
-  private generateRandomPhoneNumber(): string {
-    return Array.from({ length: 12 }, () =>
-      Math.floor(Math.random() * 10),
-    ).join('');
+  private generateRandomPhoneNumber(length: number): string {
+    const digits = Array.from({ length }, () => Math.floor(Math.random() * 10)).join('');
+    return digits;
   }
+  
 
   private async verifyGoogle(idToken: string) {
     const decodedUser: UserRecord = await this.verifyTokenFromClient(idToken);
@@ -231,7 +231,7 @@ export class AuthRepository implements IAuth {
         user_id: uuidv4(),
         full_name: userInfo.name,
         email: userInfo.email,
-        phone_number: this.generateRandomPhoneNumber, // random phone 12 ch
+        phone_number: this.generateRandomPhoneNumber(12), // random phone 12 ch
         account_status: true,
         role_id: '31129e6e-6025-494a-a02d-375441ec603a',
         created_at: new Date(),

@@ -41,4 +41,20 @@ export class NotificationRepository implements INotification {
       throw new InternalServerErrorException('Error creating notification');
     }
   }
+  async update(id: string): Promise<object | InternalServerErrorException> {
+    try {
+      const notification = await this.notificationModel.findOne({
+        where: { id: id },
+      });
+      if (!notification) {
+        return new NotFoundException('No notification found');
+      }
+      notification.read = true;
+      await notification.save();
+      return notification;
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Error creating notification');
+    }
+  }
 }
