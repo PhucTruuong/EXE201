@@ -1,24 +1,26 @@
 import {
-    IsNumber,
     IsNotEmpty,
     Length,
     IsEmail,
     IsString,
     IsNumberString,
-    IsOptional
+    IsOptional,
+    IsBoolean
 } from "class-validator";
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UserPaginationDto {
-    @IsNotEmpty()
+    //@IsNotEmpty()
     @ApiProperty({
         default: 1,
+        required: false
     })
     readonly page: number;
 
-    @IsNotEmpty()
+    //@IsNotEmpty()
     @ApiProperty({ 
-        default: 10 
+        default: 10,
+        required: false
     })
     readonly limit: number;
 };
@@ -65,7 +67,7 @@ export class UserCreateDto {
 }
 
 export class UserModifiedDto {
-    @IsNumber()
+    @IsString()
     @IsNotEmpty()
     @ApiProperty({
         default: 0,
@@ -94,4 +96,11 @@ export class UserModifiedDto {
         default: "",
     })
     readonly phone_number?: string;
+
+    @IsBoolean()
+    @IsOptional()
+    @ApiProperty({
+        default: true,
+    })
+    readonly account_status?: boolean;
 };

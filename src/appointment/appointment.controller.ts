@@ -44,7 +44,7 @@ import { Response } from 'express';
 export class AppointmentController {
   constructor(private readonly appointmentService: AppointmentService) {}
 
-  @Post()
+  @Post('/')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new appointment' })
@@ -74,10 +74,10 @@ export class AppointmentController {
       );
     } else {
       sendSuccessResponse(res, HttpStatusCodes.CREATED, item);
-    }
-  }
+    };
+  };
 
-  @Get()
+  @Get('/')
   @UseGuards(JwtAdminGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'List all  appointments' })

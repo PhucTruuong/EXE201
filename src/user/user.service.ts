@@ -4,7 +4,8 @@ import {
     Injectable,
     InternalServerErrorException,
     NotFoundException,
-    ConflictException
+    ConflictException,
+    NotImplementedException
 } from '@nestjs/common';
 import { UserPaginationDto, UserModifiedDto, UserCreateDto } from './user.dto';
 
@@ -14,12 +15,12 @@ export class UserService {
 
     public async findAllUser(pagination: UserPaginationDto): Promise<{
         data: object[],
-        totalCount: number
+        totalCount: number,
     } | InternalServerErrorException | HttpException> {
         return this.userRepository.findAllUser(pagination);
     }
 
-    public async findUserById(id: number): Promise<object | NotFoundException | InternalServerErrorException> {
+    public async findUserById(id: string): Promise<object | NotFoundException | InternalServerErrorException> {
         return this.userRepository.findUserById(id);
     }
 
@@ -27,11 +28,20 @@ export class UserService {
         return this.userRepository.createUser(user);
     }
 
-    public async updateUser(user: UserModifiedDto): Promise<boolean | InternalServerErrorException> {
+    public async updateUser(user: UserModifiedDto): Promise<
+        string |
+        InternalServerErrorException |
+        NotFoundException
+    > {
         return this.userRepository.updateUser(user);
     }
 
-    public async disableUserAccount(id: number): Promise<boolean | InternalServerErrorException | NotFoundException> {
+    public async disableUserAccount(id: string): Promise<
+        string |
+        InternalServerErrorException |
+        NotFoundException |
+        NotImplementedException
+    > {
         return this.userRepository.disableUserAccount(id);
     };
 }

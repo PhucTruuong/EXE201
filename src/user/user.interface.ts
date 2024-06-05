@@ -1,18 +1,24 @@
-import { 
+import {
     InternalServerErrorException,
     HttpException,
     NotFoundException,
-    ConflictException
+    ConflictException,
+    NotImplementedException
 } from '@nestjs/common';
 import { UserPaginationDto, UserModifiedDto } from './user.dto';
 
 export interface IUser {
     findAllUser(pagination: UserPaginationDto): Promise<{
         data: object[],
-        totalCount: number
+        totalCount: number,
     } | InternalServerErrorException | HttpException>;
-    findUserById(id: number): Promise<object | InternalServerErrorException | NotFoundException>;
+    findUserById(id: string): Promise<object | InternalServerErrorException | NotFoundException>;
     createUser(user: any): Promise<object | InternalServerErrorException | ConflictException>;
-    updateUser(user: UserModifiedDto): Promise<boolean | InternalServerErrorException>;
-    disableUserAccount(id: number): Promise<boolean | InternalServerErrorException | NotFoundException>;
+    updateUser(user: UserModifiedDto): Promise<string | InternalServerErrorException>;
+    disableUserAccount(id: string): Promise<
+        string |
+        InternalServerErrorException |
+        NotFoundException |
+        NotImplementedException
+    >;
 };

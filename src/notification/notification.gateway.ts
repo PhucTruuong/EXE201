@@ -87,7 +87,7 @@ export class NotificationGateWay
       await this.notificationServices.create(notification);
     if (socketMeta) {
       this.io
-         .to(socketMeta.socketId)
+        .to(socketMeta.socketId)
         .emit('notifications-user', notificationUser);
     } else {
       console.log('user is not online');

@@ -5,7 +5,8 @@ import {
     InternalServerErrorException,
     Inject,
     NotFoundException,
-    ConflictException
+    ConflictException,
+    NotImplementedException
 } from '@nestjs/common';
 import { User } from 'src/database/dabaseModels/user.entity';
 import { IUser } from './user.interface';
@@ -32,38 +33,85 @@ export class UserRepository implements IUser {
         totalCount: number
     } | InternalServerErrorException | HttpException> {
         try {
-            const { count, rows: allUsers } = await this.userModel.findAndCountAll({
-                attributes: [
-                    'user_id',
-                    'full_name',
-                    'email',
-                    'phone_number'
-                ],
-                limit: pagination.limit,
-                offset: (pagination.page - 1) * pagination.limit
-            });
+            console.log("Pagination: ", pagination);
 
-            console.log(allUsers);
+            if (pagination.page === undefined || pagination.limit === undefined) {
+                console.log("No pagination");
+                const allUsers = await this.userModel.findAll({
+                    attributes: [
+                        'user_id',
+                        'full_name',
+                        'email',
+                        'phone_number',
+                        'account_status'
+                    ],
+                    include: [
+                        {
+                            model: Role,
+                            as: 'role',
+                            attributes: ['role_name'],
+                            where: {
+                                role_name: {
+                                    [Op.notLike]: '%admin%'
+                                },
+                            },
+                        },
+                    ],
+                });
 
-            if (!allUsers || count === 0) {
-                return new HttpException('No user found!', HttpStatus.NOT_FOUND);
-            } else {
                 return {
                     data: allUsers,
-                    totalCount: count
+                    totalCount: 1,
                 };
-            };
+
+            } else {
+                console.log("With pagination");
+                const { count, rows: allUsers } = await this.userModel.findAndCountAll({
+                    attributes: [
+                        'user_id',
+                        'full_name',
+                        'email',
+                        'phone_number',
+                        'account_status'
+                    ],
+                    include: [
+                        {
+                            model: Role,
+                            as: 'role',
+                            attributes: ['role_name'],
+                            where: {
+                                role_name: {
+                                    [Op.notLike]: '%admin%'
+                                },
+                            },
+                        }
+                    ],
+                    limit: pagination.limit,
+                    offset: (pagination.page - 1) * pagination.limit
+                });
+
+                const numberOfPage = Math.ceil(count / pagination.limit);
+
+                if (!allUsers || count === 0) {
+                    return new HttpException('No user found!', HttpStatus.NOT_FOUND);
+                } else {
+                    return {
+                        data: allUsers,
+                        totalCount: numberOfPage,
+                    };
+                };
+            }
         } catch (error) {
-            throw new InternalServerErrorException("Error fetching users", error)
+            throw new InternalServerErrorException(error.message)
         };
     };
 
-    public async findUserById(id: number): Promise<object | InternalServerErrorException | NotFoundException> {
+    public async findUserById(id: string): Promise<object | InternalServerErrorException | NotFoundException> {
         try {
             const user = await this.userModel.findOne({
                 where: {
                     user_id: id,
-                  
+
                 },
                 attributes: [
                     'user_id',
@@ -140,13 +188,18 @@ export class UserRepository implements IUser {
         };
     };
 
-    public async updateUser(user: UserModifiedDto): Promise<boolean | InternalServerErrorException> {
+    public async updateUser(user: UserModifiedDto): Promise<
+        string |
+        InternalServerErrorException |
+        NotFoundException
+    > {
         try {
             const updatedUser = await this.userModel.update(
                 {
                     full_name: user?.full_name,
                     email: user?.email,
-                    phone_number: user?.phone_number
+                    phone_number: user?.phone_number,
+                    account_status: user?.account_status
                 },
                 {
                     where: {
@@ -158,40 +211,62 @@ export class UserRepository implements IUser {
             if (updatedUser[0] < 1) {
                 throw new NotFoundException('User does not exist!');
             } else {
-                return true;
+                return `User ${user.user_id} has been updated successfully!`;
             }
-        } catch {
-            throw new InternalServerErrorException("Error updating user");
+        } catch (error) {
+            throw new InternalServerErrorException(error.message);
         };
     };
 
-    public async disableUserAccount(id: number): Promise<boolean | InternalServerErrorException | NotFoundException> {
+    public async disableUserAccount(id: string): Promise<
+        string |
+        InternalServerErrorException |
+        NotFoundException |
+        NotImplementedException
+    > {
         try {
+            const accountStatus = await this.userModel.findOne({
+                where: {
+                    user_id: id,
+                    account_status: false
+                }
+            });
+
+            console.log(accountStatus);
+
+            if (accountStatus) {
+                return new NotImplementedException('User account is already disabled!');
+            };
+
             const disabledUser = await this.userModel.update({
-                is_active: false
+                account_status: false
             }, {
                 where: {
                     user_id: id
                 }
             });
 
-            if (!disabledUser) {
-                throw new NotFoundException('User not found!');
+            console.log("Disabled user: ", disabledUser);
+
+            if (disabledUser[0] < 1) {
+                return new NotFoundException('User not found!');
             } else {
-                return true;
+                return `User account ${id} has been disabled!`;
             }
-        } catch {
-            throw new InternalServerErrorException("Error disabling user account");
+        } catch (error) {
+            console.log("check if error");
+            throw new InternalServerErrorException(error.message);
         };
     };
-   public async checkIfUserExists(id: number){
-        const user = await this.userModel.findOne({
-            where:{user_id:id}
-        })
-        if(user){
-            return true;
-        }else{
-            return false
-        }
-    }
+
+    // public async checkIfUserExists(id: string) {
+    //     const user = await this.userModel.findOne({
+    //         where: { user_id: id }
+    //     })
+    //     if (user) {
+    //         return true;
+    //     } else {
+    //         return false
+    //     }
+    // };
 };
