@@ -21,7 +21,9 @@ import {
 import {
     InternalServerErrorException,
     HttpException,
-    NotFoundException
+    NotFoundException,
+    NotImplementedException,
+    HttpStatus,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserPaginationDto, UserModifiedDto, UserCreateDto } from './user.dto';
@@ -115,7 +117,15 @@ export class UserController {
         type: UserModifiedDto
     })
     async updateUser(@Body() user: UserModifiedDto) {
-        return await this.userService.updateUser(user);
+        const userUpdated = await this.userService.updateUser(user);
+
+        if (userUpdated instanceof InternalServerErrorException ||
+            NotFoundException
+        ) {
+            return userUpdated as InternalServerErrorException | NotFoundException;
+        };
+
+        return new HttpException(userUpdated, HttpStatus.OK);
     };
 
     @Patch('/disable/:id')
@@ -126,7 +136,15 @@ export class UserController {
         status: 200,
         description: '[ADMIN] It will  disable account iun  all in the response',
     })
-    async disableUserAccount(@Param('id') id: number) {
-        return await this.userService.disableUserAccount(id);
+    async disableUserAccount(@Param('id') id: string) {
+        const disableAccount = await this.userService.disableUserAccount(id);
+   
+        if (disableAccount instanceof InternalServerErrorException ||
+            NotFoundException || NotImplementedException
+        ) {
+            return disableAccount as InternalServerErrorException | NotFoundException | NotImplementedException;
+        };
+
+        return new HttpException(disableAccount, HttpStatus.OK);
     };
 }

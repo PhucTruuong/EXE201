@@ -92,6 +92,7 @@ export class User extends Model {
         allowNull: false,
     })
     role_id: string;
+    
     @Column({
         field: 'created_at',
         type: DataType.DATE,

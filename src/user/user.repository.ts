@@ -5,7 +5,8 @@ import {
     InternalServerErrorException,
     Inject,
     NotFoundException,
-    ConflictException
+    ConflictException,
+    NotImplementedException
 } from '@nestjs/common';
 import { User } from 'src/database/dabaseModels/user.entity';
 import { IUser } from './user.interface';
@@ -187,13 +188,18 @@ export class UserRepository implements IUser {
         };
     };
 
-    public async updateUser(user: UserModifiedDto): Promise<boolean | InternalServerErrorException> {
+    public async updateUser(user: UserModifiedDto): Promise<
+        string |
+        InternalServerErrorException |
+        NotFoundException
+    > {
         try {
             const updatedUser = await this.userModel.update(
                 {
                     full_name: user?.full_name,
                     email: user?.email,
-                    phone_number: user?.phone_number
+                    phone_number: user?.phone_number,
+                    account_status: user?.account_status
                 },
                 {
                     where: {
@@ -205,40 +211,62 @@ export class UserRepository implements IUser {
             if (updatedUser[0] < 1) {
                 throw new NotFoundException('User does not exist!');
             } else {
-                return true;
+                return `User ${user.user_id} has been updated successfully!`;
             }
-        } catch {
-            throw new InternalServerErrorException("Error updating user");
+        } catch (error) {
+            throw new InternalServerErrorException(error.message);
         };
     };
 
-    public async disableUserAccount(id: number): Promise<boolean | InternalServerErrorException | NotFoundException> {
+    public async disableUserAccount(id: string): Promise<
+        string |
+        InternalServerErrorException |
+        NotFoundException |
+        NotImplementedException
+    > {
         try {
+            const accountStatus = await this.userModel.findOne({
+                where: {
+                    user_id: id,
+                    account_status: false
+                }
+            });
+
+            console.log(accountStatus);
+
+            if (accountStatus) {
+                return new NotImplementedException('User account is already disabled!');
+            };
+
             const disabledUser = await this.userModel.update({
-                is_active: false
+                account_status: false
             }, {
                 where: {
                     user_id: id
                 }
             });
 
-            if (!disabledUser) {
-                throw new NotFoundException('User not found!');
+            console.log("Disabled user: ", disabledUser);
+
+            if (disabledUser[0] < 1) {
+                return new NotFoundException('User not found!');
             } else {
-                return true;
+                return `User account ${id} has been disabled!`;
             }
-        } catch {
-            throw new InternalServerErrorException("Error disabling user account");
+        } catch (error) {
+            console.log("check if error");
+            throw new InternalServerErrorException(error.message);
         };
     };
-    public async checkIfUserExists(id: number) {
-        const user = await this.userModel.findOne({
-            where: { user_id: id }
-        })
-        if (user) {
-            return true;
-        } else {
-            return false
-        }
-    }
+
+    // public async checkIfUserExists(id: string) {
+    //     const user = await this.userModel.findOne({
+    //         where: { user_id: id }
+    //     })
+    //     if (user) {
+    //         return true;
+    //     } else {
+    //         return false
+    //     }
+    // };
 };
