@@ -15,7 +15,6 @@ export class UserService {
     public async findAllUser(pagination: UserPaginationDto): Promise<{
         data: object[],
         totalCount: number,
-        isPaginated: boolean
     } | InternalServerErrorException | HttpException> {
         return this.userRepository.findAllUser(pagination);
     }
