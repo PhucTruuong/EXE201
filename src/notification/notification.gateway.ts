@@ -8,7 +8,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { NotificationService } from './notification.service';
-import { Socket, Namespace } from 'socket.io';
+import { Socket, Server } from 'socket.io';
 import { WsJwtGuard } from 'src/auth/guard/jwt-ws.guard';
 import { PayloadType } from 'src/auth/types/payload.types';
 import { JwtService } from '@nestjs/jwt';
@@ -26,8 +26,6 @@ export interface socketMetaPayLoad extends PayloadType {
   cors: {
     origin: '*', // Allow all origins
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    // allowedHeaders: ['Content-Type', 'Authorization'],
-    // credentials: true,
   },
   crossOriginIsolated: true,
 })
@@ -40,17 +38,16 @@ export class NotificationGateWay
     private readonly notificationServices: NotificationService,
     private readonly jwtService: JwtService,
   ) {}
-  @WebSocketServer() io: Namespace;
+  @WebSocketServer() io: Server;
   // server: Server;
   socketMap = new Map<string, socketMetaPayLoad>();
   afterInit(): void {
-    this.logger.log('Web socket initialization');
+    this.logger.log('Web socket initialization successfully');
   }
 
-  //******** Start  */
   async handleConnection(client: Socket) {
-    const sockets = this.io.sockets;
-    const token = client.handshake.query.token as string;
+    // const sockets = this.io.sockets;
+    const token = client.handshake.headers.authorization as string;
     const payload = (await this.jwtService.verify(token, {
       secret: 'jwt-secret_nam_vip_pro',
     })) as any;
@@ -62,7 +59,7 @@ export class NotificationGateWay
     console.log("socket maop" , this.socketMap)
     this.io.emit('hello', ` from || ${client.id}`);
     this.logger.log(`WS Client with id ${client.id} connected`);
-    this.logger.debug(`Number of connect sockets:: ${sockets.size} `);
+    this.logger.debug(`Number of connect sockets:: `);
   }
   handleDisconnect(client: Socket) {
     this.socketMap.forEach((value, key) => {
@@ -72,7 +69,7 @@ export class NotificationGateWay
     });
     this.socketMap.delete(client.id);
     this.logger.log(`Disconnect Client with id ${client.id} connected`);
-    this.logger.debug(`Number of connect sockets:: ${this.io.sockets.size} `);
+    this.logger.debug(`Number of connect sockets::`);
   }
 
 

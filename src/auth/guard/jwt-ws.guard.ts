@@ -15,7 +15,7 @@ export class WsJwtGuard  implements CanActivate{
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const client: Socket = context.switchToWs().getClient<Socket>();
-    const token = client.handshake.query.token as string;
+    const token = client.handshake.headers.authorization as string;
 
     if (!token) {
       throw new UnauthorizedException('Token not provided');
