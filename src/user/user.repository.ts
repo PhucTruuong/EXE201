@@ -29,7 +29,7 @@ export class UserRepository implements IUser {
 
     public async findAllUser(pagination: UserPaginationDto): Promise<{
         data: object[],
-        totalCount: number, isPaginated: boolean
+        totalCount: number
     } | InternalServerErrorException | HttpException> {
         try {
             console.log("Pagination: ", pagination);
@@ -41,7 +41,8 @@ export class UserRepository implements IUser {
                         'user_id',
                         'full_name',
                         'email',
-                        'phone_number'
+                        'phone_number',
+                        'account_status'
                     ],
                     include: [
                         {
@@ -60,7 +61,6 @@ export class UserRepository implements IUser {
                 return {
                     data: allUsers,
                     totalCount: 1,
-                    isPaginated: false
                 };
 
             } else {
@@ -70,7 +70,8 @@ export class UserRepository implements IUser {
                         'user_id',
                         'full_name',
                         'email',
-                        'phone_number'
+                        'phone_number',
+                        'account_status'
                     ],
                     include: [
                         {
@@ -96,7 +97,6 @@ export class UserRepository implements IUser {
                     return {
                         data: allUsers,
                         totalCount: numberOfPage,
-                        isPaginated: true
                     };
                 };
             }
