@@ -2,6 +2,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  ForbiddenException
 } from '@nestjs/common';
 import { LoginDto } from './dto/login-dto';
 import { AuthRepository } from './auth.repository';
@@ -28,7 +29,7 @@ export class AuthService {
   }
   public async loginWithGoogleMobile(
     userInfo: any,
-  ): Promise<object | InternalServerErrorException | NotFoundException> {
+  ): Promise<object | InternalServerErrorException | NotFoundException | ForbiddenException> {
     return this.authRepository.loginWithGoogleMobile(userInfo);
   }
 }
