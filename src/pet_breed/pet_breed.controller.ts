@@ -38,7 +38,7 @@ import { Response } from 'express';
 export class PetBreedController {
   constructor(private readonly petBreedService: PetBreedService) {}
 
-  @Post()
+  @Post('')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: ' Create a new pet breed' })
@@ -65,8 +65,8 @@ export class PetBreedController {
     };
   };
 
-  @Get()
-  @UseGuards(JwtAuthGuard)
+  @Get('')
+  //@UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: ' List all pet breeds' })
   @ApiResponse({
@@ -88,7 +88,10 @@ export class PetBreedController {
       return allPetBreeds as HttpException | InternalServerErrorException;
     } else {
       const { data, totalCount } = allPetBreeds;
-      standardParam.setPaginationInfo({ count: totalCount });
+      standardParam.setPaginationInfo({ 
+        count: totalCount,
+        limit: data.length,
+      });
       return data;
     };
   };

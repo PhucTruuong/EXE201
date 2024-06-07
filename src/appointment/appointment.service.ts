@@ -13,22 +13,27 @@ export class AppointmentService {
     totalCount: number
   } | InternalServerErrorException | NotFoundException> {
     return this.appointmentRepository.find(pagination)
-  }
+  };
+
   public async create(createAppointmentDto: CreateAppointmentDto): Promise<
     object | InternalServerErrorException | HttpException | ConflictException | NotFoundException
   > {
     return this.appointmentRepository.create(createAppointmentDto)
-  }
+  };
+
   public async findOne(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
     return this.appointmentRepository.findOne(id)
-  }
+  };
+
   public async update(id: string, updateAppointmentDto: UpdateAppointmentDto): Promise<object | InternalServerErrorException | NotFoundException | HttpException> {
     return this.appointmentRepository.update(id, updateAppointmentDto)
-  }
+  };
+
   public async delete(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
     return this.appointmentRepository.delete(id)
-  }
+  };
+
   public async findByUser(req: RequestWithUser): Promise<object | InternalServerErrorException | NotFoundException> {
     return this.appointmentRepository.findByUser(req)
-  }
+  };
 }

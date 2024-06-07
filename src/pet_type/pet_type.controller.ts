@@ -38,7 +38,7 @@ export class PetTypeController {
   };
 
   @Get('/')
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: ' List all  pet types' })
   @ApiResponse({

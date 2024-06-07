@@ -1,6 +1,6 @@
 import {
     InternalServerErrorException,
-    HttpException,
+    BadRequestException,
     NotFoundException,
     ConflictException,
     NotImplementedException
@@ -12,7 +12,7 @@ export interface IUser {
     findAllUser(pagination: UserPaginationDto): Promise<{
         data: object[],
         totalCount: number,
-    } | InternalServerErrorException | HttpException>;
+    } | InternalServerErrorException | NotFoundException | BadRequestException>;
     findUserById(id: string): Promise<object | InternalServerErrorException | NotFoundException>;
     createUser(user: any): Promise<object | InternalServerErrorException | ConflictException>;
     updateUser(user: UserModifiedDto): Promise<string | InternalServerErrorException>;

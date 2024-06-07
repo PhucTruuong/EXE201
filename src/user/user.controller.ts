@@ -35,7 +35,7 @@ import {
   StandardResponse,
 } from 'nest-standard-response';
 import { JwtAdminGuard } from 'src/auth/guard/jwt-admin.guard';
-import { JwtCustomerGuard } from 'src/auth/guard/jwt-customer.guard';
+//import { JwtCustomerGuard } from 'src/auth/guard/jwt-customer.guard';
 import { RequestWithUser } from 'src/interface/request-interface';
 import { sendSuccessResponse } from 'src/constants/sendSucessResponse';
 import HttpStatusCodes from 'src/constants/HttpStatusCodes';
@@ -45,7 +45,7 @@ import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
 @ApiTags('Accounts')
 @Controller('api/v1/user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Get('/')
   @UseGuards(JwtAdminGuard)
@@ -65,11 +65,8 @@ export class UserController {
   ) {
     const allUsers = await this.userService.findAllUser(pagination);
 
-    if (
-      allUsers instanceof InternalServerErrorException ||
-      allUsers instanceof HttpException
-    ) {
-      return allUsers as HttpException | InternalServerErrorException;
+    if (allUsers instanceof HttpException) {
+      return allUsers as HttpException;
     } else {
       const { data, totalCount } = allUsers;
       standardParam.setPaginationInfo({
@@ -97,8 +94,8 @@ export class UserController {
       return (user as InternalServerErrorException) || NotFoundException;
     } else {
       return user;
-    }
-  }
+    };
+  };
 
   @Post('/')
   @UseGuards(JwtAdminGuard)
@@ -143,7 +140,7 @@ export class UserController {
     }
 
     return new HttpException(userUpdated, HttpStatus.OK);
-  }
+  };
 
   @Patch('/disable/:id')
   @UseGuards(JwtAdminGuard)

@@ -1,12 +1,11 @@
 import {
-  HttpException,
-  HttpStatus,
   Injectable,
   InternalServerErrorException,
   Inject,
   NotFoundException,
   ConflictException,
   NotImplementedException,
+  BadRequestException
 } from '@nestjs/common';
 import { User } from 'src/database/dabaseModels/user.entity';
 import { IUser } from './user.interface';
@@ -25,15 +24,16 @@ export class UserRepository implements IUser {
     private readonly bcryptUtils: bcryptModule,
     @Inject('ROLE_REPOSITORY')
     private readonly roleModels: typeof Role,
-  ) {}
+  ) { }
 
   public async findAllUser(pagination: UserPaginationDto): Promise<
     | {
-        data: object[];
-        totalCount: number;
-      }
+      data: object[];
+      totalCount: number;
+    }
     | InternalServerErrorException
-    | HttpException
+    | BadRequestException
+    | NotFoundException
   > {
     try {
       console.log('Pagination: ', pagination);
@@ -66,6 +66,13 @@ export class UserRepository implements IUser {
           data: allUsers,
           totalCount: 1,
         };
+      };
+
+      if (
+        (pagination.limit === undefined && pagination.page) ||
+        (pagination.limit && pagination.page === undefined)
+      ) {
+        return new BadRequestException('Please provide page and limit');
       } else {
         console.log('With pagination');
         const { count, rows: allUsers } = await this.userModel.findAndCountAll({
@@ -95,7 +102,7 @@ export class UserRepository implements IUser {
         const numberOfPage = Math.ceil(count / pagination.limit);
 
         if (!allUsers || count === 0) {
-          return new HttpException('No user found!', HttpStatus.NOT_FOUND);
+          return new NotFoundException('No user found!');
         } else {
           return {
             data: allUsers,
@@ -284,10 +291,10 @@ export class UserRepository implements IUser {
     req: RequestWithUser,
   ): Promise<object | InternalServerErrorException> {
     const userId = req.user.userId;
-    console.log("id",userId)
-    const user = await this.userModel.findOne({ where: { user_id: userId } , attributes: { exclude: ['password_hashed'] } });
-    if(!user){
-        return new NotFoundException();
+    console.log("id", userId)
+    const user = await this.userModel.findOne({ where: { user_id: userId }, attributes: { exclude: ['password_hashed'] } });
+    if (!user) {
+      return new NotFoundException();
     }
     return user;
   }

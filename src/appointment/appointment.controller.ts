@@ -42,7 +42,7 @@ import { Response } from 'express';
 @ApiTags('Appointments')
 @Controller('api/v1/appointment')
 export class AppointmentController {
-  constructor(private readonly appointmentService: AppointmentService) {}
+  constructor(private readonly appointmentService: AppointmentService) {};
 
   @Post('/')
   @UseGuards(JwtAuthGuard)
@@ -87,16 +87,12 @@ export class AppointmentController {
   })
   @StandardResponse({
     isPaginated: true,
+    defaultLimit: 100,
   })
   async findAll(
     @Query() pagination: AppointmentPagination,
     @StandardParam() standardParam: StandardParams,
   ) {
-    // if (!pagination.page || !pagination.limit) {
-    //   throw new BadRequestException(
-    //     'Page and limit query parameters are required',
-    //   );
-    // }
     const item = await this.appointmentService.find(pagination);
     if (
       item instanceof InternalServerErrorException ||
@@ -106,8 +102,11 @@ export class AppointmentController {
       return item as HttpException | InternalServerErrorException;
     } else {
       const { data, totalCount } = item;
-      standardParam.setPaginationInfo({ count: totalCount });
-      return data
+      standardParam.setPaginationInfo({ 
+        count: totalCount,
+        limit: data.length, 
+      });
+      return data;
     }
   }
 

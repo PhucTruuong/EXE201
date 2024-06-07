@@ -1,6 +1,6 @@
 import { UserRepository } from './user.repository';
 import {
-    HttpException,
+    //HttpException,
     Injectable,
     InternalServerErrorException,
     NotFoundException,
@@ -17,7 +17,7 @@ export class UserService {
     public async findAllUser(pagination: UserPaginationDto): Promise<{
         data: object[],
         totalCount: number,
-    } | InternalServerErrorException | HttpException> {
+    } | InternalServerErrorException | NotFoundException | NotFoundException> {
         return this.userRepository.findAllUser(pagination);
     }
 

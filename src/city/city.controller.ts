@@ -1,4 +1,8 @@
-import { Controller, Get, Post, Body, UseGuards, InternalServerErrorException, ConflictException, NotFoundException, HttpException, Query, BadRequestException } from '@nestjs/common';
+import {
+  Controller, Get, Post, Body, UseGuards, InternalServerErrorException,
+  ConflictException, NotFoundException, HttpException, Query,
+  //BadRequestException
+} from '@nestjs/common';
 import { CityService } from './city.service';
 import { CreateCityDto } from './dto/create-city.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -8,8 +12,9 @@ import { CityPagination } from './dto/city-pagination.dto';
 @ApiTags('City')
 @Controller('api/v1/city')
 export class CityController {
-  constructor(private readonly cityService: CityService) { }
-  @Post()
+  constructor(private readonly cityService: CityService) { '' };
+
+  @Post('')
   @UseGuards(JwtAdminGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new city' })
@@ -21,7 +26,6 @@ export class CityController {
     const city = await this.cityService.create(createCityDto)
 
     if (city instanceof InternalServerErrorException
-
       || city instanceof NotFoundException
       || city instanceof ConflictException
       || city instanceof HttpException
@@ -29,10 +33,10 @@ export class CityController {
       return city as InternalServerErrorException || NotFoundException || ConflictException || HttpException;
     } else {
       return city;
-    }
-  }
+    };
+  };
 
-  @Get()
+  @Get('')
   @UseGuards(JwtAdminGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'list aLL  category' })
@@ -47,19 +51,13 @@ export class CityController {
     @Query() pagination: CityPagination,
     @StandardParam() standardParam: StandardParams
   ) {
-    if (!pagination.page || !pagination.limit) {
-      throw new BadRequestException('Page and limit query parameters are required');
-
-    }
-    const AllCity = await this.cityService.find(pagination)
-    if (AllCity instanceof InternalServerErrorException ||
-      AllCity instanceof HttpException
-    ) {
-      return AllCity as HttpException | InternalServerErrorException;
+    const allCity = await this.cityService.find(pagination)
+    if (allCity instanceof HttpException) {
+      return allCity as HttpException | InternalServerErrorException;
     } else {
-      const { data, totalCount } = AllCity;
+      const { data, totalCount } = allCity;
       standardParam.setPaginationInfo({ count: totalCount });
       return data;
-    }
-  }
-}
+    };
+  };
+};

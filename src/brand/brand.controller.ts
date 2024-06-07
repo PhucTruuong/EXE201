@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, NotFoundException, ConflictException, InternalServerErrorException, HttpException, Query, BadRequestException, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Controller, Get, Post, Body,
+  Patch, Param, Delete, UseGuards,
+  NotFoundException, ConflictException,
+  InternalServerErrorException,
+  HttpException, Query,
+  //BadRequestException,
+  UseInterceptors,
+  UploadedFile
+} from '@nestjs/common';
 import { BrandService } from './brand.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
@@ -18,7 +27,7 @@ export class BrandController {
 
   @Post('/')
   @UseGuards(JwtAdminServiceGuard)
-  @Throttle({ short: { limit: 3, ttl: 2000 }})
+  @Throttle({ short: { limit: 3, ttl: 2000 } })
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new brand' })
   @ApiResponse({ status: 201, description: 'Successfully created pet.' })
@@ -41,10 +50,10 @@ export class BrandController {
       return brand as InternalServerErrorException || NotFoundException || ConflictException || HttpException;
     } else {
       return brand;
-    }
+    };
   };
 
-  @UseGuards(JwtAdminServiceGuard)
+  //@UseGuards(JwtAdminServiceGuard)
   @Get('/')
   @Throttle({ default: { limit: 3, ttl: 60000 } })
   @ApiBearerAuth('JWT-auth')
@@ -60,20 +69,18 @@ export class BrandController {
     @Query() pagination: BrandPagination,
     @StandardParam() standardParam: StandardParams
   ) {
-    this.logger.log(`Request all brand`, BrandController.name)
-    if (!pagination.page || !pagination.limit) {
-      throw new BadRequestException('Page and limit query parameters are required');
-    };
+    this.logger.log(`Request all brand`, BrandController.name);
     const allBrand = await this.brandService.findAllBrand(pagination);
 
-    if (allBrand instanceof InternalServerErrorException ||
-      allBrand instanceof HttpException ||
-      allBrand instanceof BadRequestException
+    if (allBrand instanceof HttpException
     ) {
-      return allBrand as HttpException | InternalServerErrorException;
+      return allBrand as HttpException;
     } else {
       const { data, totalCount } = allBrand;
-      standardParam.setPaginationInfo({ count: totalCount });
+      standardParam.setPaginationInfo({
+        count: totalCount,
+        limit: data.length
+      });
       return data;
     };
   };

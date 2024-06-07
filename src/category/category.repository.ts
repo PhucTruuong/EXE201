@@ -4,7 +4,7 @@ import {
   ConflictException,
   NotFoundException,
   Inject,
-  HttpStatus,
+  BadRequestException
 } from '@nestjs/common';
 import { ICategory } from './category.interface';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -12,7 +12,7 @@ import { Category } from 'src/database/dabaseModels/category.entity';
 import { CategoryPagination } from './dto/category-pagination.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { find } from 'rxjs';
+// import { find } from 'rxjs';
 
 export class CategoryRepository implements ICategory {
   constructor(
@@ -20,7 +20,7 @@ export class CategoryRepository implements ICategory {
     private readonly categoryModel: typeof Category,
     private readonly cloudinaryService: CloudinaryService,
   ) {}
-  async createCategory(
+  public async createCategory(
     createCategoryDto: CreateCategoryDto & { image: Express.Multer.File },
   ): Promise<
     | object
@@ -56,7 +56,7 @@ export class CategoryRepository implements ICategory {
           return new InternalServerErrorException();
         }
       } else {
-        return new NotFoundException('not have images');
+        return new NotFoundException('There is no image to upload!');
       }
       const newCategory = await this.categoryModel.create({
         category_name: createCategoryDto.category_name,
@@ -67,16 +67,47 @@ export class CategoryRepository implements ICategory {
     } catch (error) {
       console.log('error', error);
       throw new InternalServerErrorException('Error create category', error);
-    }
-  }
-  async findAllCategory(
+    };
+  };
+
+  public async findAllCategory(
     pagination: CategoryPagination,
   ): Promise<
     | InternalServerErrorException
-    | HttpException
+    | NotFoundException
     | { data: object[]; totalCount: number }
+    | BadRequestException
   > {
     try {
+      if(pagination.limit === undefined && pagination.page === undefined) {
+        const allCategory = await this.categoryModel.findAll({
+          attributes: [
+            'id',
+            'category_name',
+            'category_description',
+            'image',
+            'status',
+            'created_at',
+            'updated_at',
+          ],
+        });
+        if (!allCategory) {
+          return new NotFoundException('No category found!');
+        } else {
+          return {
+            data: allCategory,
+            totalCount: 1,
+          };
+        }
+      };
+
+      if (
+        (pagination.limit === undefined && pagination.page) ||
+        (pagination.limit && pagination.page === undefined)
+      ) {
+        return new BadRequestException('Please provide page and limit!');
+      };
+
       const limit = pagination?.limit ?? null;
       const page = pagination?.page ?? 1;
       const findOptions: any = {
@@ -90,26 +121,31 @@ export class CategoryRepository implements ICategory {
           'updated_at',
         ],
       };
+
       if (limit !== null) {
         findOptions.limit = limit;
         findOptions.offset = (page - 1) * limit;
-      }
-      const { count, rows: allCategory } =
-        await this.categoryModel.findAndCountAll(findOptions);
+      };
+
+      const { count, rows: allCategory } = await this.categoryModel.findAndCountAll(findOptions);
+
+      const numberOfPage = Math.ceil(count / pagination.limit);
+
       if (!allCategory || count === 0) {
-        return new HttpException('No Pet  found!', HttpStatus.NOT_FOUND);
+        return new NotFoundException('No category found!');
       } else {
         return {
           data: allCategory,
-          totalCount: count,
+          totalCount: numberOfPage,
         };
       }
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error fetching category ', error);
-    }
-  }
-  async findOneCategory(
+      throw new InternalServerErrorException(error.message);
+    };
+  };
+
+  public async findOneCategory(
     id: string,
   ): Promise<
     object | InternalServerErrorException | HttpException | NotFoundException
@@ -118,9 +154,11 @@ export class CategoryRepository implements ICategory {
       const category = await this.categoryModel.findOne({
         where: { id: id },
       });
+
       if (!category) {
         throw new NotFoundException('category  not found');
-      }
+      };
+
       return category;
     } catch (error) {
       console.log(error);
@@ -128,9 +166,10 @@ export class CategoryRepository implements ICategory {
         'Error find one  category ',
         error,
       );
-    }
-  }
-  async deleteCategory(
+    };
+  };
+
+  public async deleteCategory(
     id: string,
   ): Promise<
     object | InternalServerErrorException | NotFoundException | HttpException
@@ -141,10 +180,12 @@ export class CategoryRepository implements ICategory {
       });
       if (!category) {
         throw new NotFoundException('category  not found');
-      }
+      };
+
       await this.categoryModel.destroy({
         where: { id: id },
       });
+
       return {
         message: 'category  deleted successfully',
       };
@@ -154,9 +195,10 @@ export class CategoryRepository implements ICategory {
         'Error delete one category',
         error,
       );
-    }
-  }
-  async updateCategory(
+    };
+  };
+
+  public async updateCategory(
     id: string,
     updateCategoryDto: UpdateCategoryDto,
   ): Promise<
@@ -183,6 +225,6 @@ export class CategoryRepository implements ICategory {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error update one pet ', error);
-    }
-  }
-}
+    };
+  };
+};

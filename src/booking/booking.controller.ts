@@ -12,9 +12,9 @@ import { BookingPagination } from './dto/pagination-booking.dto';
 @ApiTags('Bookings')
 @Controller('api/v1/booking')
 export class BookingController {
-  constructor(private readonly bookingService: BookingService) { }
+  constructor(private readonly bookingService: BookingService) { };
 
-  @Post()
+  @Post('')
   @UseGuards(JwtCustomerGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new booking' })
@@ -36,10 +36,10 @@ export class BookingController {
       return item as InternalServerErrorException || NotFoundException || ConflictException || HttpException;
     } else {
       return item;
-    }
-  }
+    };
+  };
 
-  @Get()
+  @Get('')
   @UseGuards(JwtAdminGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: '[ADMIN] List all  bookings' })
@@ -49,13 +49,13 @@ export class BookingController {
   })
   @StandardResponse({
     isPaginated: true,
-
   })
   async findAll(
     @Query() pagination: BookingPagination,
     @StandardParam() standardParam: StandardParams
   ) {
     const item = await this.bookingService.find(pagination);
+    console.log("Bookings: ", item);
 
     if (item instanceof InternalServerErrorException ||
       item instanceof HttpException ||
@@ -64,10 +64,14 @@ export class BookingController {
       return item as HttpException | InternalServerErrorException;
     } else {
       const { data, totalCount } = item;
-      standardParam.setPaginationInfo({ count: totalCount });
+      console.log(totalCount);
+      standardParam.setPaginationInfo({ 
+        count: totalCount,
+        limit: data.length
+      });
       return data;
-    }
-  }
+    };
+  };
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)

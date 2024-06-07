@@ -4,6 +4,7 @@ import {
   Inject,
   InternalServerErrorException,
   NotFoundException,
+  BadRequestException
 } from '@nestjs/common';
 import { IFeedBack } from './feedback.interface';
 import { Feedback } from 'src/database/dabaseModels/feedbacks.entity';
@@ -29,8 +30,9 @@ export class feedbackRepository implements IFeedBack {
     private readonly userRepository: UserRepository,
     private readonly notificationService: NotificationService,
     private readonly notificationGateway: NotificationGateWay,
-  ) {}
-  async create(
+  ) { };
+
+  public async create(
     createFeedbackDto: CreateFeedbackDto,
     req: RequestWithUser,
   ): Promise<
@@ -84,9 +86,10 @@ export class feedbackRepository implements IFeedBack {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error create feedback', error);
-    }
-  }
-  async delete(
+    };
+  };
+
+  public async delete(
     id: string,
   ): Promise<
     object | InternalServerErrorException | HttpException | NotFoundException
@@ -107,16 +110,37 @@ export class feedbackRepository implements IFeedBack {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error delete one item ', error);
-    }
-  }
-  async find(
+    };
+  };
+
+  public async find(
     pagination: FeedBackPagination,
   ): Promise<
-    | { data: object[]; totalCount: number }
+    { data: object[]; totalCount: number }
     | InternalServerErrorException
     | NotFoundException
+    | BadRequestException
   > {
     try {
+      console.log(pagination.limit, pagination.page);
+      if (pagination.limit === undefined && pagination.page === undefined) {
+        const allItem = await this.feedBackModel.findAll();
+        if (!allItem) {
+          return new NotFoundException('No item found');
+        }
+        return {
+          data: allItem,
+          totalCount: 1,
+        };
+      };
+
+      if (
+        (!pagination.limit && pagination.page) ||
+        (pagination.limit && !pagination.page)
+      ) {
+        return new BadRequestException('Please provide limit and page');
+      };
+
       const limit = pagination?.limit ?? null;
       const page = pagination?.page ?? 1;
 
@@ -142,23 +166,27 @@ export class feedbackRepository implements IFeedBack {
           },
         ],
       };
+
       if (limit !== null) {
         findOptions.limit = limit;
         findOptions.offset = (page - 1) * limit;
-      }
-      const { count, rows: allItem } =
-        await this.feedBackModel.findAndCountAll(findOptions);
+      };
+
+      const { count, rows: allItem } = await this.feedBackModel.findAndCountAll(findOptions);
+
+      const numberOfPages = Math.ceil(count / pagination.limit);
+
       if (!allItem || count === 0) {
-        return new NotFoundException();
+        return new NotFoundException('No item found!');
       } else {
         return {
           data: allItem,
-          totalCount: count,
+          totalCount: numberOfPages,
         };
       }
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error fetching  ', error);
+      throw new InternalServerErrorException(error.message);
     }
   }
   async findOne(

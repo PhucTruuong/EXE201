@@ -4,6 +4,7 @@ import {
   ConflictException,
   NotFoundException,
   Inject,
+  BadRequestException
 } from '@nestjs/common';
 import { IBooking } from './booking.interface';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -28,8 +29,9 @@ export class BookingRepository implements IBooking {
     @Inject('USER_REPOSITORY')
     private readonly userModel: typeof User,
     private readonly paymentService: PaymentService,
-  ) {}
-  async create(
+  ) { };
+
+  public async create(
     createBookingDto: CreateBookingDto,
     req: RequestWithUser,
   ): Promise<
@@ -45,32 +47,34 @@ export class BookingRepository implements IBooking {
         include: {
           model: this.serviceModel,
           as: 'service',
-          attributes:['id']
+          attributes: ['id']
         },
       });
+
       if (!existAppointment) {
         return new NotFoundException('Appointment Not Found');
-      }
+      };
+
       const service = await this.serviceModel.findOne({
-        where:{id: existAppointment.service_id}
-      })
+        where: { id: existAppointment.service_id }
+      });
+
       const bookings = await this.bookingModel.create({
         user_id: req.user.userId,
         appointment_id: createBookingDto.appointment_id,
         booking_date: createBookingDto.booking_date,
         status_string: 'not_paid',
       });
+
       const data = await this.paymentService.create(bookings, service?.price);
       return { ...data, bookings };
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error create booking', error);
-    }
-  }
+    };
+  };
 
-  async delete(
-    id: string,
-  ): Promise<
+  public async delete(id: string): Promise<
     object | InternalServerErrorException | HttpException | NotFoundException
   > {
     try {
@@ -89,18 +93,62 @@ export class BookingRepository implements IBooking {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error delete one item ', error);
-    }
-  }
-  async find(
+    };
+  };
+
+  public async find(
     pagination: BookingPagination,
   ): Promise<
     | InternalServerErrorException
     | NotFoundException
     | { data: object[]; totalCount: number }
+    | BadRequestException
   > {
     try {
+      if (pagination.page === undefined && pagination.limit === undefined) {
+        console.log(new Date());
+        const allItem = await this.bookingModel.findAll({
+          attributes: [
+            'id',
+            'booking_date',
+            'status',
+            'created_at',
+            'updated_at',
+          ],
+          include: [
+            {
+              model: this.appointmentModel,
+              as: 'appointment',
+            },
+            {
+              model: this.userModel,
+              as: 'user',
+            },
+          ],
+        });
+
+        if (!allItem || allItem.length === 0) {
+          return new NotFoundException('There is no bookings!');
+        };
+
+        return {
+          data: allItem,
+          totalCount: 1,
+        };
+      };
+
+      if (
+        (!pagination.limit && pagination.page) ||
+        (pagination.limit && !pagination.page)
+      ) {
+        return new BadRequestException('Please provide limit and page!');
+      };
+
+      console.log('pagination');
+
       const limit = pagination?.limit ?? null;
       const page = pagination?.page ?? 1;
+      
       const findOptions: any = {
         attributes: [
           'id',
@@ -120,26 +168,31 @@ export class BookingRepository implements IBooking {
           },
         ],
       };
-      const { count, rows: allItem } =
-        await this.bookingModel.findAndCountAll(findOptions);
+
       if (limit !== null) {
         findOptions.limit = limit;
         findOptions.offset = (page - 1) * limit;
-      }
+      };
+
+      const { count, rows: allItem } = await this.bookingModel.findAndCountAll(findOptions);
+
+      const numberOfPage = Math.ceil(count / pagination.limit);
+
       if (!allItem || count === 0) {
         return new NotFoundException();
       } else {
         return {
           data: allItem,
-          totalCount: count,
+          totalCount: numberOfPage,
         };
       }
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error fetching  ', error);
-    }
-  }
-  async findByUser(
+      throw new InternalServerErrorException(error.message);
+    };
+  };
+
+  public async findByUser(
     req: RequestWithUser,
     pagination: BookingPagination,
   ): Promise<
@@ -187,9 +240,10 @@ export class BookingRepository implements IBooking {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error fetching  ', error);
-    }
-  }
-  async findOne(
+    };
+  };
+
+  public async findOne(
     id: string,
   ): Promise<
     object | InternalServerErrorException | HttpException | NotFoundException
@@ -205,9 +259,10 @@ export class BookingRepository implements IBooking {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error find item ', error);
-    }
-  }
-  async update(
+    };
+  };
+
+  public async update(
     id: string,
     updateBookingDto: UpdateBookingDto,
   ): Promise<
@@ -217,9 +272,11 @@ export class BookingRepository implements IBooking {
       const item = await this.bookingModel.findOne({
         where: { id: id },
       });
+
       if (!item) {
         throw new NotFoundException('item  not found');
-      }
+      };
+
       const updated = await this.bookingModel.update(
         {
           appointment_id: updateBookingDto.appointment_id,
@@ -231,10 +288,11 @@ export class BookingRepository implements IBooking {
           where: { id: id },
         },
       );
+
       return updated;
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error update item ', error);
-    }
-  }
-}
+    };
+  };
+};

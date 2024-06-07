@@ -1,4 +1,11 @@
-import { InternalServerErrorException, HttpException, ConflictException, NotFoundException, Inject } from "@nestjs/common";
+import {
+    InternalServerErrorException,
+    HttpException,
+    ConflictException,
+    NotFoundException,
+    Inject,
+    BadRequestException
+} from "@nestjs/common";
 import { CreateLocationDto } from "./dto/create-location.dto";
 import { ILocation } from "./location.interface";
 import { LocationPagination } from "./dto/pagination-location.dto";
@@ -12,8 +19,15 @@ export class LocationRepository implements ILocation {
         private readonly locationModel: typeof Location,
         @Inject('CITY_REPOSITORY')
         private readonly cityModel: typeof City,
-    ) { }
-    async create(createLocationDto: CreateLocationDto): Promise<object | InternalServerErrorException | HttpException | ConflictException | NotFoundException> {
+    ) { };
+
+    public async create(createLocationDto: CreateLocationDto): Promise<
+        object |
+        InternalServerErrorException |
+        HttpException |
+        ConflictException |
+        NotFoundException
+    > {
         try {
             const existing = await this.locationModel.findOne({
                 where: {
@@ -41,8 +55,9 @@ export class LocationRepository implements ILocation {
             console.log("error", error)
             throw new InternalServerErrorException("Error create location", error)
         };
-    }
-  async  delete(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
+    };
+
+    public async delete(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
         try {
             const location = await this.locationModel.findOne({
                 where: { id: id }
@@ -59,69 +74,101 @@ export class LocationRepository implements ILocation {
         } catch (error) {
             console.log(error);
             throw new InternalServerErrorException("Error delete one item ", error)
-        };  
-    }
-  async  find(pagination: LocationPagination): Promise<InternalServerErrorException | NotFoundException | { data: object[]; totalCount: number; }> {
-    try {
-        const { count, rows: allItem } = await this.locationModel.findAndCountAll({
-            attributes: [
-                'id',
-                'location_name',
-                'location_address',
-                'city_id',
-                'status',
-                'created_at',
-                'updated_at',
-            ],
-            limit: pagination.limit,
-            offset: (pagination.page - 1) * pagination.limit,
-            include:[{model:City,required:true}]
-        });
-        if (!allItem || count === 0) {
-            return new NotFoundException()
-        } else {
-            return {
-                data: allItem,
-                totalCount: count
-            };
         };
-    } catch (error) {
-        console.log(error);
-        throw new InternalServerErrorException("Error fetching location ", error)
     };
-    }
- async   findOne(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
+
+    public async find(pagination: LocationPagination): Promise<
+        InternalServerErrorException |
+        NotFoundException |
+        { data: object[]; totalCount: number; }
+    > {
+        try {
+            if (pagination.page === undefined && pagination.limit === undefined) {
+                const allItem = await this.locationModel.findAll();
+                if (!allItem) {
+                    return new NotFoundException('No item found!');
+                } else {
+                    return {
+                        data: allItem,
+                        totalCount: 1
+                    };
+                };
+            };
+
+            if (
+                (pagination.limit === undefined && pagination.page) ||
+                (pagination.limit && pagination.page === undefined)
+            ) {
+                return new BadRequestException('Please provide page and limit');
+            };
+
+            const { count, rows: allItem } = await this.locationModel.findAndCountAll({
+                attributes: [
+                    'id',
+                    'location_name',
+                    'location_address',
+                    'city_id',
+                    'status',
+                    'created_at',
+                    'updated_at',
+                ],
+                limit: pagination.limit,
+                offset: (pagination.page - 1) * pagination.limit,
+                include: [{ model: City, required: true }]
+            });
+
+            const numberOfPage = Math.ceil(count / pagination.limit);
+            
+            if (!allItem || count === 0) {
+                return new NotFoundException()
+            } else {
+                return {
+                    data: allItem,
+                    totalCount: numberOfPage
+                };
+            };
+        } catch (error) {
+            console.log(error);
+            throw new InternalServerErrorException(error.message)
+        };
+    };
+
+    public async findOne(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
         try {
             const item = await this.locationModel.findOne({
                 where: { id: id }
             })
             if (!item) {
-                throw new NotFoundException("item  not found");
+                throw new NotFoundException("Item not found!");
             }
             return item
         } catch (error) {
             console.log(error);
-            throw new InternalServerErrorException("Error find item ", error)
+            throw new InternalServerErrorException(error.message);
         };
-    }
-  async  update(id: string, updateLocationDto: UpdateLocationDto): Promise<object | InternalServerErrorException | NotFoundException | HttpException> {
+    };
+
+    public async update(id: string, updateLocationDto: UpdateLocationDto): Promise<object | InternalServerErrorException | NotFoundException | HttpException> {
         try {
             const item = await this.locationModel.findOne({
                 where: { id: id }
-            })
+            });
+    
             if (!item) {
                 throw new NotFoundException("item  not found");
-            }
+            };
+
             const duplicateName = await this.locationModel.findOne({
                 where: {
                     location_name: updateLocationDto.location_name,
                 }
-            })
-            if(duplicateName){
-                throw new ConflictException("Duplicate location name");
-            }
-            const updated = await this.locationModel.update(
+            });
 
+            if (duplicateName) {
+                throw new ConflictException("Duplicate location name");
+            };
+
+            const updated = await this.locationModel.update(
                 {
                     location_name: updateLocationDto.location_name,
                     location_address: updateLocationDto.location_address,
@@ -130,11 +177,12 @@ export class LocationRepository implements ILocation {
                 {
                     where: { id: id }
                 }
-            )
-            return updated
+            );
+            
+            return updated;
         } catch (error) {
             console.log(error);
             throw new InternalServerErrorException("Error update item ", error)
         };
-    }
-}
+    };
+};

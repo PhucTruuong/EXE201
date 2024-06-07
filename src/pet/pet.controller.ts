@@ -42,9 +42,9 @@ import { CreatePetMobileDto } from './dto/create-pet-mobile.dto';
 @ApiTags('Pet')
 @Controller('api/v1/pet')
 export class PetController {
-  constructor(private readonly petService: PetService) {}
+  constructor(private readonly petService: PetService) {};
 
-  @Post()
+  @Post('')
   @UseGuards(JwtCustomerGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: ' [CUSTOMER]Create a new pet' })
@@ -79,8 +79,9 @@ export class PetController {
       );
     } else {
       return pet;
-    }
-  }
+    };
+  };
+
   @Post('mobile')
   @UseGuards(JwtCustomerGuard)
   @ApiBearerAuth('JWT-auth')
@@ -109,10 +110,10 @@ export class PetController {
       );
     } else {
       return pet;
-    }
-  }
+    };
+  };
 
-  @Get()
+  @Get('')
   @UseGuards(JwtAdminGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: '[ADMIN] List all  pet' })
@@ -135,10 +136,13 @@ export class PetController {
       return allPet as HttpException | InternalServerErrorException;
     } else {
       const { data, totalCount } = allPet;
-      standardParam.setPaginationInfo({ count: totalCount });
+      standardParam.setPaginationInfo({ 
+        count: totalCount,
+        limit: data.length,
+      });
       return data;
-    }
-  }
+    };
+  };
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)

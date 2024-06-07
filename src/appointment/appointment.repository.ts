@@ -4,6 +4,7 @@ import {
   HttpException,
   ConflictException,
   Inject,
+  BadRequestException
 } from '@nestjs/common';
 import { IAppointment } from './appointment.interface';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
@@ -22,8 +23,9 @@ export class AppointmentRepository implements IAppointment {
     private readonly petModel: typeof Pet,
     @Inject('SERVICE_REPOSITORY')
     private readonly serviceModel: typeof Service,
-  ) {}
-  async create(
+  ) { };
+
+  public async create(
     createAppointmentDto: CreateAppointmentDto,
   ): Promise<
     | object
@@ -36,15 +38,19 @@ export class AppointmentRepository implements IAppointment {
       const existPet = await this.petModel.findOne({
         where: { id: createAppointmentDto.pet_id },
       });
+
       if (!existPet) {
-        return new NotFoundException('Pet Not Found');
-      }
+        return new NotFoundException('Pet Not Found!');
+      };
+
       const existService = await this.serviceModel.findOne({
         where: { id: createAppointmentDto.service_id },
       });
+
       if (!existService) {
-        return new NotFoundException('Service  Not Found');
-      }
+        return new NotFoundException('Service not found!');
+      };
+
       const appointment = await this.appointmentModel.create({
         pet_id: createAppointmentDto.pet_id,
         service_id: createAppointmentDto.service_id,
@@ -55,16 +61,57 @@ export class AppointmentRepository implements IAppointment {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error create appointment', error);
-    }
-  }
-  async find(
+    };
+  };
+
+  public async find(
     pagination: AppointmentPagination,
   ): Promise<
     | { data: object[]; totalCount: number }
     | InternalServerErrorException
     | NotFoundException
+    | BadRequestException
   > {
     try {
+      if (pagination.limit === undefined && pagination.page === undefined) {
+        const allItem = await this.appointmentModel.findAll({
+          attributes: [
+            'id',
+            'appointment_date',
+            'appointment_time',
+            'status',
+            'created_at',
+            'updated_at',
+          ],
+          include: [
+            {
+              model: this.petModel,
+              as: 'pet',
+            },
+            {
+              model: this.serviceModel,
+              as: 'service',
+            },
+          ],
+        });
+
+        if (!allItem || allItem.length === 0) {
+          return new NotFoundException('There is no appointments!');
+        };
+
+        return {
+          data: allItem,
+          totalCount: 1,
+        };
+      }
+
+      if (
+        (!pagination.limit && pagination.page) ||
+        (pagination.limit && !pagination.page)
+      ) {
+        return new BadRequestException('Please provide limit and page!');
+      };
+
       const limit = pagination?.limit ?? null;
       const page = pagination?.page ?? 1;
 
@@ -88,27 +135,31 @@ export class AppointmentRepository implements IAppointment {
           },
         ],
       };
+
       if (limit !== null) {
         findOptions.limit = limit;
         findOptions.offset = (page - 1) * limit;
-      }
-      const { count, rows: allItem } =
-        await this.appointmentModel.findAndCountAll(findOptions);
+      };
+
+      const { count, rows: allItem } = await this.appointmentModel.findAndCountAll(findOptions);
+
+      const numberOfPages = Math.ceil(count / pagination.limit);
 
       if (!allItem || count === 0) {
         return new NotFoundException();
       } else {
         return {
           data: allItem,
-          totalCount: count,
+          totalCount: numberOfPages,
         };
       }
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error fetching  ', error);
-    }
-  }
-  async findOne(
+    };
+  };
+
+  public async findOne(
     id: string,
   ): Promise<
     object | InternalServerErrorException | HttpException | NotFoundException
@@ -124,9 +175,10 @@ export class AppointmentRepository implements IAppointment {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error find item ', error);
-    }
-  }
-  async findByUser(
+    };
+  };
+
+  public async findByUser(
     req: RequestWithUser,
   ): Promise<object | InternalServerErrorException | NotFoundException> {
     try {
@@ -150,9 +202,10 @@ export class AppointmentRepository implements IAppointment {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error find appointment ', error);
-    }
-  }
-  async update(
+    };
+  };
+
+  public async update(
     id: string,
     updateAppointmentDto: UpdateAppointmentDto,
   ): Promise<
@@ -162,9 +215,11 @@ export class AppointmentRepository implements IAppointment {
       const item = await this.appointmentModel.findOne({
         where: { id: id },
       });
+
       if (!item) {
         throw new NotFoundException('item  not found');
-      }
+      };
+
       const updated = await this.serviceModel.update(
         {
           pet_id: updateAppointmentDto.pet_id,
@@ -177,13 +232,15 @@ export class AppointmentRepository implements IAppointment {
           where: { id: id },
         },
       );
+
       return updated;
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error update item ', error);
-    }
-  }
-  async delete(
+    };
+  };
+
+  public async delete(
     id: string,
   ): Promise<
     object | InternalServerErrorException | NotFoundException | HttpException
@@ -204,6 +261,6 @@ export class AppointmentRepository implements IAppointment {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error delete one item ', error);
-    }
-  }
-}
+    };
+  };
+};

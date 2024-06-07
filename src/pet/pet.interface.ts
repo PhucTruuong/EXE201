@@ -1,4 +1,10 @@
-import { ConflictException, HttpException, InternalServerErrorException, NotFoundException } from "@nestjs/common";
+import { 
+    ConflictException, 
+    HttpException, 
+    InternalServerErrorException, 
+    NotFoundException,
+    BadRequestException 
+} from "@nestjs/common";
 import { PetPagination } from "./dto/pet-pagination.dto";
 import { CreatePetDto } from "./dto/create-pet.dto";
 import { UpdatePetDto } from "./dto/update-pet.dto";
@@ -9,7 +15,7 @@ export interface IPet {
     findAllPet(pagination: PetPagination): Promise<{
         data: object[],
         totalCount: number
-    } | InternalServerErrorException | HttpException>;
+    } | InternalServerErrorException | BadRequestException | NotFoundException>;
     createPet(createPetDto: CreatePetDto & { image: Express.Multer.File }, req: RequestWithUser): Promise<
         object | InternalServerErrorException | HttpException | ConflictException | NotFoundException
     >

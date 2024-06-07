@@ -6,6 +6,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  BadRequestException
 } from '@nestjs/common';
 import { IPetBreed } from './pet_breed.interface';
 import { PetBreed } from 'src/database/dabaseModels/pet_breed.entity';
@@ -22,7 +23,7 @@ export class PetBreedRepository implements IPetBreed {
     private readonly petBreedModel: typeof PetBreed,
     @Inject('PET_TYPE_REPOSITORY')
     private readonly petTypeModel: typeof PetType,
-  ) {}
+  ) { }
   async createPetBreed(
     createPetType: CreatePetBreedDto,
   ): Promise<
@@ -65,6 +66,42 @@ export class PetBreedRepository implements IPetBreed {
     | { data: object[]; totalCount: number }
   > {
     try {
+      if (pagination.limit === undefined && pagination.page === undefined) {
+        const allPetBreed = await this.petBreedModel.findAll({
+          attributes: [
+            'id',
+            'breed_name',
+            'breed_description',
+            'pet_type_id',
+            'status',
+            'created_at',
+            'updated_at',
+          ],
+          include: [
+            {
+              model: PetType,
+              attributes: ['id', 'id', 'type_name', 'type_description'],
+            },
+          ],
+        });
+
+        if (!allPetBreed) {
+          return new HttpException('No Pet Type found!', HttpStatus.NOT_FOUND);
+        } else {
+          return {
+            data: allPetBreed,
+            totalCount: 1,
+          };
+        };
+      };
+
+      if (
+        (pagination.limit === undefined && pagination.page) ||
+        (pagination.limit && pagination.page === undefined)
+      ) {
+        return new BadRequestException('Please provide page and limit!');
+      };
+
       const limit = pagination?.limit ?? null;
       const page = pagination?.page ?? 1;
       const findOptions: any = {
@@ -84,8 +121,11 @@ export class PetBreedRepository implements IPetBreed {
           },
         ],
       };
-      const { count, rows: allPetBreed } =
-        await this.petBreedModel.findAndCountAll(findOptions);
+
+      const { count, rows: allPetBreed } = await this.petBreedModel.findAndCountAll(findOptions);
+
+      const numberOfPage = Math.ceil(count / pagination.limit);
+
       if (limit !== null) {
         findOptions.limit = limit;
         findOptions.offset = (page - 1) * limit;
@@ -95,7 +135,7 @@ export class PetBreedRepository implements IPetBreed {
       } else {
         return {
           data: allPetBreed,
-          totalCount: count,
+          totalCount: numberOfPage,
         };
       }
     } catch (error) {

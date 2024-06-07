@@ -10,9 +10,9 @@ import { RequestWithUser } from 'src/interface/request-interface';
 @ApiTags('Feedback')
 @Controller('api/v1/feedback')
 export class FeedbackController {
-  constructor(private readonly feedbackService: FeedbackService) { }
+  constructor(private readonly feedbackService: FeedbackService) { };
 
-  @Post()
+  @Post('')
   @UseGuards(JwtAdminServiceGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new FeedBack' })
@@ -25,7 +25,7 @@ export class FeedbackController {
   })
   async create(@Body() createFeedbackDto: CreateFeedbackDto,
     @Req() req: RequestWithUser) {
-    const item = await this.feedbackService.create(createFeedbackDto,req)
+    const item = await this.feedbackService.create(createFeedbackDto, req)
     if (item instanceof InternalServerErrorException
       || item instanceof NotFoundException
       || item instanceof ConflictException
@@ -34,10 +34,10 @@ export class FeedbackController {
       return item as InternalServerErrorException || NotFoundException || ConflictException || HttpException;
     } else {
       return item;
-    }
-  }
+    };
+  };
 
-  @Get()
+  @Get('')
   @UseGuards(JwtAdminServiceGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'List all  feedback' })
@@ -52,10 +52,6 @@ export class FeedbackController {
     @Query() pagination: FeedBackPagination,
     @StandardParam() standardParam: StandardParams
   ) {
-    if (!pagination.page || !pagination.limit) {
-      throw new BadRequestException('Page and limit query parameters are required');
-
-    }
     const item = await this.feedbackService.find(pagination)
     if (item instanceof InternalServerErrorException ||
       item instanceof HttpException ||
@@ -64,7 +60,10 @@ export class FeedbackController {
       return item as HttpException | InternalServerErrorException;
     } else {
       const { data, totalCount } = item;
-      standardParam.setPaginationInfo({ count: totalCount });
+      standardParam.setPaginationInfo({
+        count: totalCount,
+        limit: data.length,
+      });
       return data;
     }
   };
