@@ -4,18 +4,20 @@ import {
   Post,
   Body,
   UseGuards,
-  Request,
   InternalServerErrorException,
   NotFoundException,
   BadRequestException,
-  ForbiddenException
+  ForbiddenException,
+  Req
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login-dto';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from './guard/jwt.guard';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegisterDto } from './dto/register-auth.dto';
 import { TokenDto } from './dto/token-auth.dto';
+import { JwtCustomerGuard } from './guard/jwt-customer.guard';
+import { RequestWithUser } from 'src/interface/request-interface';
+import { JwtAuthGuard } from './guard/jwt.guard';
 //import { sendSuccessResponse } from 'src/constants/sendSucessResponse';
 //import { Response } from 'express';
 //import HttpStatusCodes from 'src/constants/HttpStatusCodes';
@@ -47,10 +49,14 @@ export class AuthController {
     return data;
   };
 
-  @Get('profile')
-  // @UseGuards(JwtAuthGuard)
+
+
+
+
   @UseGuards(JwtAuthGuard)
-  getProfile(@Request() req) {
+  @ApiBearerAuth('JWT-auth')
+  @Get('profile')
+  getProfile(@Req() req: RequestWithUser) {
     return req.user;
   }
   @Post('register')

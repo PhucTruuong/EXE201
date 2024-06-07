@@ -64,13 +64,13 @@ export class Service extends Model {
     type: DataType.TIME,
     allowNull: false,
   })
-  startTime: string;
+  starttime: string;
 
   @Column({
     type: DataType.TIME,
     allowNull: false,
   })
-  endTime: string;
+  endtime: string;
 
   @Column({
     type: DataType.BOOLEAN,
