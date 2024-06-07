@@ -4,6 +4,7 @@ import {
   HttpException,
   ConflictException,
   Inject,
+  BadRequestException
 } from '@nestjs/common';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { IService } from './service.interface';
@@ -27,9 +28,9 @@ export class ServiceRepository implements IService {
     @Inject('CATEGORY_REPOSITORY')
     private readonly categoryModel: typeof Category,
     private readonly cloudinaryService: CloudinaryService,
-  ) {}
+  ) { }
 
-  async create(
+  public async create(
     createServiceDto: CreateServiceDto & { image: Express.Multer.File },
     req: RequestWithUser,
   ): Promise<
@@ -110,20 +111,21 @@ export class ServiceRepository implements IService {
     } catch (error) {
       console.log('error', error);
       throw new InternalServerErrorException('Error create item', error);
-    }
-  }
-  async find(
+    };
+  };
+
+  public async find(
     pagination: ServicePagination,
   ): Promise<
     | { data: object[]; totalCount: number }
     | InternalServerErrorException
     | NotFoundException
+    | BadRequestException
   > {
     try {
-      const limit = pagination?.limit ?? null;
-      const page = pagination?.page ?? 1;
-      const findOptions: any = {
-        attributes: [
+      if (pagination.limit === undefined && pagination.page === undefined) {
+        const allItem = await this.serviceModel.findAll({
+          attributes: [
             'id',
             'service_name',
             'service_description',
@@ -138,7 +140,7 @@ export class ServiceRepository implements IService {
             {
               model: Brand,
               as: 'brand',
-              attributes: ['id', 'brand_name','brand_description','image'],
+              attributes: ['id', 'brand_name', 'brand_description', 'image'],
             },
             {
               model: Location,
@@ -148,30 +150,83 @@ export class ServiceRepository implements IService {
             {
               model: Category,
               as: 'category',
-              attributes: ['id', 'category_name','category_description','image'],
+              attributes: ['id', 'category_name', 'category_description', 'image'],
             },
           ],
-      }
-       if (limit !== null) {
+        });
+        if (!allItem) {
+          return new NotFoundException();
+        } else {
+          return {
+            data: allItem,
+            totalCount: 1,
+          };
+        }
+      };
+
+      if (
+        (pagination.limit === undefined && pagination.page) ||
+        (pagination.limit && pagination.page === undefined)
+      ) {
+        return new BadRequestException('Please provide page and limit!');
+      };
+
+      const limit = pagination?.limit ?? null;
+      const page = pagination?.page ?? 1;
+      const findOptions: any = {
+        attributes: [
+          'id',
+          'service_name',
+          'service_description',
+          'starttime',
+          'endtime',
+          'image',
+          'status',
+          'created_at',
+          'updated_at',
+        ],
+        include: [
+          {
+            model: Brand,
+            as: 'brand',
+            attributes: ['id', 'brand_name', 'brand_description', 'image'],
+          },
+          {
+            model: Location,
+            as: 'location',
+            attributes: ['id', 'location_name', 'location_address'],
+          },
+          {
+            model: Category,
+            as: 'category',
+            attributes: ['id', 'category_name', 'category_description', 'image'],
+          },
+        ],
+      };
+
+      if (limit !== null) {
         findOptions.limit = limit;
         findOptions.offset = (page - 1) * limit;
       }
       const { count, rows: allItem } = await this.serviceModel.findAndCountAll(findOptions);
-      
+
+      const numberOfPage = Math.ceil(count / pagination.limit);
+
       if (!allItem || count === 0) {
         return new NotFoundException();
       } else {
         return {
           data: allItem,
-          totalCount: count,
+          totalCount: numberOfPage,
         };
       }
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error fetching services ', error);
-    }
-  }
-  async findOne(
+      throw new InternalServerErrorException(error.message);
+    };
+  };
+
+  public async findOne(
     id: string,
   ): Promise<
     object | InternalServerErrorException | HttpException | NotFoundException
@@ -223,9 +278,10 @@ export class ServiceRepository implements IService {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error find item ', error);
-    }
-  }
-  async update(
+    };
+  };
+
+  public async update(
     id: string,
     updateServiceDto: UpdateServiceDto,
   ): Promise<
@@ -265,9 +321,10 @@ export class ServiceRepository implements IService {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error update item ', error);
-    }
-  }
-  async delete(
+    };
+  };
+
+  public async delete(
     id: string,
   ): Promise<
     object | InternalServerErrorException | HttpException | NotFoundException
@@ -288,6 +345,6 @@ export class ServiceRepository implements IService {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error delete one item ', error);
-    }
-  }
-}
+    };
+  };
+};

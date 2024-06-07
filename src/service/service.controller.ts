@@ -15,7 +15,7 @@ import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
 export class ServiceController {
   constructor(private readonly serviceService: ServiceService) { }
 
-  @Post()
+  @Post('')
   @UseGuards(JwtHostGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new Service' })
@@ -26,12 +26,12 @@ export class ServiceController {
   })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('image'))
-  async create(@Body() createServiceDto: CreateServiceDto,
-  @UploadedFile() image: Express.Multer.File,
-  @Req() req: RequestWithUser,
-
+  async create(
+    @Body() createServiceDto: CreateServiceDto,
+    @UploadedFile() image: Express.Multer.File,
+    @Req() req: RequestWithUser,
   ) {
-    const item = await this.serviceService.create({...createServiceDto,image} ,req)
+    const item = await this.serviceService.create({ ...createServiceDto, image }, req)
     if (item instanceof InternalServerErrorException
       || item instanceof NotFoundException
       || item instanceof ConflictException
@@ -40,11 +40,11 @@ export class ServiceController {
       return item as InternalServerErrorException || NotFoundException || ConflictException || HttpException;
     } else {
       return item;
-    }
-  }
+    };
+  };
 
-  @Get()
-  @UseGuards(JwtAuthGuard)
+  @Get('')
+  //@UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'List all  Service' })
   @ApiResponse({
@@ -58,9 +58,6 @@ export class ServiceController {
     @Query() pagination: ServicePagination,
     @StandardParam() standardParam: StandardParams
   ) {
-    if (!pagination.page || !pagination.limit) {
-      throw new BadRequestException('Page and limit query parameters are required');
-    }
     const item = await this.serviceService.find(pagination)
     if (item instanceof InternalServerErrorException ||
       item instanceof HttpException ||
@@ -69,10 +66,13 @@ export class ServiceController {
       return item as HttpException | InternalServerErrorException;
     } else {
       const { data, totalCount } = item;
-      standardParam.setPaginationInfo({ count: totalCount });
+      standardParam.setPaginationInfo({
+        count: totalCount, 
+        limit: data.length
+      });
       return data;
-    }
-  }
+    };
+  };
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)

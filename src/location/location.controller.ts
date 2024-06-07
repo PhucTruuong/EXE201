@@ -9,9 +9,9 @@ import { LocationPagination } from './dto/pagination-location.dto';
 @ApiTags('Location')
 @Controller('api/v1/location')
 export class LocationController {
-  constructor(private readonly locationService: LocationService) { }
+  constructor(private readonly locationService: LocationService) { };
 
-  @Post()
+  @Post('')
   @UseGuards(JwtAdminServiceGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new Location' })
@@ -23,7 +23,7 @@ export class LocationController {
     type: CreateLocationDto
   })
   async create(@Body() createLocationDto: CreateLocationDto) {
-    
+
     const location = await this.locationService.create(createLocationDto)
 
     if (location instanceof InternalServerErrorException
@@ -34,10 +34,10 @@ export class LocationController {
       return location as InternalServerErrorException || NotFoundException || ConflictException || HttpException;
     } else {
       return location;
-    }
-  }
+    };
+  };
 
-  @Get()
+  @Get('')
   @UseGuards(JwtAdminServiceGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Lost all  Location' })
@@ -52,9 +52,6 @@ export class LocationController {
     @Query() pagination: LocationPagination,
     @StandardParam() standardParam: StandardParams
   ) {
-    if (!pagination.page || !pagination.limit) {
-      throw new BadRequestException('Page and limit query parameters are required');
-    }
     const location = await this.locationService.find(pagination)
     if (location instanceof InternalServerErrorException ||
       location instanceof HttpException ||
@@ -63,10 +60,13 @@ export class LocationController {
       return location as HttpException | InternalServerErrorException;
     } else {
       const { data, totalCount } = location;
-      standardParam.setPaginationInfo({ count: totalCount });
+      standardParam.setPaginationInfo({
+        count: totalCount,
+        limit: data.length
+      });
       return data;
-    }
-  }
+    };
+  };
 
   @Get(':id')
   @UseGuards(JwtAdminServiceGuard)

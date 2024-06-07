@@ -1,4 +1,10 @@
-import { ConflictException, HttpException, InternalServerErrorException, NotFoundException } from "@nestjs/common";
+import { 
+    ConflictException, 
+    HttpException, 
+    InternalServerErrorException, 
+    NotFoundException,
+    BadRequestException
+} from "@nestjs/common";
 import { FeedBackPagination } from "./dto/pagination-feedback.dto";
 import { CreateFeedbackDto } from "./dto/create-feedback.dto";
 import { UpdateFeedbackDto } from "./dto/update-feedback.dto";
@@ -8,7 +14,7 @@ export interface IFeedBack {
     find(pagination: FeedBackPagination): Promise<{
         data: object[],
         totalCount: number
-    } | InternalServerErrorException | NotFoundException>;
+    } | InternalServerErrorException | NotFoundException | BadRequestException>;
     create(createFeedbackDto : CreateFeedbackDto , req: RequestWithUser): Promise<
         object | InternalServerErrorException | HttpException | ConflictException | NotFoundException
     >

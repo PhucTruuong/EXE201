@@ -11,14 +11,14 @@ export class CityService {
   public async find(pagination: CityPagination): Promise<{
     data: object[],
     totalCount: number
-  } | InternalServerErrorException | HttpException> {
+  } | InternalServerErrorException | NotFoundException> {
 
     return this.cityRepository.find(pagination)
   }
 
   public async create(createCityDto: CreateCityDto): Promise<
     object | InternalServerErrorException | HttpException | ConflictException | NotFoundException
-  >{
+  > {
     return this.cityRepository.create(createCityDto)
   }
 }

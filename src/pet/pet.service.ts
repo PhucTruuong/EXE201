@@ -4,6 +4,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  BadRequestException
 } from '@nestjs/common';
 import { CreatePetDto } from './dto/create-pet.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
@@ -22,7 +23,8 @@ export class PetService {
         totalCount: number;
       }
     | InternalServerErrorException
-    | HttpException
+    | BadRequestException
+    | NotFoundException
   > {
     return this.petRepository.findAllPet(pagination);
   }

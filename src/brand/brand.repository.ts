@@ -3,11 +3,11 @@ import { IBrand } from './brand.interface';
 import {
   ConflictException,
   HttpException,
-  HttpStatus,
   Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  BadRequestException
 } from '@nestjs/common';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { BrandPagination } from './dto/pagination-brand.dto';
@@ -19,8 +19,9 @@ export class BrandRepository implements IBrand {
     @Inject('BRAND_REPOSITORY')
     private readonly brandModel: typeof Brand,
     private readonly cloudinaryService: CloudinaryService,
-  ) {}
-  async createBrand(
+  ) { };
+
+  public async createBrand(
     createBrandDto: CreateBrandDto & { image: Express.Multer.File },
   ): Promise<
     | object
@@ -35,48 +36,79 @@ export class BrandRepository implements IBrand {
           brand_name: createBrandDto.brand_name,
         },
       });
+
       if (existingBrand) {
         throw new ConflictException(
-          'Brand  already exists , choose other name',
+          'Brand already exists, choose other names!',
         );
-      }
+      };
+
       let imageUrl = null;
+
       if (createBrandDto.image) {
         try {
           const uploadResult = await this.cloudinaryService.uploadFile(
             createBrandDto.image,
           );
+
           if (!uploadResult) {
             console.log('error upload image pet');
             return new InternalServerErrorException();
-          }
+          };
+
           imageUrl = uploadResult.secure_url;
         } catch (error) {
           console.log('error from upload', error);
           return new InternalServerErrorException();
-        }
+        };
       } else {
         return new NotFoundException('not have images');
-      }
+      };
+
       const newBrand = await this.brandModel.create({
         brand_name: createBrandDto.brand_name,
         brand_description: createBrandDto.brand_description,
         image: imageUrl,
       });
+
       return newBrand;
     } catch (error) {
       console.log('error', error);
-      throw new InternalServerErrorException('Error create brand', error);
-    }
-  }
-  async findAllBrand(
+      throw new InternalServerErrorException(error.message);
+    };
+  };
+
+  public async findAllBrand(
     pagination: BrandPagination,
   ): Promise<
     | { data: object[]; totalCount: number }
     | InternalServerErrorException
-    | HttpException
+    | BadRequestException
+    | NotFoundException
   > {
     try {
+      console.log('pagination: ', pagination.limit, pagination.page);
+      if (pagination.limit === undefined && pagination.page === undefined) {
+        console.log('no pagination');
+        const allBrands = await this.brandModel.findAll();
+
+        return {
+          data: allBrands,
+          totalCount: 1,
+        };
+      };
+
+      if (
+        (pagination.page && !pagination.limit) ||
+        (!pagination.page && pagination.limit)
+      ) {
+        console.log('one pagination');
+        return new BadRequestException(
+          'Page and limit query parameters are required',
+        );
+      };
+      
+      console.log('pagination');
       const limit = pagination?.limit ?? null;
       const page = pagination?.page ?? 1;
 
@@ -91,27 +123,29 @@ export class BrandRepository implements IBrand {
           'updated_at',
         ],
       };
+
       if (limit !== null) {
         findOptions.limit = limit;
         findOptions.offset = (page - 1) * limit;
-      }
-      const { count, rows: allBrand } =
-        await this.brandModel.findAndCountAll(findOptions);
+      };
+
+      const { count, rows: allBrand } = await this.brandModel.findAndCountAll(findOptions);
+      const numberOfPage = Math.ceil(count / pagination.limit);
 
       if (!allBrand || count === 0) {
-        return new HttpException('No Pet  found!', HttpStatus.NOT_FOUND);
+        return new NotFoundException('No pet found!');
       } else {
         return {
           data: allBrand,
-          totalCount: count,
+          totalCount: numberOfPage,
         };
-      }
+      };
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error fetching brand ', error);
+      throw new InternalServerErrorException(error.message);
     }
   }
-  async findOneBrand(
+  public async findOneBrand(
     id: string,
   ): Promise<
     object | InternalServerErrorException | HttpException | NotFoundException

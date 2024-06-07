@@ -41,9 +41,9 @@ import { Response } from 'express';
 @ApiTags('Category')
 @Controller('api/v1/category')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(private readonly categoryService: CategoryService) {};
 
-  @Post()
+  @Post('')
   @UseGuards(JwtAdminServiceGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new category' })
@@ -78,11 +78,11 @@ export class CategoryController {
       );
     } else {
       return sendSuccessResponse(res, HttpStatusCodes.CREATED, category);
-    }
-  }
+    };
+  };
 
-  @Get()
-  @UseGuards(JwtAdminServiceGuard)
+  @Get('')
+  //@UseGuards(JwtAdminServiceGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'list aLL  category' })
   @ApiResponse({
@@ -96,9 +96,6 @@ export class CategoryController {
     @Query() pagination: CategoryPagination,
     @StandardParam() standardParam: StandardParams,
   ) {
-    // if (!pagination.page || !pagination.limit) {
-    //   throw new BadRequestException('Page and limit query parameters are required');
-    // }
     const allCategory = await this.categoryService.findAllCategory(pagination);
     if (
       allCategory instanceof InternalServerErrorException ||
@@ -107,10 +104,13 @@ export class CategoryController {
       return allCategory as HttpException | InternalServerErrorException;
     } else {
       const { data, totalCount } = allCategory;
-      standardParam.setPaginationInfo({ count: totalCount });
+      standardParam.setPaginationInfo({ 
+        count: totalCount,
+        limit: data.length,
+      });
       return data;
-    }
-  }
+    };
+  };
 
   @Get(':id')
   @UseGuards(JwtAdminServiceGuard)

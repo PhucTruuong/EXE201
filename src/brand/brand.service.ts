@@ -1,4 +1,11 @@
-import { ConflictException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  HttpException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  BadRequestException
+} from '@nestjs/common';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
 import { BrandRepository } from './brand.repository';
@@ -12,7 +19,7 @@ export class BrandService {
   public async findAllBrand(pagination: BrandPagination): Promise<{
     data: object[],
     totalCount: number
-  } | InternalServerErrorException | HttpException> {
+  } | InternalServerErrorException | NotFoundException | BadRequestException> {
     return this.brandRepository.findAllBrand(pagination)
   }
 
