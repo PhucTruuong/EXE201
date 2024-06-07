@@ -25,10 +25,8 @@ export class PetTypeController {
   @ApiBody({
     type: CreatePetTypeDto
   })
-  async create(@Body() createPetTypeDto: CreatePetTypeDto
-
-  ) {
-    const petType = await this.petTypeService.createPetType(createPetTypeDto)
+  async create(@Body() createPetTypeDto: CreatePetTypeDto) {
+    const petType = await this.petTypeService.createPetType(createPetTypeDto);
 
     if (petType instanceof InternalServerErrorException
       || petType instanceof NotFoundException
@@ -36,8 +34,8 @@ export class PetTypeController {
       return petType as InternalServerErrorException || NotFoundException;
     } else {
       return petType;
-    }
-  }
+    };
+  };
 
   @Get('/')
   @UseGuards(JwtAuthGuard)
@@ -93,7 +91,7 @@ export class PetTypeController {
     description: ' It will update  pet type in the response',
   })
   @ApiBody({
-    type:UpdatePetTypeDto
+    type: UpdatePetTypeDto
   })
   async update(@Param('id') id: string, @Body() updatePetTypeDto: UpdatePetTypeDto) {
     this.logger.log(`Request update pet type`, PetTypeController.name)
