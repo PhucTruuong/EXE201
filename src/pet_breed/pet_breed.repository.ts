@@ -80,7 +80,7 @@ export class PetBreedRepository implements IPetBreed {
         include: [
           {
             model: PetType,
-            attributes: ['id', 'pet_type_id', 'type_name', 'type_description'],
+            attributes: ['id', 'id', 'type_name', 'type_description'],
           },
         ],
       };
