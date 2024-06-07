@@ -8,6 +8,7 @@ import {
     NotImplementedException
 } from '@nestjs/common';
 import { UserPaginationDto, UserModifiedDto, UserCreateDto } from './user.dto';
+import { RequestWithUser } from 'src/interface/request-interface';
 
 @Injectable()
 export class UserService {
@@ -44,4 +45,7 @@ export class UserService {
     > {
         return this.userRepository.disableUserAccount(id);
     };
+    public async getProfile(req:RequestWithUser){
+        return this.userRepository.getProfile(req);
+    }
 }

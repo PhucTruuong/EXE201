@@ -6,6 +6,7 @@ import {
     NotImplementedException
 } from '@nestjs/common';
 import { UserPaginationDto, UserModifiedDto } from './user.dto';
+import { RequestWithUser } from 'src/interface/request-interface';
 
 export interface IUser {
     findAllUser(pagination: UserPaginationDto): Promise<{
@@ -21,4 +22,5 @@ export interface IUser {
         NotFoundException |
         NotImplementedException
     >;
+    getProfile(req:RequestWithUser) : Promise<object | InternalServerErrorException >;
 };
