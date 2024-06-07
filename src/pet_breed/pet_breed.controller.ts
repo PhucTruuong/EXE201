@@ -53,8 +53,7 @@ export class PetBreedController {
     @Body() createPetBreedDto: CreatePetBreedDto,
     @Res() res: Response,
   ) {
-    const petBreeds =
-      await this.petBreedService.createPetBreed(createPetBreedDto);
+    const petBreeds = await this.petBreedService.createPetBreed(createPetBreedDto);
 
     if (
       petBreeds instanceof InternalServerErrorException ||
@@ -63,8 +62,9 @@ export class PetBreedController {
       return (petBreeds as InternalServerErrorException) || NotFoundException;
     } else {
       return sendSuccessResponse(res, HttpStatusCodes.CREATED, petBreeds);
-    }
-  }
+    };
+  };
+
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
@@ -90,8 +90,8 @@ export class PetBreedController {
       const { data, totalCount } = allPetBreeds;
       standardParam.setPaginationInfo({ count: totalCount });
       return data;
-    }
-  }
+    };
+  };
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
@@ -110,8 +110,8 @@ export class PetBreedController {
       return (petBreed as InternalServerErrorException) || NotFoundException;
     } else {
       return sendSuccessResponse(res, HttpStatusCodes.OK, petBreed);
-    }
-  }
+    };
+  };
 
   @Get('pet-type/:id')
   @UseGuards(JwtAuthGuard)
