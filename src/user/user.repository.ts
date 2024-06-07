@@ -117,7 +117,8 @@ export class UserRepository implements IUser {
                     'user_id',
                     'full_name',
                     'email',
-                    'phone_number'
+                    'phone_number',
+                    'account_status'
                 ]
             });
 

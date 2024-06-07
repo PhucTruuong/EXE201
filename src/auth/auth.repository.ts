@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
+  ForbiddenException
 } from '@nestjs/common';
 import { IAuth } from './auth.interface';
 import { LoginDto } from './dto/login-dto';
@@ -36,7 +37,7 @@ export class AuthRepository implements IAuth {
 
     // @InjectFirebaseAdmin() private readonly firebase: FirebaseAdmin,
     @Inject('FIREBASE_ADMIN') private readonly firebaseApp: admin.app.App,
-  ) {}
+  ) { }
 
   private generateRandomPhoneNumber(): string {
     return Array.from({ length: 12 }, () =>
@@ -111,10 +112,16 @@ export class AuthRepository implements IAuth {
 
   public async login(
     loginDto: LoginDto,
-  ): Promise<object | InternalServerErrorException | NotFoundException> {
+  ): Promise<
+    object |
+    InternalServerErrorException |
+    NotFoundException |
+    ForbiddenException
+  > {
     try {
+      console.log('loginDto: ', loginDto)
       const user = await this.userModel.findOne({
-        attributes: ['user_id', 'full_name', 'email', 'password_hashed'],
+        attributes: ['user_id', 'full_name', 'email', 'password_hashed', 'account_status'],
         where: {
           email: loginDto.email,
         },
@@ -127,9 +134,15 @@ export class AuthRepository implements IAuth {
         ],
       });
 
-      console.log('Role Name: ', user.dataValues.role.role_name);
+      // console.log('User: ', user);
+
+      // console.log('Role Name: ', user.dataValues.role.role_name);
       if (!user) {
         return new NotFoundException('User not found!');
+      };
+
+      if (user.account_status === false) {
+        return new ForbiddenException('This account is not active!');
       }
       const passwordMatch = await this.bcryptUtils.compare(
         loginDto.password,
@@ -157,7 +170,7 @@ export class AuthRepository implements IAuth {
       };
     } catch (error) {
       console.log('error from login', error);
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException(error.message);
     }
   }
 
