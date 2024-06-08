@@ -167,6 +167,17 @@ export class AppointmentRepository implements IAppointment {
     try {
       const item = await this.appointmentModel.findOne({
         where: { id: id },
+        include: [
+          {
+            model: this.petModel,
+            as: 'pet',
+
+          },
+          {
+            model: this.serviceModel,
+            as: 'service',
+          },
+        ],
       });
       if (!item) {
         throw new NotFoundException('item  not found');
