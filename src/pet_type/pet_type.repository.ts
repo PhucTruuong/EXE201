@@ -20,7 +20,7 @@ export class PetTypeRepository implements IPetType {
     @Inject('PET_TYPE_REPOSITORY')
     private readonly petTypeModel: typeof PetType,
   ) {}
-  async createPetType(
+  public async createPetType(
     createPetType: CreatePetTypeDto,
   ): Promise<
     object | InternalServerErrorException | HttpException | ConflictException
@@ -48,7 +48,7 @@ export class PetTypeRepository implements IPetType {
     }
   }
 
-  async findAllPetType(
+  public async findAllPetType(
     pagination: PetTypePagination,
   ): Promise<
     | { data: object[]; totalCount: number }
@@ -85,10 +85,10 @@ export class PetTypeRepository implements IPetType {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error fetching pet type', error);
-    }
-  }
+    };
+  };
 
-  async findOnePetType(
+  public async findOnePetType(
     id: string,
   ): Promise<object | InternalServerErrorException | HttpException> {
     try {
@@ -105,7 +105,7 @@ export class PetTypeRepository implements IPetType {
     }
   }
 
-  async deletePetType(
+  public async deletePetType(
     id: string,
   ): Promise<object | InternalServerErrorException | HttpException> {
     try {
@@ -127,10 +127,10 @@ export class PetTypeRepository implements IPetType {
         'Error when deleting pet type',
         error,
       );
-    }
-  }
+    };
+  };
 
-  async updatePetType(
+  public async updatePetType(
     id: string,
     updatePetType: UpdatePetTypeDto,
   ): Promise<object | InternalServerErrorException | HttpException> {
@@ -138,9 +138,11 @@ export class PetTypeRepository implements IPetType {
       const petType = await this.petTypeModel.findOne({
         where: { id: id },
       });
+
       if (!petType) {
-        throw new NotFoundException('pet type not found');
-      }
+        throw new NotFoundException('Pet type not found');
+      };
+
       const PetTypeUpdated = await this.petTypeModel.update(
         {
           type_name: updatePetType.type_name,
@@ -150,6 +152,7 @@ export class PetTypeRepository implements IPetType {
           where: { id: id },
         },
       );
+
       return PetTypeUpdated;
     } catch (error) {
       console.log(error);
@@ -157,6 +160,6 @@ export class PetTypeRepository implements IPetType {
         'Error when updating pet type',
         error,
       );
-    }
-  }
-}
+    };
+  };
+};

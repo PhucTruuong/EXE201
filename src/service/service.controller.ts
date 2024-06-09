@@ -31,7 +31,8 @@ export class ServiceController {
     @UploadedFile() image: Express.Multer.File,
     @Req() req: RequestWithUser,
   ) {
-    const item = await this.serviceService.create({ ...createServiceDto, image }, req)
+    const item = await this.serviceService.create({ ...createServiceDto, image }, req);
+
     if (item instanceof InternalServerErrorException
       || item instanceof NotFoundException
       || item instanceof ConflictException
@@ -95,7 +96,7 @@ export class ServiceController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAdminServiceGuard)
+  @UseGuards(JwtHostGuard, JwtAdminServiceGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update  Service' })
   @ApiResponse({
@@ -113,8 +114,8 @@ export class ServiceController {
       return item as InternalServerErrorException || HttpException || NotFoundException;
     } else {
       return item;
-    }
-  }
+    };
+  };
 
   @Delete(':id')
   @UseGuards(JwtAdminServiceGuard)

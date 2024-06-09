@@ -11,6 +11,7 @@ export class CreateServiceDto {
         description:"id of brand"
     })
     brand_id: string;
+
     @IsString()
     @IsNotEmpty()
     @IsUUID()
@@ -20,6 +21,7 @@ export class CreateServiceDto {
         description:"id of category"
     })
     category_id: string;
+
     @IsString()
     @IsNotEmpty()
     @IsUUID()
@@ -28,7 +30,8 @@ export class CreateServiceDto {
         example:"70f7c050-e927-4c92-837d-54fedfd3e503",
         description:"id of location"
     })
-    location_id:  string;
+    location_id: string;
+
     @IsString()
     @IsNotEmpty()
     @ApiProperty({
@@ -37,6 +40,7 @@ export class CreateServiceDto {
         description: "Service namemust be string"
     })
     service_name: string;
+
     @IsString()
     @IsNotEmpty()
     @ApiProperty({
@@ -45,6 +49,7 @@ export class CreateServiceDto {
         description: "Service namemust be string"
     })
     service_description: string;
+
     @IsString()
     @IsNotEmpty()
     @ApiProperty({
@@ -53,6 +58,7 @@ export class CreateServiceDto {
         description: "Start time of the service in ISO 8601 format with time zone"
     })
     startTime: string;
+    
     @IsString()
     @IsNotEmpty()
     @ApiProperty({

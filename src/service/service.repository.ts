@@ -46,32 +46,39 @@ export class ServiceRepository implements IService {
           service_name: createServiceDto.service_name,
         },
       });
+
       if (existing) {
         return new ConflictException(
           'Items already exists , choose other name',
         );
-      }
+      };
+
       const existingBrand = await this.brandModel.findOne({
         where: {
           id: createServiceDto.brand_id,
         },
       });
+
       if (!existingBrand) {
-        return new NotFoundException('Brand not found ');
-      }
+        return new NotFoundException('Brand not found');
+      };
+
       const existingLocation = await this.locationModel.findOne({
         where: {
           id: createServiceDto.location_id,
         },
       });
+
       if (!existingLocation) {
         return new NotFoundException('item not found ');
-      }
+      };
+
       const existingCategory = await this.categoryModel.findOne({
         where: {
           id: createServiceDto.category_id,
         },
       });
+
       if (!existingCategory) {
         return new NotFoundException('Category not found ');
       }
@@ -82,18 +89,21 @@ export class ServiceRepository implements IService {
           const uploadResult = await this.cloudinaryService.uploadFile(
             createServiceDto.image,
           );
+
           if (!uploadResult) {
             console.log('error upload image pet');
             return new InternalServerErrorException();
-          }
+          };
+
           imageUrl = uploadResult.secure_url;
         } catch (error) {
           console.log('error from upload', error);
-          return new InternalServerErrorException();
-        }
+          return new InternalServerErrorException(error.message);
+        };
       } else {
         return new NotFoundException('not have images');
-      }
+      };
+
       const new_item = await this.serviceModel.create({
         service_name: createServiceDto.service_name,
         service_description: createServiceDto.service_description,
@@ -107,10 +117,11 @@ export class ServiceRepository implements IService {
         createAt: new Date(),
         updateAt: new Date(),
       });
+
       return new_item;
     } catch (error) {
       console.log('error', error);
-      throw new InternalServerErrorException('Error create item', error);
+      throw new InternalServerErrorException(error.message);
     };
   };
 

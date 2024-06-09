@@ -29,7 +29,7 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
             timestamp: new Date().toISOString(),
             path: request.url,
             response: '' || {},
-        }
+        };
 
         if (exception instanceof HttpException) {
             myResponseObj.statusCode = exception.getStatus()
@@ -37,14 +37,14 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
         } else {
             myResponseObj.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
             myResponseObj.response = 'Internal Server Error'
-        }
+        };
 
         response 
             .status(myResponseObj.statusCode) 
             .json(myResponseObj)
 
-        this.logger.error(myResponseObj.response, AllExceptionsFilter.name)
+        this.logger.error(myResponseObj.response, AllExceptionsFilter.name);
 
-        super.catch(exception, host)
+        super.catch(exception, host);
     };
 };
