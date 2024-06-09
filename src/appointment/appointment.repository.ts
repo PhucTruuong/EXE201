@@ -35,17 +35,22 @@ export class AppointmentRepository implements IAppointment {
     | ConflictException
   > {
     try {
-      const existPet = await this.petModel.findOne({
-        where: { id: createAppointmentDto.pet_id },
-      });
+      console.log('createAppointmentDto', createAppointmentDto);
+
+      const promises = [
+        this.petModel.findOne({
+          where: { id: createAppointmentDto.pet_id },
+        }),
+        this.serviceModel.findOne({
+          where: { id: createAppointmentDto.service_id },
+        }),
+      ];
+      
+      const [existPet, existService] = await Promise.all(promises);
 
       if (!existPet) {
         return new NotFoundException('Pet Not Found!');
       };
-
-      const existService = await this.serviceModel.findOne({
-        where: { id: createAppointmentDto.service_id },
-      });
 
       if (!existService) {
         return new NotFoundException('Service not found!');
@@ -57,6 +62,7 @@ export class AppointmentRepository implements IAppointment {
         appointment_date: createAppointmentDto.appointment_date,
         appointment_time: createAppointmentDto.appointment_time,
       });
+      
       return appointment;
     } catch (error) {
       console.log(error);
