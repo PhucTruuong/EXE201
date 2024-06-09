@@ -57,7 +57,7 @@ export class AppointmentController {
   })
   async create(
     @Body() createAppointmentDto: CreateAppointmentDto,
-    @Res() res: Response,
+    //@Res() res: Response,
   ) {
     const item = await this.appointmentService.create(createAppointmentDto);
     if (
@@ -73,7 +73,7 @@ export class AppointmentController {
         HttpException
       );
     } else {
-      sendSuccessResponse(res, HttpStatusCodes.CREATED, item);
+      return item;
     };
   };
 

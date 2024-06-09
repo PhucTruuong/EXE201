@@ -14,6 +14,7 @@ import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { Pet } from 'src/database/dabaseModels/pet.entity';
 import { Service } from 'src/database/dabaseModels/service.entity';
 import { RequestWithUser } from 'src/interface/request-interface';
+//import { Sequelize } from 'sequelize-typescript';
 
 export class AppointmentRepository implements IAppointment {
   constructor(
@@ -35,17 +36,20 @@ export class AppointmentRepository implements IAppointment {
     | ConflictException
   > {
     try {
-      console.log('createAppointmentDto', createAppointmentDto);
+      console.log('createAppointmentDto: ', createAppointmentDto);
+
+      const dateOnly = new Date(createAppointmentDto.appointment_date).toISOString().split('T')[0];
 
       const promises = [
         this.petModel.findOne({
           where: { id: createAppointmentDto.pet_id },
         }),
+
         this.serviceModel.findOne({
           where: { id: createAppointmentDto.service_id },
         }),
       ];
-      
+
       const [existPet, existService] = await Promise.all(promises);
 
       if (!existPet) {
@@ -56,17 +60,40 @@ export class AppointmentRepository implements IAppointment {
         return new NotFoundException('Service not found!');
       };
 
+      const existedAppointment = await this.appointmentModel.sequelize.query(
+        `
+          SELECT * FROM petcare_appointment
+          WHERE date_trunc('day', appointment_date) = ?
+          AND appointment_time = ?
+          AND service_id = ?
+        `,
+        {
+          replacements: [
+            dateOnly, 
+            createAppointmentDto.appointment_time,
+            createAppointmentDto.service_id,
+          ],
+        }
+      );
+
+      console.log('Existed appointment: ', existedAppointment[0]);
+
+      if (existedAppointment[0].length > 0) {
+        console.log('There has been already an appointment at this slot!');
+        return new ConflictException('There has been already an appointment at this slot!');
+      };
+
       const appointment = await this.appointmentModel.create({
         pet_id: createAppointmentDto.pet_id,
         service_id: createAppointmentDto.service_id,
         appointment_date: createAppointmentDto.appointment_date,
         appointment_time: createAppointmentDto.appointment_time,
       });
-      
+
       return appointment;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error create appointment', error);
+      return new InternalServerErrorException(error.message);
     };
   };
 
