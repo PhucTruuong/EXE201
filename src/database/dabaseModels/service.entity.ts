@@ -19,6 +19,7 @@ export class Service extends Model {
     defaultValue: DataType.UUIDV4,
   })
   id: string;
+
   @BelongsTo(() => Brand)
   brand: Brand;
   @ForeignKey(() => Brand)
@@ -27,6 +28,7 @@ export class Service extends Model {
     allowNull: false,
   })
   brand_id: string;
+
   @BelongsTo(() => Category)
   category: Category;
   @ForeignKey(() => Category)
@@ -35,6 +37,7 @@ export class Service extends Model {
     allowNull: false,
   })
   category_id: string;
+
   @BelongsTo(() => Location)
   location: Location;
   @ForeignKey(() => Location)
@@ -55,11 +58,13 @@ export class Service extends Model {
     allowNull: true,
   })
   service_description: string;
+
   @Column({
     type: DataType.FLOAT,
     allowNull: false,
   })
   price: number;
+
   @Column({
     type: DataType.TIME,
     allowNull: false,
@@ -75,7 +80,7 @@ export class Service extends Model {
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true, // Default status is true
+    defaultValue: false, // Default status is false
   })
   status: boolean;
 
@@ -92,11 +97,13 @@ export class Service extends Model {
     defaultValue: DataType.NOW, // Set current date as default
   })
   updated_at: Date;
+
   @Column({
     type: DataType.STRING,
     allowNull: true,
   })
   image: string;
+
   @ForeignKey(() => User)
   @Column({
     type: DataType.UUID,
@@ -109,7 +116,4 @@ export class Service extends Model {
 
   @HasMany(() => Appointment, { foreignKey: 'service_id' })
   appointments: Appointment[];
-
-
-
 }

@@ -40,12 +40,35 @@ export class ServiceRepository implements IService {
     | ConflictException
     | NotFoundException
   > {
+    console.log('createServiceDto', createServiceDto);
     try {
-      const existing = await this.serviceModel.findOne({
-        where: {
-          service_name: createServiceDto.service_name,
-        },
-      });
+      const promises = [
+        this.serviceModel.findOne({
+          where: {
+            service_name: createServiceDto.service_name,
+          },
+        }),
+
+        this.brandModel.findOne({
+          where: {
+            id: createServiceDto.brand_id,
+          },
+        }),
+
+        this.locationModel.findOne({
+          where: {
+            id: createServiceDto.location_id,
+          },
+        }),
+
+        this.categoryModel.findOne({
+          where: {
+            id: createServiceDto.category_id,
+          },
+        })
+      ];
+
+      const [existing, existingBrand, existingLocation, existingCategory] = await Promise.all(promises);
 
       if (existing) {
         return new ConflictException(
@@ -53,35 +76,17 @@ export class ServiceRepository implements IService {
         );
       };
 
-      const existingBrand = await this.brandModel.findOne({
-        where: {
-          id: createServiceDto.brand_id,
-        },
-      });
-
       if (!existingBrand) {
         return new NotFoundException('Brand not found');
       };
 
-      const existingLocation = await this.locationModel.findOne({
-        where: {
-          id: createServiceDto.location_id,
-        },
-      });
-
       if (!existingLocation) {
-        return new NotFoundException('item not found ');
+        return new NotFoundException('Item not found');
       };
-
-      const existingCategory = await this.categoryModel.findOne({
-        where: {
-          id: createServiceDto.category_id,
-        },
-      });
 
       if (!existingCategory) {
         return new NotFoundException('Category not found ');
-      }
+      };
 
       let imageUrl = null;
       if (createServiceDto.image) {
@@ -101,14 +106,15 @@ export class ServiceRepository implements IService {
           return new InternalServerErrorException(error.message);
         };
       } else {
-        return new NotFoundException('not have images');
+        return new NotFoundException('There is no image');
       };
 
       const new_item = await this.serviceModel.create({
         service_name: createServiceDto.service_name,
         service_description: createServiceDto.service_description,
-        startTime: createServiceDto.startTime,
-        endTime: createServiceDto.endTime,
+        price: createServiceDto.service_price,
+        starttime: createServiceDto.startTime,
+        endtime: createServiceDto.endTime,
         brand_id: createServiceDto.brand_id,
         category_id: createServiceDto.category_id,
         location_id: createServiceDto.location_id,
@@ -295,43 +301,92 @@ export class ServiceRepository implements IService {
   public async update(
     id: string,
     updateServiceDto: UpdateServiceDto,
-  ): Promise<
-    object | InternalServerErrorException | NotFoundException | HttpException
-  > {
+  ): Promise<object | InternalServerErrorException | NotFoundException | HttpException> {
     try {
-      const item = await this.serviceModel.findOne({
+      const existedService = await this.serviceModel.findOne({
         where: { id: id },
       });
-      if (!item) {
-        throw new NotFoundException('item  not found');
+
+      if (!existedService) {
+        return new NotFoundException('Service not found');
       }
-      const duplicateName = await this.serviceModel.findOne({
-        where: {
-          service_name: updateServiceDto.service_name,
-        },
+
+      if (
+        !updateServiceDto.service_name &&
+        !updateServiceDto.service_description &&
+        !updateServiceDto.startTime &&
+        !updateServiceDto.endTime &&
+        !updateServiceDto.brand_id &&
+        !updateServiceDto.category_id &&
+        !updateServiceDto.location_id
+      ) {
+        return new BadRequestException('Please provide data to update');
+      }
+
+      const updateObject = {};
+
+      if (updateServiceDto.service_name) {
+        const duplicateName = await this.serviceModel.findOne({
+          where: { service_name: updateServiceDto.service_name },
+        });
+        if (duplicateName) {
+          throw new ConflictException('Duplicate name!');
+        }
+        updateObject['service_name'] = updateServiceDto.service_name;
+      };
+
+      if (updateServiceDto.brand_id) {
+        const existedBrand = await this.brandModel.findOne({
+          where: { id: updateServiceDto.brand_id },
+        });
+        if (!existedBrand) {
+          throw new NotFoundException('Brand not found');
+        }
+        updateObject['brand_id'] = updateServiceDto.brand_id;
+      };
+
+      if (updateServiceDto.category_id) {
+        const existedCategory = await this.categoryModel.findOne({
+          where: { id: updateServiceDto.category_id },
+        });
+        if (!existedCategory) {
+          throw new NotFoundException('Category not found');
+        }
+        updateObject['category_id'] = updateServiceDto.category_id;
+      };
+
+      if (updateServiceDto.location_id) {
+        const existedLocation = await this.locationModel.findOne({
+          where: { id: updateServiceDto.location_id },
+        });
+        if (!existedLocation) {
+          throw new NotFoundException('Location not found');
+        }
+        updateObject['location_id'] = updateServiceDto.location_id;
+      };
+
+      if (updateServiceDto.service_description) {
+        updateObject['service_description'] = updateServiceDto.service_description;
+      };
+
+      if (updateServiceDto.startTime) {
+        updateObject['starttime'] = updateServiceDto.startTime;
+      };
+
+      if (updateServiceDto.endTime) {
+        updateObject['endtime'] = updateServiceDto.endTime;
+      };
+
+      updateObject['updatedAt'] = new Date();
+
+      await this.serviceModel.update(updateObject, {
+        where: { id: id },
       });
-      if (duplicateName) {
-        throw new ConflictException('Duplicate  name!');
-      }
-      const updated = await this.serviceModel.update(
-        {
-          service_name: updateServiceDto.service_name,
-          service_description: updateServiceDto.service_description,
-          startTime: updateServiceDto.startTime,
-          endTime: updateServiceDto.endTime,
-          brand_id: updateServiceDto.brand_id,
-          category_id: updateServiceDto.category_id,
-          location_id: updateServiceDto.location_id,
-          updateAt: new Date(),
-        },
-        {
-          where: { id: id },
-        },
-      );
-      return updated;
+
+      return { message: 'Service updated successfully' };
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error update item ', error);
+      throw new InternalServerErrorException(error.message);
     };
   };
 
