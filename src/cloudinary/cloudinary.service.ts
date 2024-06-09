@@ -25,9 +25,10 @@ export class CloudinaryService {
         reject(new Error('File or buffer is missing.'));
       }
     });
-  }
+  };
+
   uploadMultipleFiles(files: Express.Multer.File[]): Promise<CloudinaryResponse[]> {
     const uploadPromises = files.map(file => this.uploadFile(file));
     return Promise.all(uploadPromises);
-  }
+  };
 }

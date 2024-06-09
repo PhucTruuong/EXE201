@@ -345,8 +345,9 @@ export class PetRepository implements IPet {
         } catch (error) {
           console.error('Image upload error:', error);
           return new InternalServerErrorException('Upload failed');
-        }
-      }
+        };
+      };
+
       const PetUpdated = await this.petModel.update(
         {
           pet_name: updatePetDto.pet_name,
@@ -362,6 +363,7 @@ export class PetRepository implements IPet {
           where: { id: id },
         },
       );
+
       return PetUpdated;
     } catch (error) {
       console.log(error);
@@ -385,7 +387,7 @@ export class PetRepository implements IPet {
         where: { id: id },
       });
       return {
-        message: 'pet  deleted successfully',
+        message: 'Pet deleted successfully!',
       };
     } catch (error) {
       console.log(error);

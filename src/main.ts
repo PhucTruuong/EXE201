@@ -63,6 +63,9 @@ async function bootstrap() {
       forbidNonWhitelisted: true, // Ensure non-whitelisted properties are rejected
       transform: true,
       skipMissingProperties: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
 
