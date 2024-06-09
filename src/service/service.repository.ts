@@ -198,6 +198,7 @@ export class ServiceRepository implements IService {
           'service_description',
           'starttime',
           'endtime',
+          'price',
           'image',
           'status',
           'created_at',
