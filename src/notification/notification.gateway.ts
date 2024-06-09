@@ -47,7 +47,7 @@ export class NotificationGateWay
     this.logger.log('Web socket initialization successfully');
   }
 
-  async handleConnection(client: Socket) {
+  public async handleConnection(client: Socket) {
     try {
       const authHeader = client.handshake.headers.authorization;
       if (authHeader && (authHeader as string).split(' ')[1]) {
@@ -75,8 +75,8 @@ export class NotificationGateWay
       console.log('error');
       client.emit('unauthorized', 'You are not authenticated');
       client.disconnect();
-    }
-  }
+    };
+  };
 
   handleDisconnect(client: Socket) {
     let disconnectedUserId: string | null = null;
@@ -90,10 +90,10 @@ export class NotificationGateWay
       this.socketMap.delete(disconnectedUserId);
       this.logger.log(`WS Client with id :: ${client.id} disconnected`);
       this.logger.debug(`Number of connected sockets:: ${this.socketMap.size}`);
-    }
-  }
+    };
+  };
 
-  async emitDemoNotification(
+  public async emitDemoNotification(
     userId: string,
     notification: CreateNotificationDto,
   ) {
@@ -106,12 +106,12 @@ export class NotificationGateWay
         .emit('notifications-user', notificationUser);
     } else {
       console.log('user is not online');
-    }
-  }
+    };
+  };
 
   @UseGuards(WsJwtGuard)
   @SubscribeMessage('notifications-lists')
-  async emitListNotifications(@Req() req :RequestWithUser) {
+  public async emitListNotifications(@Req() req :RequestWithUser) {
     const socketMeta = this.socketMap.get(req.user.userId);
     const notifications = await this.notificationServices.find(
       socketMeta.userId,
@@ -122,11 +122,11 @@ export class NotificationGateWay
         .emit('notifications-lists', notifications);
     } else {
       console.log('user is not online');
-    }
-  }
+    };
+  };
   //update for me
   @SubscribeMessage('update-notification')
-  async handleUpdateNotification(@MessageBody() data: { id: string }) {
+  public async handleUpdateNotification(@MessageBody() data: { id: string }) {
     try {
       const updatedNotification = await this.notificationServices.update(
         data.id,
@@ -138,6 +138,6 @@ export class NotificationGateWay
         event: 'update-notification-error',
         data: 'Failed to update notification',
       };
-    }
-  }
-}
+    };
+  };
+};
