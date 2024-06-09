@@ -15,4 +15,4 @@ export class CreateBookingDto {
         description: "date which book a appointment"
     })
     booking_date: Date;
-}
+};
