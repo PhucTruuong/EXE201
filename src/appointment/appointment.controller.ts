@@ -39,10 +39,11 @@ import { JwtCustomerGuard } from 'src/auth/guard/jwt-customer.guard';
 import { sendSuccessResponse } from 'src/constants/sendSucessResponse';
 import HttpStatusCodes from 'src/constants/HttpStatusCodes';
 import { Response } from 'express';
+import { JwtHostGuard } from 'src/auth/guard/jwt-service.guard';
 @ApiTags('Appointments')
 @Controller('api/v1/appointment')
 export class AppointmentController {
-  constructor(private readonly appointmentService: AppointmentService) {};
+  constructor(private readonly appointmentService: AppointmentService) { };
 
   @Post('/')
   @UseGuards(JwtAuthGuard)
@@ -102,9 +103,9 @@ export class AppointmentController {
       return item as HttpException | InternalServerErrorException;
     } else {
       const { data, totalCount } = item;
-      standardParam.setPaginationInfo({ 
+      standardParam.setPaginationInfo({
         count: totalCount,
-        limit: data.length, 
+        limit: data.length,
       });
       return data;
     }
@@ -131,12 +132,12 @@ export class AppointmentController {
         HttpException
       );
     } else {
-     return sendSuccessResponse(res, HttpStatusCodes.OK, item);
-    }
-  }
+      return sendSuccessResponse(res, HttpStatusCodes.OK, item);
+    };
+  };
 
   @Patch(':id')
-  @UseGuards(JwtAdminGuard)
+  @UseGuards(JwtHostGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'update  appointments' })
   @ApiResponse({
@@ -164,12 +165,12 @@ export class AppointmentController {
         NotFoundException
       );
     } else {
-      return sendSuccessResponse(res,HttpStatusCodes.OK,item);
+      return sendSuccessResponse(res, HttpStatusCodes.OK, item);
     }
   }
 
   @Delete(':id')
-  @UseGuards(JwtAdminGuard)
+  @UseGuards(JwtHostGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'delete  appointments' })
   @ApiResponse({
@@ -192,7 +193,8 @@ export class AppointmentController {
     } else {
       return item;
     }
-  }
+  };
+
   @Get('/me/appointments')
   @UseGuards(JwtCustomerGuard)
   @ApiBearerAuth('JWT-auth')
@@ -208,4 +210,6 @@ export class AppointmentController {
     }
     return item;
   }
-}
+};
+
+

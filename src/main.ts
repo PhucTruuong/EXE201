@@ -71,11 +71,10 @@ async function bootstrap() {
 
   const whitelist = [
     'http://localhost:5173',
-    'http://localhost:443',
-    'http://localhost:8081',
+    'http://localhost:8000',
     'https://api.fureverfriend.id.vn',
     'https://fureverfriend.id.vn',
-    'http://localhost:8000',
+    'http://localhost:8081'
   ];
 
   app.enableCors({

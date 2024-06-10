@@ -36,7 +36,7 @@ export class ServiceService {
     return this.serviceRepository.findOne(id);
   };
 
-  public async update(id: string, updateServiceDto: UpdateServiceDto): Promise<
+  public async update(id: string, updateServiceDto: UpdateServiceDto & { image: Express.Multer.File }): Promise<
     object | InternalServerErrorException | NotFoundException | HttpException
   > {
     return this.serviceRepository.update(id, updateServiceDto);

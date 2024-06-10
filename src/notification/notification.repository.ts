@@ -11,8 +11,9 @@ export class NotificationRepository implements INotification {
   constructor(
     @Inject('NOTIFICATION_REPOSITORY')
     private readonly notificationModel: typeof Notification,
-  ) {}
-  create(
+  ) {};
+
+  public async create(
     createINotificationDto: CreateNotificationDto,
   ): Promise<object | InternalServerErrorException | NotFoundException> {
     try {
@@ -24,13 +25,15 @@ export class NotificationRepository implements INotification {
         read: false,
         user_id: createINotificationDto.user_id,
       });
+      
       return notification;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error creating notification');
-    }
-  }
-  find(userId: string): Promise<object | InternalServerErrorException> {
+      throw new InternalServerErrorException(error.message);
+    };
+  };
+
+  public async find(userId: string): Promise<object | InternalServerErrorException> {
     try {
       const notifications = this.notificationModel.findAll({
         where: { user_id: userId },
@@ -38,10 +41,11 @@ export class NotificationRepository implements INotification {
       return notifications;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error creating notification');
-    }
-  }
-  async update(id: string): Promise<object | InternalServerErrorException> {
+      throw new InternalServerErrorException(error.message);
+    };
+  };
+
+  public async update(id: string): Promise<object | InternalServerErrorException> {
     try {
       const notification = await this.notificationModel.findOne({
         where: { id: id },
@@ -54,7 +58,7 @@ export class NotificationRepository implements INotification {
       return notification;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error creating notification');
-    }
-  }
-}
+      throw new InternalServerErrorException(error.message);
+    };
+  };
+};

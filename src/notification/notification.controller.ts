@@ -11,11 +11,10 @@ export class NotificationController {
   @Post()
   create(@Body() createNotificationDto: CreateNotificationDto) {
     return this.notificationService.create(createNotificationDto);
-  }
+  };
 
   @Get(':userId')
   findAll(@Param('userId') userId : string) {
     return this.notificationService.find(userId);
-  }
-
+  };
 }

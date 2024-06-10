@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { 
-    IsNotEmpty, 
+    //IsNotEmpty, 
     IsNumber, 
     IsString, 
     IsUUID, 
@@ -9,13 +9,13 @@ import {
 
 export class UpdateServiceDto {
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     @IsUUID()
     @ApiProperty({
         default: "uuid",
         example: "dfb35e40-2749-451d-8ffd-204b8100f351",
         description: "id of brand",
-        required: true
+        required: false
     })
     brand_id: string;
 
@@ -71,7 +71,7 @@ export class UpdateServiceDto {
     service_price: number;
 
     @IsOptional()
-    @IsNotEmpty()
+    @IsOptional()
     @ApiProperty({
         default: "10:00:00",
         example: "10:00:00",
