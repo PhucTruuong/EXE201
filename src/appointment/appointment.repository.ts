@@ -230,18 +230,22 @@ export class AppointmentRepository implements IAppointment {
       const pets = await this.petModel.findAll({
         where: { user_id: req.user.userId },
       });
+
       console.log('pets fopund', pets);
       if (!pets || pets.length === 0) {
         return new NotFoundException('User not found');
-      }
+      };
+
       const petIds = pets.map((pet) => pet.id);
       console.log('petIds', petIds);
       const appointments = await this.appointmentModel.findAll({
         where: { pet_id: petIds },
       });
+      
       if (!appointments) {
         return new NotFoundException('Not have any appointments');
-      }
+      };
+
       return appointments;
     } catch (error) {
       console.log(error);
@@ -307,4 +311,33 @@ export class AppointmentRepository implements IAppointment {
       throw new InternalServerErrorException('Error delete one item ', error);
     };
   };
+
+  public async acceptAppointment(appointment_id: string): Promise<object | InternalServerErrorException | NotFoundException | HttpException> {
+    try {
+      const appointment = await this.appointmentModel.findOne({
+        where: { 
+          id: appointment_id,
+        },
+      });
+
+      if (!appointment) {
+        throw new NotFoundException('There is no pending appointment!');
+      };
+
+      const updated = await this.appointmentModel.update(
+        {
+          status: 'accepted',
+          updateAt: new Date(),
+        },
+        {
+          where: { id: appointment.id },
+        },
+      );
+
+      return updated;
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Error update item ', error);
+    };
+  }
 };

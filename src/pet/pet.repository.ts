@@ -167,7 +167,7 @@ export class PetRepository implements IPet {
 
         await this.notificationGateway.emitDemoNotification(req.user.userId, {
           user_id: req.user.userId,
-          title: 'New Feedback Created',
+          title: 'New Pet Created',
           description: `You have create a new pet profile <..>`,
           type: 'info',
         });

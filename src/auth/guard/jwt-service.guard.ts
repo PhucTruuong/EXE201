@@ -13,13 +13,13 @@ export class JwtHostGuard extends AuthGuard('jwt'){
         //1
         if (err || !user) {
             throw err || new UnauthorizedException();
-
-        }
+        };
+        
         console.log("user", user);
         // change to service id 
         if (user.role === "host") {
             return user;
-        }
+        };
         throw err || new UnauthorizedException();
-    }
-}
+    };
+};

@@ -171,6 +171,7 @@ export class ServiceRepository implements IService {
               attributes: ['id', 'category_name', 'category_description', 'image'],
             },
           ],
+          order: [['created_at', 'DESC']],
         });
         if (!allItem) {
           return new NotFoundException();
@@ -300,9 +301,10 @@ export class ServiceRepository implements IService {
 
   public async update(
     id: string,
-    updateServiceDto: UpdateServiceDto,
+    updateServiceDto: UpdateServiceDto & { image: Express.Multer.File },
   ): Promise<object | InternalServerErrorException | NotFoundException | HttpException> {
     try {
+      console.log('updateServiceDto', updateServiceDto);
       const existedService = await this.serviceModel.findOne({
         where: { id: id },
       });
@@ -316,12 +318,14 @@ export class ServiceRepository implements IService {
         !updateServiceDto.service_description &&
         !updateServiceDto.startTime &&
         !updateServiceDto.endTime &&
+        !updateServiceDto.service_price &&
         !updateServiceDto.brand_id &&
         !updateServiceDto.category_id &&
-        !updateServiceDto.location_id
+        !updateServiceDto.location_id && 
+        !updateServiceDto.image
       ) {
         return new BadRequestException('Please provide data to update');
-      }
+      };
 
       const updateObject = {};
 
@@ -369,6 +373,10 @@ export class ServiceRepository implements IService {
         updateObject['service_description'] = updateServiceDto.service_description;
       };
 
+      if (updateServiceDto.service_price) {
+        updateObject['price'] = updateServiceDto.service_price;
+      };
+
       if (updateServiceDto.startTime) {
         updateObject['starttime'] = updateServiceDto.startTime;
       };
@@ -376,6 +384,26 @@ export class ServiceRepository implements IService {
       if (updateServiceDto.endTime) {
         updateObject['endtime'] = updateServiceDto.endTime;
       };
+
+      let imageUrl = null;
+      if (updateServiceDto.image) {
+        try {
+          const uploadResult = await this.cloudinaryService.uploadFile(
+            updateServiceDto.image,
+          );
+
+          if (!uploadResult) {
+            console.log('error upload image pet');
+            return new InternalServerErrorException();
+          };
+
+          imageUrl = uploadResult.secure_url;
+          updateObject['image'] = imageUrl;
+        } catch (error) {
+          console.log('error from upload', error);
+          return new InternalServerErrorException(error.message);
+        };
+      }
 
       updateObject['updatedAt'] = new Date();
 

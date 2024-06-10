@@ -26,7 +26,13 @@ export interface socketMetaPayLoad extends PayloadType {
   namespace: 'api/v1/notification',
   // transports: ['websocket'],
   cors: {
-    origin: '*', // Allow all origins
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:8081',
+      'https://api.fureverfriend.id.vn',
+      'https://fureverfriend.id.vn',
+      'http://localhost:8000'
+    ], 
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   },
   crossOriginIsolated: true,
@@ -43,16 +49,17 @@ export class NotificationGateWay
   @WebSocketServer() io: Server;
   // server: Server;
   socketMap = new Map<string, socketMetaPayLoad>();
+
   afterInit(): void {
     this.logger.log('Web socket initialization successfully');
-  }
+  };
 
   public async handleConnection(client: Socket) {
     try {
       const authHeader = client.handshake.headers.authorization;
       if (authHeader && (authHeader as string).split(' ')[1]) {
         console.log(authHeader);
-      }
+      };
       const token = (authHeader as string).split(' ')[1];
       const payload = (await this.jwtService.verify(token, {
         secret: 'jwt-secret_nam_vip_pro',
@@ -78,7 +85,7 @@ export class NotificationGateWay
     };
   };
 
-  handleDisconnect(client: Socket) {
+  public handleDisconnect(client: Socket) {
     let disconnectedUserId: string | null = null;
     this.socketMap.forEach((value, key) => {
       if (value.socketId === client.id) {
@@ -124,6 +131,7 @@ export class NotificationGateWay
       console.log('user is not online');
     };
   };
+
   //update for me
   @SubscribeMessage('update-notification')
   public async handleUpdateNotification(@MessageBody() data: { id: string }) {
@@ -141,3 +149,4 @@ export class NotificationGateWay
     };
   };
 };
+// thằng host tạo, gửi noti cho thằng admin

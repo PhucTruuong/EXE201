@@ -45,7 +45,7 @@ export class ServiceController {
   };
 
   @Get('')
-  //@UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtHostGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'List all  Service' })
   @ApiResponse({
@@ -68,7 +68,7 @@ export class ServiceController {
     } else {
       const { data, totalCount } = item;
       standardParam.setPaginationInfo({
-        count: totalCount, 
+        count: totalCount,
         limit: data.length
       });
       return data;
@@ -93,7 +93,7 @@ export class ServiceController {
     } else {
       return item;
     }
-  }
+  };
 
   @Patch(':id')
   @UseGuards(JwtHostGuard, JwtAdminServiceGuard)
@@ -103,13 +103,18 @@ export class ServiceController {
     status: 200,
     description: 'It will update  Service in the response',
   })
-  async update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) {
-    const item = await this.serviceService.update(id, updateServiceDto)
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('image'))
+  async update(
+    @Param('id') service_id: string,
+    @Body() updateServiceDto: UpdateServiceDto,
+    @UploadedFile() image: Express.Multer.File
+  ) {
+    const item = await this.serviceService.update(service_id, { ...updateServiceDto, image });
 
     if (item instanceof InternalServerErrorException
       || item instanceof NotFoundException
       || item instanceof HttpException
-
     ) {
       return item as InternalServerErrorException || HttpException || NotFoundException;
     } else {
@@ -137,5 +142,5 @@ export class ServiceController {
     } else {
       return item;
     }
-  }
-}
+  };
+};
