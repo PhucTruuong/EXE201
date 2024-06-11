@@ -79,7 +79,8 @@ export class PetService {
     | NotFoundException
   > {
     return this.petRepository.findAllPetByUser(req, pagination);
-  }
+  };
+
   public async createPetMobile(
     createPetDto: CreatePetMobileDto,
 
@@ -92,5 +93,5 @@ export class PetService {
     | NotFoundException
   > {
     return this.petRepository.createPetMobile(createPetDto, req);
-  }
-}
+  };
+};

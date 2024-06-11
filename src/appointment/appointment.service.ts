@@ -36,4 +36,19 @@ export class AppointmentService {
   public async findByUser(req: RequestWithUser): Promise<object | InternalServerErrorException | NotFoundException> {
     return this.appointmentRepository.findByUser(req)
   };
+
+  public async confirmAppointment(appointment_id: string): Promise<
+    object | InternalServerErrorException | NotFoundException
+  > {
+    return this.appointmentRepository.confirmAppointment(appointment_id)
+  };
+
+  public async getHostAppointments(req: RequestWithUser, pagination: AppointmentPagination): Promise<
+    {
+      data: object[],
+      totalCount: number
+    } | InternalServerErrorException | NotFoundException
+  > {
+    return this.appointmentRepository.getHostAppointments(req, pagination);
+  };
 }
