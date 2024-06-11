@@ -40,13 +40,14 @@ import { sendSuccessResponse } from 'src/constants/sendSucessResponse';
 import HttpStatusCodes from 'src/constants/HttpStatusCodes';
 import { Response } from 'express';
 import { JwtHostGuard } from 'src/auth/guard/jwt-service.guard';
+
 @ApiTags('Appointments')
-@Controller('api/v1/appointment')
+@Controller('api')
 export class AppointmentController {
   constructor(private readonly appointmentService: AppointmentService) { };
 
-  @Post('/')
-  @UseGuards(JwtAuthGuard)
+  @Post('/v1/appointment')
+  @UseGuards(JwtCustomerGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new appointment' })
   @ApiResponse({
@@ -78,7 +79,7 @@ export class AppointmentController {
     };
   };
 
-  @Get('/')
+  @Get('/v1/appointment')
   @UseGuards(JwtAdminGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'List all  appointments' })
@@ -95,6 +96,7 @@ export class AppointmentController {
     @StandardParam() standardParam: StandardParams,
   ) {
     const item = await this.appointmentService.find(pagination);
+    console.log("item: ", item);
     if (
       item instanceof InternalServerErrorException ||
       item instanceof HttpException ||
@@ -108,10 +110,10 @@ export class AppointmentController {
         limit: data.length,
       });
       return data;
-    }
-  }
+    };
+  };
 
-  @Get(':id')
+  @Get('/v1/appointment/:id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'List details  appointments' })
@@ -136,7 +138,7 @@ export class AppointmentController {
     };
   };
 
-  @Patch(':id')
+  @Patch('/v1/appointment/:id')
   @UseGuards(JwtHostGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'update  appointments' })
@@ -166,10 +168,10 @@ export class AppointmentController {
       );
     } else {
       return sendSuccessResponse(res, HttpStatusCodes.OK, item);
-    }
-  }
+    };
+  };
 
-  @Delete(':id')
+  @Delete('/v1/appointment/:id')
   @UseGuards(JwtHostGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'delete  appointments' })
@@ -195,7 +197,7 @@ export class AppointmentController {
     }
   };
 
-  @Get('/me/appointments')
+  @Get('/v1/appointment/my-appointments')
   @UseGuards(JwtCustomerGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'get appointment by user' })
@@ -209,7 +211,57 @@ export class AppointmentController {
       return (item as InternalServerErrorException) || NotFoundException;
     }
     return item;
-  }
+  };
+
+  @Get('/v2/appointment/my-appointments')
+  @UseGuards(JwtHostGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Host get the appointments of them' })
+  @ApiResponse({
+    status: 200,
+    description: 'It will get all appointment by user in the response',
+  })
+  @StandardResponse({
+    isPaginated: true,
+    defaultLimit: 100,
+  })
+  async getAppointmentOfHost(
+    @Req() req: RequestWithUser,
+    @Query() pagination: AppointmentPagination,
+    @StandardParam() standardParam: StandardParams,
+  ) {
+    const item = await this.appointmentService.getHostAppointments(req, pagination);
+
+    if (
+      item instanceof InternalServerErrorException ||
+      item instanceof HttpException ||
+      item instanceof BadRequestException ||
+      item instanceof NotFoundException
+    ) {
+      return item as HttpException | InternalServerErrorException | BadRequestException | NotFoundException;
+    } else {
+      const { data, totalCount } = item;
+      standardParam.setPaginationInfo({
+        count: totalCount,
+        limit: data.length,
+      });
+      return data;
+    };
+  };
+
+  @Patch('/v1/appointment/confirmation/:id')
+  @UseGuards(JwtHostGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Host confirms an appointment of a customer' })
+  @ApiResponse({
+    status: 200,
+    description: 'It will confirm appointment in the response',
+  })
+  async confirmAppointment(@Param('id') appointment_id: string) {
+    const item = await this.appointmentService.confirmAppointment(appointment_id);
+    if (item instanceof InternalServerErrorException || NotFoundException || ConflictException) {
+      return (item as InternalServerErrorException) || NotFoundException || ConflictException;
+    }
+    return item;
+  };
 };
-
-

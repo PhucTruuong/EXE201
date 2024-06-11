@@ -43,7 +43,7 @@ export class BookingRepository implements IBooking {
   > {
     try {
       const existAppointment = await this.appointmentModel.findOne({
-        where: { id: createBookingDto.appointment_id },
+        where: { appointment_id: createBookingDto.appointment_id },
         include: {
           model: this.serviceModel,
           as: 'service',

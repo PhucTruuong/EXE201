@@ -16,15 +16,17 @@ import { Booking } from './booking.entity';
   timestamps: false,
   freezeTableName: true,
 })
+
 export class Appointment extends Model {
   @Column({
+    field: 'id',
     type: DataType.UUID,
     primaryKey: true,
     allowNull: false,
     unique: true,
     defaultValue: DataType.UUIDV4,
   })
-  id: string;
+  appointment_id: string;
 
   @ForeignKey(() => Pet)
   @Column({
@@ -61,7 +63,7 @@ export class Appointment extends Model {
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true, // Default status is true
+    defaultValue: false, // Default status is false
   })
   status: boolean;
 
@@ -71,12 +73,14 @@ export class Appointment extends Model {
     defaultValue: DataType.NOW, // Set current date as default
   })
   created_at: Date;
+
   @Column({
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW, // Set current date as default
   })
   updated_at: Date;
+  
   @HasMany(() => Booking, { foreignKey: 'appointment_id' })
   bookings: Booking[];
 }

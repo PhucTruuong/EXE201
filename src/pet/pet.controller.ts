@@ -116,7 +116,7 @@ export class PetController {
   @Get('')
   @UseGuards(JwtAdminGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: '[ADMIN] List all  pet' })
+  @ApiOperation({ summary: '[ADMIN] List all pet' })
   @ApiResponse({
     status: 200,
     description: '[ADMIN] It will lits all new pet in the response',
@@ -166,8 +166,8 @@ export class PetController {
       );
     } else {
       return pet;
-    }
-  }
+    };
+  };
 
   @Patch(':id')
   @UseGuards(JwtCustomerGuard)
@@ -195,8 +195,8 @@ export class PetController {
       );
     } else {
       return pet;
-    }
-  }
+    };
+  };
 
   @Delete(':id')
   @UseGuards(JwtCustomerGuard)
@@ -221,8 +221,9 @@ export class PetController {
       );
     } else {
       return pet;
-    }
-  }
+    };
+  };
+
   @Get('me/pets')
   @UseGuards(JwtCustomerGuard)
   @ApiBearerAuth('JWT-auth')
@@ -240,6 +241,7 @@ export class PetController {
     @StandardParam() standardParam: StandardParams,
   ) {
     const allPet = await this.petService.findAllPetByUser(req, pagination);
+
     if (
       allPet instanceof InternalServerErrorException ||
       allPet instanceof HttpException
@@ -249,6 +251,6 @@ export class PetController {
       const { data, totalCount } = allPet;
       standardParam.setPaginationInfo({ count: totalCount });
       return data;
-    }
-  }
-}
+    };
+  };
+};
