@@ -238,6 +238,15 @@ export class AuthRepository implements IAuth {
   ): Promise<object | InternalServerErrorException | NotFoundException> {
     const existingUser = await this.userModel.findOne({
       where: { email: userInfo.email },
+      attributes: ['user_id', 'full_name', 'email', 'password_hashed', 'account_status'],
+      include: [
+        {
+          model: Role,
+          as: 'role',
+          attributes: ['role_name'],
+        },
+      ],
+
     });
     if (!existingUser) {
       const newUser = await this.userModel.create({
@@ -255,7 +264,7 @@ export class AuthRepository implements IAuth {
         email: newUser.email,
         userId: newUser.user_id,
         full_name: newUser.full_name,
-        role: newUser.role_id,
+        role: newUser.dataValues.role.role_name,
       }; // 1
 
       return {
@@ -263,7 +272,8 @@ export class AuthRepository implements IAuth {
           user_id: newUser.user_id,
           full_name: newUser.full_name,
           email: newUser.email,
-          role: newUser.role_id,
+          role: newUser.dataValues.role.role_name,
+
         },
         accessToken: this.jwtService.sign(payload),
       };
@@ -273,7 +283,8 @@ export class AuthRepository implements IAuth {
       email: existingUser.email,
       userId: existingUser.user_id,
       full_name: existingUser.full_name,
-      role: existingUser.role_id,
+      role: existingUser.dataValues.role.role_name,
+
     }; // 1
 
     return {
@@ -281,7 +292,7 @@ export class AuthRepository implements IAuth {
         user_id: existingUser.user_id,
         full_name: existingUser.full_name,
         email: existingUser.email,
-        role: existingUser.role_id,
+        role: existingUser.dataValues.role.role_name,
       },
       accessToken: this.jwtService.sign(payload),
     };
