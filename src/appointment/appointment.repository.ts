@@ -198,6 +198,7 @@ export class AppointmentRepository implements IAppointment {
     object | InternalServerErrorException | HttpException | NotFoundException
   > {
     try {
+      console.log('onibnd');
       const item = await this.appointmentModel.findOne({
         where: { appointment_id: id },
         include: [
@@ -217,7 +218,7 @@ export class AppointmentRepository implements IAppointment {
       return item;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error find item ', error);
+      throw new InternalServerErrorException(error.message);
     };
   };
 
@@ -225,6 +226,8 @@ export class AppointmentRepository implements IAppointment {
     req: RequestWithUser,
   ): Promise<object | InternalServerErrorException | NotFoundException> {
     try {
+      console.log("sdfsdf");
+      console.log(req.user);
       // find all pet that user have
       const pets = await this.petModel.findAll({
         where: { user_id: req.user.userId },
@@ -248,7 +251,7 @@ export class AppointmentRepository implements IAppointment {
       return appointments;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error find appointment ', error);
+      throw new InternalServerErrorException(error.message);
     };
   };
 
