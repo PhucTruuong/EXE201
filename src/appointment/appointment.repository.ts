@@ -226,7 +226,6 @@ export class AppointmentRepository implements IAppointment {
     req: RequestWithUser,
   ): Promise<object | InternalServerErrorException | NotFoundException> {
     try {
-      console.log("sdfsdf");
       console.log(req.user);
       // find all pet that user have
       const pets = await this.petModel.findAll({
@@ -239,13 +238,13 @@ export class AppointmentRepository implements IAppointment {
       };
 
       const petIds = pets.map((pet) => pet.id);
-      console.log('petIds', petIds);
+      //console.log('petIds', petIds);
       const appointments = await this.appointmentModel.findAll({
         where: { pet_id: petIds },
       });
 
       if (!appointments) {
-        return new NotFoundException('Not have any appointments');
+        return new NotFoundException('There is no appointments');
       };
 
       return appointments;
@@ -380,7 +379,7 @@ export class AppointmentRepository implements IAppointment {
         });
 
         if (!appointments) {
-          return new NotFoundException('There is no appointment');
+          return new NotFoundException('There is no appointment!');
         };
 
         return { data: appointments, totalCount: 1 };
