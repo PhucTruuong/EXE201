@@ -140,7 +140,7 @@ export class BookingController {
     };
   };
 
-  @Get('/me/bookings')
+  @Get('/customer/my-bookings')
   @UseGuards(JwtCustomerGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'get bookings by user' })
@@ -155,11 +155,8 @@ export class BookingController {
     @Query() pagination: BookingPagination,
     @StandardParam() standardParam: StandardParams,
     @Req() req: RequestWithUser) {
-    // if (!pagination.page || !pagination.limit) {
-    //   throw new BadRequestException('Page and limit query parameters are required');
+    const item = await this.bookingService.findByUser(req, pagination);
 
-    // }
-    const item = await this.bookingService.findByUser(req, pagination)
     if (item instanceof InternalServerErrorException ||
       item instanceof HttpException ||
       item instanceof BadRequestException
@@ -167,7 +164,10 @@ export class BookingController {
       return item as HttpException | InternalServerErrorException;
     } else {
       const { data, totalCount } = item;
-      standardParam.setPaginationInfo({ count: totalCount });
+      standardParam.setPaginationInfo({ 
+        count: totalCount,
+        limit: data.length
+      });
       return data;
     };
   };

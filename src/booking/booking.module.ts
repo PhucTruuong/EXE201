@@ -10,6 +10,7 @@ import { PaymentModule } from 'src/payment/payment.module';
 import { PaymentService } from 'src/payment/payment.service';
 import { PaymentRepository } from 'src/payment/payment.repository';
 import { ServiceProviders } from 'src/service/service.providers';
+import { PetProviders } from 'src/pet/pet.providers';
 
 @Module({
   controllers: [BookingController],
@@ -21,6 +22,7 @@ import { ServiceProviders } from 'src/service/service.providers';
     ...AppointmentProviders,
     ...UserProviders,
     ...ServiceProviders,
+    ...PetProviders
   ],
   imports: [
     DatabaseModule,

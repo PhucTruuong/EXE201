@@ -24,7 +24,6 @@ import { Role } from 'src/database/dabaseModels/role.entity';
 import { NotificationService } from 'src/notification/notification.service';
 import { NotificationGateWay } from 'src/notification/notification.gateway';
 
-
 @Injectable()
 export class AuthRepository implements IAuth {
   constructor(
@@ -42,9 +41,8 @@ export class AuthRepository implements IAuth {
   private generateRandomPhoneNumber(length: number): string {
     const digits = Array.from({ length }, () => Math.floor(Math.random() * 10)).join('');
     return digits;
-  }
+  };
   
-
   private async verifyGoogle(idToken: string) {
     const decodedUser: UserRecord = await this.verifyTokenFromClient(idToken);
     const user = {
@@ -106,9 +104,9 @@ export class AuthRepository implements IAuth {
       return user;
     } catch (error) {
       console.log('error from auth/register', error);
-      throw new InternalServerErrorException();
-    }
-  }
+      throw new InternalServerErrorException(error.message);
+    };
+  };
 
   public async login(
     loginDto: LoginDto,
@@ -174,7 +172,7 @@ export class AuthRepository implements IAuth {
     }
   }
 
-  async loginWithGoogle(
+  public async loginWithGoogle(
     tokenDto: TokenDto,
   ): Promise<object | InternalServerErrorException | NotFoundException> {
     console.log('idToken', tokenDto.idToken);
@@ -232,8 +230,9 @@ export class AuthRepository implements IAuth {
       },
       accessToken: this.jwtService.sign(payload),
     };
-  }
-  async loginWithGoogleMobile(
+  };
+
+  public async loginWithGoogleMobile(
     userInfo: any,
   ): Promise<object | InternalServerErrorException | NotFoundException> {
     const existingUser = await this.userModel.findOne({
@@ -246,8 +245,8 @@ export class AuthRepository implements IAuth {
           attributes: ['role_name'],
         },
       ],
-
     });
+
     if (!existingUser) {
       const newUser = await this.userModel.create({
         user_id: uuidv4(),
@@ -296,5 +295,5 @@ export class AuthRepository implements IAuth {
       },
       accessToken: this.jwtService.sign(payload),
     };
-  }
-}
+  };
+};

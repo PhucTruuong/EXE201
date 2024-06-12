@@ -197,7 +197,7 @@ export class AppointmentController {
     }
   };
 
-  @Get('/v1/appointment/user/my-appointments')
+  @Get('/v1/appointment/customer/my-appointments')
   @UseGuards(JwtCustomerGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'get appointment by user' })

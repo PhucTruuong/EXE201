@@ -21,5 +21,5 @@ export class JwtCustomerGuard extends AuthGuard('jwt') {
         };
         
         throw err || new UnauthorizedException('You are not permissions ! must be Customer');
-    }
-}
+    };
+};

@@ -206,7 +206,7 @@ export class PetController {
     status: 200,
     description: '[CUSTOMER] it will delete pet in the response',
   })
-  async remove(@Param('id') id: string) {
+  public async remove(@Param('id') id: string) {
     const pet = await this.petService.deletePet(id);
 
     if (

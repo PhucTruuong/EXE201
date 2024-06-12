@@ -16,6 +16,7 @@ import { Appointment } from 'src/database/dabaseModels/appointment.entity';
 import { User } from 'src/database/dabaseModels/user.entity';
 import { PaymentService } from 'src/payment/payment.service';
 import { Service } from 'src/database/dabaseModels/service.entity';
+import { Pet } from 'src/database/dabaseModels/pet.entity';
 
 export class BookingRepository implements IBooking {
   constructor(
@@ -23,11 +24,12 @@ export class BookingRepository implements IBooking {
     private readonly bookingModel: typeof Booking,
     @Inject('APPOINTMENT_REPOSITORY')
     private readonly appointmentModel: typeof Appointment,
-
     @Inject('SERVICE_REPOSITORY')
     private readonly serviceModel: typeof Service,
     @Inject('USER_REPOSITORY')
     private readonly userModel: typeof User,
+    @Inject('PET_REPOSITORY')
+    private readonly petModel: typeof Pet,
     private readonly paymentService: PaymentService,
   ) { };
 
@@ -149,7 +151,7 @@ export class BookingRepository implements IBooking {
 
       const limit = pagination?.limit ?? null;
       const page = pagination?.page ?? 1;
-      
+
       const findOptions: any = {
         attributes: [
           'id',
@@ -202,46 +204,135 @@ export class BookingRepository implements IBooking {
     | NotFoundException
   > {
     try {
+      if (pagination.page === undefined && pagination.limit === undefined) {
+        const allItem = await this.bookingModel.findAll({
+          where: { user_id: req.user.userId },
+          attributes: [
+            'id',
+            // [
+            //   this.bookingModel.sequelize.fn(
+            //     'date',
+            //     this.bookingModel.sequelize.col('booking_date')
+            //   ),
+            //   'booking_date_only'
+            // ],
+            'booking_date',
+            'status',
+            'status_string'
+          ],
+          include: [
+            {
+              model: this.appointmentModel,
+              attributes: [
+                //'appointment_id',
+                'appointment_date',
+                'appointment_time'
+              ],
+              as: 'appointment',
+              required: true,
+              include: [
+                {
+                  model: this.serviceModel,
+                  attributes: ['service_name', 'price', 'service_description'],
+                  as: 'service',
+                  required: true,
+                },
+                {
+                  model: this.petModel,
+                  attributes: ['pet_name', 'pet_dob'],
+                  as: 'pet',
+                  required: true,
+                }
+              ],
+            },
+          ],
+          order: [['booking_date', 'DESC']],
+        });
+
+        if (!allItem || allItem.length === 0) {
+          return new NotFoundException('There is no bookings!');
+        };
+
+        return {
+          data: allItem,
+          totalCount: 1,
+        };
+      }
+
+      if (
+        (!pagination.limit && pagination.page) ||
+        (pagination.limit && !pagination.page)
+      ) {
+        return new BadRequestException('Please provide limit and page!');
+      };
+
       const limit = pagination?.limit ?? null;
       const page = pagination?.page ?? 1;
+
       const findOptions: any = {
         where: { user_id: req.user.userId },
         attributes: [
           'id',
+          // [
+          //   this.bookingModel.sequelize.fn(
+          //     'date',
+          //     this.bookingModel.sequelize.col('booking_date')
+          //   ),
+          //   'booking_date_only'
+          // ],
           'booking_date',
           'status',
-          'created_at',
-          'updated_at',
           'status_string'
         ],
         include: [
           {
             model: this.appointmentModel,
+            attributes: [
+              //'appointment_id',
+              'appointment_date',
+              'appointment_time'
+            ],
             as: 'appointment',
+            required: true,
+            include: [
+              {
+                model: this.serviceModel,
+                attributes: ['service_name', 'price', 'service_description'],
+                as: 'service',
+                required: true,
+              },
+              {
+                model: this.petModel,
+                attributes: ['pet_name', 'pet_dob'],
+                as: 'pet',
+                required: true,
+              }
+            ],
           },
-          // {
-          //     model: this.userModel,
-          //     as: 'user',
-          // },
         ],
+        order: [['booking_date', 'DESC']],
       };
+
       if (limit !== null) {
         findOptions.limit = limit;
         findOptions.offset = (page - 1) * limit;
       }
-      const { count, rows: allItem } =
-        await this.bookingModel.findAndCountAll(findOptions);
-      if (!allItem || count === 0) {
-        return new NotFoundException();
+      const allBookings = await this.bookingModel.findAll(findOptions);
+
+      const numberOfPages = Math.ceil(allBookings.length / pagination.limit);
+
+
+      if (!allBookings || allBookings.length === 0) {
+        return new NotFoundException('There is no bookings!');
       } else {
         return {
-          data: allItem,
-          totalCount: count,
+          data: allBookings,
+          totalCount: numberOfPages,
         };
       }
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error fetching  ', error);
+      throw new InternalServerErrorException(error.message);
     };
   };
 
