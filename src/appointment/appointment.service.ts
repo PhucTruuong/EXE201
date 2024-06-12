@@ -21,7 +21,9 @@ export class AppointmentService {
     return this.appointmentRepository.create(createAppointmentDto)
   };
 
-  public async findOne(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
+  public async findOne(id: string): Promise<
+    object | InternalServerErrorException | HttpException | NotFoundException
+  > {
     return this.appointmentRepository.findOne(id)
   };
 

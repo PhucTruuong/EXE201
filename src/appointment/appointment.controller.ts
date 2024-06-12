@@ -197,7 +197,7 @@ export class AppointmentController {
     }
   };
 
-  @Get('/v1/appointment/my-appointments')
+  @Get('/v1/appointment/user/my-appointments')
   @UseGuards(JwtCustomerGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'get appointment by user' })
@@ -213,7 +213,7 @@ export class AppointmentController {
     return item;
   };
 
-  @Get('/v2/appointment/my-appointments')
+  @Get('/v2/appointment/host/my-appointments')
   @UseGuards(JwtHostGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Host get the appointments of them' })
