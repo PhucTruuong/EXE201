@@ -21,28 +21,9 @@ import { JwtAdminGuard } from 'src/auth/guard/jwt-admin.guard';
 @ApiTags('Payments')
 @Controller('/api/v1/payment')
 export class PaymentController {
-  constructor(private readonly paymentService: PaymentService) { }
+  constructor(private readonly paymentService: PaymentService) { };
 
-  @Post('zalo-pay')
-  create(@Body() booking: any, price: number) {
-    return this.paymentService.create(booking, price);
-  }
-  @Post('momo')
-  createByMomo() {
-    return this.paymentService.createByMomo();
-  }
-
-  @Post('callback')
-  callBackZaloPay(@Req() req: Request) {
-    return this.paymentService.callbackZaloPay(req);
-  };
-
-  @Post('check-status-order')
-  checkStatusOrder(@Req() req: Request) {
-    return this.paymentService.checkOrderStatus(req);
-  };
-
-  @Get('')
+  @Get('/')
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAdminGuard)
   @ApiOperation({ summary: 'Get all payment' })
@@ -70,5 +51,24 @@ export class PaymentController {
       });
       return data;
     };
+  };
+
+  @Post('zalo-pay')
+  create(@Body() booking: any, price: number) {
+    return this.paymentService.create(booking, price);
+  }
+  @Post('momo')
+  createByMomo() {
+    return this.paymentService.createByMomo();
+  }
+
+  @Post('callback')
+  callBackZaloPay(@Req() req: Request) {
+    return this.paymentService.callbackZaloPay(req);
+  };
+
+  @Post('check-status-order')
+  checkStatusOrder(@Req() req: Request) {
+    return this.paymentService.checkOrderStatus(req);
   };
 };
