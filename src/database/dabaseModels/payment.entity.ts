@@ -22,8 +22,10 @@ export class Payment extends Model {
     allowNull: false,
   })
   booking_id: string;
+
   @BelongsTo(() => Booking)
   booking: Booking;
+  
   @Column({
     type: DataType.DATE,
     allowNull: false,

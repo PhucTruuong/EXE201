@@ -3,10 +3,18 @@ import axios from 'axios';
 import * as CryptoJS from 'crypto-js';
 import * as moment from 'moment';
 import * as crypto from 'crypto';
-import { Inject, InternalServerErrorException } from '@nestjs/common';
+import {
+  Inject,
+  InternalServerErrorException,
+  NotFoundException,
+  BadRequestException
+} from '@nestjs/common';
 import { Request } from 'express';
 import * as qs from 'qs';
 import { Booking } from 'src/database/dabaseModels/booking.entity';
+import { Payment } from 'src/database/dabaseModels/payment.entity';
+import { PaymentPagination } from './dto/payment-pagination.dto';
+
 const config = {
   app_id: '2554',
   key1: 'sdngKKJmqEMzvh5QQcdD2A9XBSKUNaYn',
@@ -22,9 +30,11 @@ export class PaymentRepository implements IPayment {
   constructor(
     @Inject('BOOKING_REPOSITORY')
     private readonly bookingModel: typeof Booking,
-  ) {}
+    @Inject('PAYMENT_REPOSITORY')
+    private readonly paymentModel: typeof Payment,
+  ) { };
 
-  async create(booking: any,price: number): Promise<object> {
+  public async create(booking: any, price: number): Promise<object> {
     const embed_data = {
       merchantinfo: 'embeddata123',
       redirecturl: 'https://fureverfriend.id.vn/api/',
@@ -72,12 +82,13 @@ export class PaymentRepository implements IPayment {
       console.log(error);
       throw new Error('Failed to create payment order');
     }
-  }
+  };
+
   private configKey = {
     key2: 'Iyz2habzyr7AG8SgvoBCbKwKi3UzlLi3',
   };
 
-  async callbackZaloPay(
+  public async callbackZaloPay(
     req: Request,
   ): Promise<object | InternalServerErrorException> {
     const result: CallbackResult = {
@@ -102,7 +113,7 @@ export class PaymentRepository implements IPayment {
         // Extract id and status_string
         const items = JSON.parse(dataJson.item);
         const itemId = items[0].id;
-        
+
         await this.bookingModel.update(
           {
             status_string: 'paid',
@@ -120,7 +131,7 @@ export class PaymentRepository implements IPayment {
     return result;
   }
 
-  async createByMomo(): Promise<object | InternalServerErrorException> {
+  public async createByMomo(): Promise<object | InternalServerErrorException> {
     const accessKey = 'F8BBA842ECF85';
     const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
     const orderInfo = 'pay with MoMo';
@@ -210,8 +221,9 @@ export class PaymentRepository implements IPayment {
       return new InternalServerErrorException();
     }
     //Send the request and get the response
-  }
-  async checkStatusOrder(
+  };
+
+  public async checkStatusOrder(
     req: Request,
   ): Promise<object | InternalServerErrorException> {
     const { app_trans_id } = req.body;
@@ -256,6 +268,98 @@ export class PaymentRepository implements IPayment {
     } catch (error) {
       console.log('lỗi');
       console.log(error);
+    }
+  };
+
+  public async getAllPayment(pagination: PaymentPagination): Promise<
+    {
+      data: object[];
+      totalCount: number
+    } |
+    InternalServerErrorException |
+    NotFoundException |
+    BadRequestException
+  > {
+    try {
+      if (pagination.page === undefined && pagination.limit === undefined) {
+        const payments = await this.paymentModel.findAll({
+          attributes: [
+            'id',
+            'amount',
+            'payment_date',
+            'status'
+          ],
+          include: [
+            {
+              model: Booking,
+              as: 'booking',
+              attributes: ['booking_date', 'status_string'],
+              required: true,
+            },
+          ],
+          order: [['payment_date', 'DESC']],
+          group: ['payment.id', 'booking.user_id', 'booking.id'],
+        });
+
+        if (!payments || payments.length === 0) {
+          return new NotFoundException('There is no payment in the system!');
+        };
+
+        return {
+          data: payments,
+          totalCount: 1,
+        };
+      };
+
+      if (
+        (!pagination.limit && pagination.page) ||
+        (pagination.limit && !pagination.page)
+      ) {
+        return new BadRequestException('Please provide limit and page!');
+      };
+
+      const limit = pagination?.limit ?? null;
+      const page = pagination?.page ?? 1;
+
+      const findOptions: any = {
+        attributes: [
+          'id',
+          'amount',
+          'payment_date',
+          'status'
+        ],
+        include: [
+          {
+            model: Booking,
+            as: 'booking',
+            attributes: ['booking_date', 'status_string'],
+            required: true,
+          },
+        ],
+        order: [['payment_date', 'DESC']],
+        group: ['payment.id', 'booking.id', 'booking.user_id'],
+      };
+
+      if (limit !== null) {
+        findOptions.limit = limit;
+        findOptions.offset = (page - 1) * limit;
+      };
+
+      const payments = await this.paymentModel.findAll(findOptions);
+
+      const numberOfPages = Math.ceil(payments.length / pagination.limit);
+
+      if (!payments || payments.length === 0) {
+        return new NotFoundException('There is no payment in the system!');
+      } else {
+        return {
+          data: payments,
+          totalCount: numberOfPages,
+        };
+      };
+    } catch (error) {
+      console.log(error);
+      return new InternalServerErrorException(error.message);
     }
   }
 }
