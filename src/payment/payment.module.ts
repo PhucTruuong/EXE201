@@ -8,7 +8,12 @@ import { BookingProviders } from 'src/booking/booking.providers';
 
 @Module({
   controllers: [PaymentController],
-  providers: [PaymentService, ...PaymentProviders, PaymentRepository,...BookingProviders],
+  providers: [
+    PaymentService,
+    ...PaymentProviders,
+    PaymentRepository,
+    ...BookingProviders
+  ],
   imports: [DatabaseModule],
 })
-export class PaymentModule {}
+export class PaymentModule { }

@@ -37,6 +37,7 @@ export class Booking extends Model {
 
     @BelongsTo(() => Appointment)
     appointment: Appointment;
+    
     @Column({
         type: DataType.DATE,
         allowNull: false,
@@ -63,11 +64,13 @@ export class Booking extends Model {
         defaultValue: DataType.NOW,
     })
     updated_at: Date;
+
     @Column({
         type: DataType.ENUM('not_paid', 'paid', 'processing', 'completed', 'delayed', 'not_completed'),
         allowNull: true, 
     })
     status_string: 'not_paid' | 'paid' | 'processing' | 'completed' | 'delayed' | 'not_completed';
+
     @HasMany(() => Payment, { foreignKey:'booking_id' })
     payments: Payment[];
 }
