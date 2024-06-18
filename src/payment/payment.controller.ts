@@ -56,11 +56,12 @@ export class PaymentController {
   @Post('zalo-pay')
   create(@Body() booking: any, price: number) {
     return this.paymentService.create(booking, price);
-  }
+  };
+  
   @Post('momo')
   createByMomo() {
     return this.paymentService.createByMomo();
-  }
+  };
 
   @Post('callback')
   callBackZaloPay(@Req() req: Request) {
