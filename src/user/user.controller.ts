@@ -165,7 +165,8 @@ export class UserController {
     }
 
     return new HttpException(disableAccount, HttpStatus.OK);
-  }
+  };
+  
   @Get('profile/me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
