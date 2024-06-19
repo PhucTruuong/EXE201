@@ -173,14 +173,15 @@ export class ServiceRepository implements IService {
           ],
           order: [['created_at', 'DESC']],
         });
-        if (!allItem) {
-          return new NotFoundException();
-        } else {
-          return {
-            data: allItem,
-            totalCount: 1,
-          };
-        }
+
+        // if (!allItem) {
+        //   return new NotFoundException();
+        // } else {
+        return {
+          data: allItem,
+          totalCount: 1,
+        };
+        //};
       };
 
       if (
@@ -232,14 +233,14 @@ export class ServiceRepository implements IService {
 
       const numberOfPage = Math.ceil(count / pagination.limit);
 
-      if (!allItem || count === 0) {
-        return new NotFoundException();
-      } else {
-        return {
-          data: allItem,
-          totalCount: numberOfPage,
-        };
-      }
+      // if (!allItem || count === 0) {
+      //   return new NotFoundException();
+      // } else {
+      return {
+        data: allItem,
+        totalCount: numberOfPage,
+      };
+      //}
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(error.message);
@@ -321,7 +322,7 @@ export class ServiceRepository implements IService {
         !updateServiceDto.service_price &&
         !updateServiceDto.brand_id &&
         !updateServiceDto.category_id &&
-        !updateServiceDto.location_id && 
+        !updateServiceDto.location_id &&
         !updateServiceDto.image
       ) {
         return new BadRequestException('Please provide data to update');

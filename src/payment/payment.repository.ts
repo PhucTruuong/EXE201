@@ -301,9 +301,9 @@ export class PaymentRepository implements IPayment {
           group: ['payment.id', 'booking.user_id', 'booking.id'],
         });
 
-        if (!payments || payments.length === 0) {
-          return new NotFoundException('There is no payment in the system!');
-        };
+        // if (!payments || payments.length === 0) {
+        //   return new NotFoundException('There is no payment in the system!');
+        // };
 
         return {
           data: payments,
@@ -349,17 +349,17 @@ export class PaymentRepository implements IPayment {
 
       const numberOfPages = Math.ceil(payments.length / pagination.limit);
 
-      if (!payments || payments.length === 0) {
-        return new NotFoundException('There is no payment in the system!');
-      } else {
-        return {
-          data: payments,
-          totalCount: numberOfPages,
-        };
+      // if (!payments || payments.length === 0) {
+      //   return new NotFoundException('There is no payment in the system!');
+      // } else {
+      return {
+        data: payments,
+        totalCount: numberOfPages,
       };
+      //};
     } catch (error) {
       console.log(error);
       return new InternalServerErrorException(error.message);
-    }
-  }
-}
+    };
+  };
+};
