@@ -82,7 +82,7 @@ export class feedbackRepository implements IFeedBack {
         description: `You have created a feedback for service`,
         type: 'info',
       });
-      
+
       return new_item;
     } catch (error) {
       console.log(error);
@@ -126,9 +126,9 @@ export class feedbackRepository implements IFeedBack {
       console.log(pagination.limit, pagination.page);
       if (pagination.limit === undefined && pagination.page === undefined) {
         const allItem = await this.feedBackModel.findAll();
-        if (!allItem) {
-          return new NotFoundException('No item found');
-        }
+        // if (!allItem) {
+        //   return new NotFoundException('No item found');
+        // }
         return {
           data: allItem,
           totalCount: 1,
@@ -177,20 +177,21 @@ export class feedbackRepository implements IFeedBack {
 
       const numberOfPages = Math.ceil(count / pagination.limit);
 
-      if (!allItem || count === 0) {
-        return new NotFoundException('No item found!');
-      } else {
-        return {
-          data: allItem,
-          totalCount: numberOfPages,
-        };
-      }
+      // if (!allItem || count === 0) {
+      //   return new NotFoundException('No item found!');
+      // } else {
+      return {
+        data: allItem,
+        totalCount: numberOfPages,
+      };
+      //}
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(error.message);
-    }
-  }
-  async findOne(
+    };
+  };
+
+  public async findOne(
     id: string,
   ): Promise<
     object | InternalServerErrorException | HttpException | NotFoundException
@@ -206,9 +207,10 @@ export class feedbackRepository implements IFeedBack {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error find item ', error);
-    }
-  }
-  async update(
+    };
+  };
+
+  public async update(
     id: string,
     updateFeedbackDto: UpdateFeedbackDto,
   ): Promise<
@@ -233,9 +235,10 @@ export class feedbackRepository implements IFeedBack {
           ],
         },
       });
+      
       if (duplicateName) {
         throw new ConflictException('You are not update anything');
-      }
+      };
       const updated = await this.serviceModel.update(
         {
           comment: updateFeedbackDto.comment,
@@ -250,6 +253,6 @@ export class feedbackRepository implements IFeedBack {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error update item ', error);
-    }
-  }
-}
+    };
+  };
+};

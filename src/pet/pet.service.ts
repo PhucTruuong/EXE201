@@ -83,7 +83,6 @@ export class PetService {
 
   public async createPetMobile(
     createPetDto: CreatePetMobileDto,
-
     req: RequestWithUser,
   ): Promise<
     | object

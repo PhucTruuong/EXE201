@@ -128,9 +128,9 @@ export class AppointmentRepository implements IAppointment {
           ],
         });
 
-        if (!allItem || allItem.length === 0) {
-          return new NotFoundException('There is no appointments!');
-        };
+        // if (!allItem || allItem.length === 0) {
+        //   return new NotFoundException('There is no appointments!');
+        // };
 
         return {
           data: allItem,
@@ -178,14 +178,14 @@ export class AppointmentRepository implements IAppointment {
 
       const numberOfPages = Math.ceil(count / pagination.limit);
 
-      if (!allItem || count === 0) {
-        return new NotFoundException();
-      } else {
-        return {
-          data: allItem,
-          totalCount: numberOfPages,
-        };
-      }
+      // if (!allItem || count === 0) {
+      //   return new NotFoundException();
+      // } else {
+      return {
+        data: allItem,
+        totalCount: numberOfPages,
+      };
+      //}
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(error.message);

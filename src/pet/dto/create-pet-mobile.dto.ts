@@ -1,42 +1,40 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDateString, IsNotEmpty, IsString, IsUUID } from "class-validator";
-
+import { IsDate, IsNotEmpty, IsNumber, IsString, IsUUID } from "class-validator";
 export class CreatePetMobileDto {
     @IsString()
     @IsNotEmpty()
     @ApiProperty({
-        default: "hong phuc111",
-        example: "hong phuc",
+        default: "Hoàng Kim Nam",
         description: "name of pet"
     })
     pet_name: string;
 
     @IsNotEmpty()
-    @IsDateString()
+    @IsDate()
     @ApiProperty({
-        example: "2022-03-06T11:00:00.000Z",
-        default: "2022-03-06T11:00:00.000Z",
+        default: new Date(),
         description: "birthdate of pet"
     })
     pet_dob: Date;
 
-    @IsString()
+    @IsNumber()
     @IsNotEmpty()
     @ApiProperty({
         default: 100,
         example: 100,
         description: "don vi cm"
     })
-    height: number
+    height: number;
 
-    @IsString()
+    @IsNumber()
     @IsNotEmpty()
     @ApiProperty({
         default: 67.5,
         example: 67.5,
         description: "weight  of pet"
     })
-    weight: number
+    weight: number;
+
     @IsUUID()
     @IsNotEmpty()
     @ApiProperty({
@@ -44,7 +42,8 @@ export class CreatePetMobileDto {
         example: "eba07116-3740-47d1-bac2-8dbf49325655",
         description: "id of pet type ( pet belongto type)"
     })
-    pet_type_id: string
+    pet_type_id: string;
+
     @IsUUID()
     @IsNotEmpty()
     @ApiProperty({
@@ -52,7 +51,8 @@ export class CreatePetMobileDto {
         example: "b071c95b-e608-4342-bf5c-be50089c27e2",
         description: "id of pet breed ( pet belongs to pet breed)"
     })
-    pet_breed_id: string
+    pet_breed_id: string;
+
     @IsNotEmpty()
     @IsString()
     @ApiProperty({

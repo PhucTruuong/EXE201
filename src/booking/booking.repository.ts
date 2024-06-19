@@ -130,9 +130,9 @@ export class BookingRepository implements IBooking {
           ],
         });
 
-        if (!allItem || allItem.length === 0) {
-          return new NotFoundException('There is no bookings!');
-        };
+        // if (!allItem || allItem.length === 0) {
+        //   return new NotFoundException('There is no bookings!');
+        // };
 
         return {
           data: allItem,
@@ -181,14 +181,14 @@ export class BookingRepository implements IBooking {
 
       const numberOfPage = Math.ceil(count / pagination.limit);
 
-      if (!allItem || count === 0) {
-        return new NotFoundException();
-      } else {
-        return {
-          data: allItem,
-          totalCount: numberOfPage,
-        };
-      }
+      // if (!allItem || count === 0) {
+      //   return new NotFoundException();
+      // } else {
+      return {
+        data: allItem,
+        totalCount: numberOfPage,
+      };
+      //}
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(error.message);
@@ -249,9 +249,9 @@ export class BookingRepository implements IBooking {
           order: [['booking_date', 'DESC']],
         });
 
-        if (!allItem || allItem.length === 0) {
-          return new NotFoundException('There is no bookings!');
-        };
+        // if (!allItem || allItem.length === 0) {
+        //   return new NotFoundException('There is no bookings!');
+        // };
 
         return {
           data: allItem,
@@ -322,14 +322,14 @@ export class BookingRepository implements IBooking {
       const numberOfPages = Math.ceil(allBookings.length / pagination.limit);
 
 
-      if (!allBookings || allBookings.length === 0) {
-        return new NotFoundException('There is no bookings!');
-      } else {
-        return {
-          data: allBookings,
-          totalCount: numberOfPages,
-        };
-      }
+      // if (!allBookings || allBookings.length === 0) {
+      //   return new NotFoundException('There is no bookings!');
+      // } else {
+      return {
+        data: allBookings,
+        totalCount: numberOfPages,
+      };
+      //}
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(error.message);

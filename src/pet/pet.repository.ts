@@ -33,8 +33,9 @@ export class PetRepository implements IPet {
     private readonly petBreedModel: typeof PetBreed,
     private readonly cloudinaryService: CloudinaryService,
     private readonly notificationGateway: NotificationGateWay,
-  ) {}
-  async createPetMobile(
+  ) {};
+
+  public async createPetMobile(
     createPetDto: CreatePetMobileDto,
     req: RequestWithUser,
   ): Promise<
@@ -45,31 +46,36 @@ export class PetRepository implements IPet {
     | NotFoundException
   > {
     try {
-      console.log('checking', createPetDto);
-      const existingPet = await this.petModel.findOne({
-        where: {
-          pet_name: createPetDto.pet_name,
-          user_id: req.user.userId,
-        },
-      });
-      console.log('exits', existingPet);
+      const promise = [
+        this.petModel.findOne({
+          where: {
+            pet_name: createPetDto.pet_name,
+            user_id: req.user.userId,
+          },
+        }),
+
+        this.petTypeModel.findOne({
+          where: { id: createPetDto.pet_type_id },
+        }),
+
+        this.petBreedModel.findOne({
+          where: { id: createPetDto.pet_breed_id },
+        }),
+      ];
+
+      const [existingPet, existingPetType, existingPetBreed] = await Promise.all(promise);
+
       if (existingPet) {
-        return new ConflictException('Pet  already exists , choose other name');
-      }
-      // check pet type
-      const existingPetType = await this.petTypeModel.findOne({
-        where: { id: createPetDto.pet_type_id },
-      });
+        return new ConflictException('Pet has already existed, please choose another name!');
+      };
+
       if (!existingPetType) {
         return new NotFoundException('Pet Type not found');
-      }
-      // check pet breed
-      const existingPetBreed = await this.petBreedModel.findOne({
-        where: { id: createPetDto.pet_breed_id },
-      });
+      };
+
       if (!existingPetBreed) {
-        return new NotFoundException('Pet  Breed not found');
-      }
+        return new NotFoundException('Pet Breed not found');
+      };
 
       let uploadedImageUrl;
       if (createPetDto.image) {
@@ -78,12 +84,17 @@ export class PetRepository implements IPet {
             folder: 'pets',
             crop: 'scale',
           });
+
+          console.log('check point 2');
           uploadedImageUrl = myCloud.secure_url;
         } catch (error) {
           console.error('Image upload error:', error);
-          return new InternalServerErrorException('Upload failed');
+          throw new InternalServerErrorException(error.message);
         }
-      }
+      };
+
+      console.log('check point 1');
+
       const newPet = this.petModel.create({
         id: uuidv4(),
         pet_name: createPetDto.pet_name,
@@ -98,16 +109,19 @@ export class PetRepository implements IPet {
         updateAt: new Date(),
       });
 
+      console.log('check point 3');
+
       await this.notificationGateway.emitDemoNotification(req.user.userId, {
         user_id: req.user.userId,
         title: 'New Feedback Created',
         description: `You have create a new pet profile <..>`,
         type: 'info',
       });
+
       return newPet;
     } catch (error) {
       console.log('error from create pet', error);
-      throw new InternalServerErrorException('Error create pet`', error);
+      throw new InternalServerErrorException(error.message);
     }
   }
 

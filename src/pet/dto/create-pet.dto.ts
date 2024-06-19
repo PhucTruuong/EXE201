@@ -53,7 +53,8 @@ export class CreatePetDto {
         example: "b071c95b-e608-4342-bf5c-be50089c27e2",
         description: "id of pet breed ( pet belongs to pet breed)"
     })
-    pet_breed_id: string
+    pet_breed_id: string;
+    
     @IsNotEmpty()
     @ApiProperty({
         type: 'string',
