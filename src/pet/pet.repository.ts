@@ -85,7 +85,7 @@ export class PetRepository implements IPet {
             crop: 'scale',
           });
 
-          console.log('check point 2');
+          console.log('check point 1');
           uploadedImageUrl = myCloud.secure_url;
         } catch (error) {
           console.error('Image upload error:', error);
@@ -93,7 +93,7 @@ export class PetRepository implements IPet {
         }
       };
 
-      console.log('check point 1');
+      console.log('check point 2');
 
       const newPet = this.petModel.create({
         id: uuidv4(),
@@ -138,29 +138,37 @@ export class PetRepository implements IPet {
     try {
       // check name if exits
       console.log('checking', createPetDto);
-      const existingPet = await this.petModel.findOne({
-        where: {
-          pet_name: createPetDto.pet_name,
-          user_id: req.user.userId,
-        },
-      });
+
+      const promise = [
+        this.petModel.findOne({
+          where: {
+            pet_name: createPetDto.pet_name,
+            user_id: req.user.userId,
+          },
+        }),
+
+        this.petTypeModel.findOne({
+          where: { id: createPetDto.pet_type_id },
+        }),
+
+        this.petBreedModel.findOne({
+          where: { id: createPetDto.pet_breed_id },
+        }),
+      ];
+
+      const [existingPet, existingPetType, existingPetBreed] = await Promise.all(promise);
+
       if (existingPet) {
         return new ConflictException('Pet  already exists , choose other name');
-      }
-      // check pet type
-      const existingPetType = await this.petTypeModel.findOne({
-        where: { id: createPetDto.pet_type_id },
-      });
+      };
+
       if (!existingPetType) {
         return new NotFoundException('Pet Type not found');
-      }
-      // check pet breed
-      const existingPetBreed = await this.petBreedModel.findOne({
-        where: { id: createPetDto.pet_breed_id },
-      });
+      };
+
       if (!existingPetBreed) {
         return new NotFoundException('Pet  Breed not found');
-      }
+      };
 
       let imageUrl = null;
       if (createPetDto.image) {
