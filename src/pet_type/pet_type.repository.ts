@@ -19,7 +19,8 @@ export class PetTypeRepository implements IPetType {
   constructor(
     @Inject('PET_TYPE_REPOSITORY')
     private readonly petTypeModel: typeof PetType,
-  ) {}
+  ) { };
+
   public async createPetType(
     createPetType: CreatePetTypeDto,
   ): Promise<
@@ -31,9 +32,11 @@ export class PetTypeRepository implements IPetType {
           type_name: createPetType.type_name,
         },
       });
+
       if (existingPetType) {
         throw new ConflictException('Pet Type already exists');
-      }
+      };
+
       const newPetType = this.petTypeModel.create({
         id: uuidv4(),
         type_name: createPetType.type_name,
@@ -41,12 +44,17 @@ export class PetTypeRepository implements IPetType {
         createAt: new Date(),
         updateAt: new Date(),
       });
+
       return newPetType;
     } catch (error) {
       console.log('error from create pet type', error);
-      throw new InternalServerErrorException('Error create pet type', error);
-    }
-  }
+      if (error instanceof ConflictException) {
+        throw error;
+      };
+
+      throw new InternalServerErrorException(error.message);
+    };
+  };
 
   public async findAllPetType(
     pagination: PetTypePagination,
@@ -72,19 +80,16 @@ export class PetTypeRepository implements IPetType {
         findOptions.limit = limit;
         findOptions.offset = (page - 1) * limit;
       }
-      const { count, rows: allPetType } =
-        await this.petTypeModel.findAndCountAll(findOptions);
-      if (!allPetType || count === 0) {
-        return new HttpException('No Pet Type found!', HttpStatus.NOT_FOUND);
-      } else {
-        return {
-          data: allPetType,
-          totalCount: count,
-        };
-      }
+      const { count, rows: allPetType } = await this.petTypeModel.findAndCountAll(findOptions);
+
+      return {
+        data: allPetType,
+        totalCount: count,
+      };
+
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error fetching pet type', error);
+      throw new InternalServerErrorException(error.message);
     };
   };
 
@@ -95,13 +100,19 @@ export class PetTypeRepository implements IPetType {
       const petType = await this.petTypeModel.findOne({
         where: { id: id },
       });
+
       if (!petType) {
-        throw new NotFoundException('pet type not found');
-      }
+        throw new NotFoundException('This pet type does not exist');
+      };
+
       return petType;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException(error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+
+      throw new InternalServerErrorException(error.message);
     }
   }
 
@@ -112,21 +123,25 @@ export class PetTypeRepository implements IPetType {
       const petType = await this.petTypeModel.findOne({
         where: { id: id },
       });
+
       if (!petType) {
         throw new NotFoundException('pet type not found');
-      }
+      };
+
       await this.petTypeModel.destroy({
         where: { id: id },
       });
+
       return {
         message: 'pet type deleted successfully',
-      };
+      }
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException(
-        'Error when deleting pet type',
-        error,
-      );
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+
+      throw new InternalServerErrorException(error.message);
     };
   };
 
@@ -140,10 +155,10 @@ export class PetTypeRepository implements IPetType {
       });
 
       if (!petType) {
-        throw new NotFoundException('Pet type not found');
+        throw new NotFoundException('This pet type does not exist!');
       };
 
-      const PetTypeUpdated = await this.petTypeModel.update(
+      const petTypeUpdated = await this.petTypeModel.update(
         {
           type_name: updatePetType.type_name,
           type_description: updatePetType.type_description,
@@ -153,13 +168,13 @@ export class PetTypeRepository implements IPetType {
         },
       );
 
-      return PetTypeUpdated;
+      return petTypeUpdated;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException(
-        'Error when updating pet type',
-        error,
-      );
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+      throw new InternalServerErrorException(error.message);
     };
   };
 };

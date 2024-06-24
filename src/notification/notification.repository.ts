@@ -11,7 +11,7 @@ export class NotificationRepository implements INotification {
   constructor(
     @Inject('NOTIFICATION_REPOSITORY')
     private readonly notificationModel: typeof Notification,
-  ) {};
+  ) { };
 
   public async create(
     createINotificationDto: CreateNotificationDto,
@@ -25,7 +25,7 @@ export class NotificationRepository implements INotification {
         read: false,
         user_id: createINotificationDto.user_id,
       });
-      
+
       return notification;
     } catch (error) {
       console.log(error);
@@ -38,6 +38,7 @@ export class NotificationRepository implements INotification {
       const notifications = this.notificationModel.findAll({
         where: { user_id: userId },
       });
+      
       return notifications;
     } catch (error) {
       console.log(error);
@@ -51,13 +52,17 @@ export class NotificationRepository implements INotification {
         where: { id: id },
       });
       if (!notification) {
-        return new NotFoundException('No notification found');
+        throw new NotFoundException('No notification found');
       }
       notification.read = true;
       await notification.save();
       return notification;
     } catch (error) {
       console.log(error);
+      if(error instanceof NotFoundException) {
+        throw error;
+      };
+
       throw new InternalServerErrorException(error.message);
     };
   };

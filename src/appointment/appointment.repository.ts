@@ -4,7 +4,8 @@ import {
   HttpException,
   ConflictException,
   Inject,
-  BadRequestException
+  BadRequestException,
+  HttpStatus
 } from '@nestjs/common';
 import { IAppointment } from './appointment.interface';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
@@ -53,11 +54,11 @@ export class AppointmentRepository implements IAppointment {
       const [existPet, existService] = await Promise.all(promises);
 
       if (!existPet) {
-        return new NotFoundException('Pet Not Found!');
+        throw new NotFoundException('Pet Not Found!');
       };
 
       if (!existService) {
-        return new NotFoundException('Service not found!');
+        throw new NotFoundException('Service not found!');
       };
 
       const existedAppointment = await this.appointmentModel.sequelize.query(
@@ -80,7 +81,7 @@ export class AppointmentRepository implements IAppointment {
 
       if (existedAppointment[0].length > 0) {
         console.log('There has been already an appointment at this slot!');
-        return new ConflictException('There has been already an appointment at this slot!');
+        throw new ConflictException('There has been already an appointment at this slot!');
       };
 
       const appointment = await this.appointmentModel.create({
@@ -93,6 +94,12 @@ export class AppointmentRepository implements IAppointment {
       return appointment;
     } catch (error) {
       console.log(error);
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ConflictException
+      ) {
+        return error;
+      };
       return new InternalServerErrorException(error.message);
     };
   };
@@ -129,7 +136,7 @@ export class AppointmentRepository implements IAppointment {
         });
 
         // if (!allItem || allItem.length === 0) {
-        //   return new NotFoundException('There is no appointments!');
+        //   throw new NotFoundException('There is no appointments!');
         // };
 
         return {
@@ -179,7 +186,7 @@ export class AppointmentRepository implements IAppointment {
       const numberOfPages = Math.ceil(count / pagination.limit);
 
       // if (!allItem || count === 0) {
-      //   return new NotFoundException();
+      //   throw new NotFoundException();
       // } else {
       return {
         data: allItem,
@@ -213,7 +220,7 @@ export class AppointmentRepository implements IAppointment {
         ],
       });
       if (!item) {
-        throw new NotFoundException('item  not found');
+        throw new NotFoundException('The appointment does not exist!');
       }
       return item;
     } catch (error) {
@@ -224,32 +231,102 @@ export class AppointmentRepository implements IAppointment {
 
   public async findByUser(
     req: RequestWithUser,
-  ): Promise<object | InternalServerErrorException | NotFoundException> {
+    pagination: AppointmentPagination,
+  ): Promise<{
+    data: object[],
+    totalCount: number
+  } | InternalServerErrorException | NotFoundException> {
     try {
-      console.log(req.user);
-      // find all pet that user have
-      const pets = await this.petModel.findAll({
-        where: { user_id: req.user.userId },
-      });
+      console.log(req.user.userId);
 
-      console.log('pets fopund', pets);
-      if (!pets || pets.length === 0) {
-        return new NotFoundException('User not found');
+      if (pagination.limit === undefined && pagination.page === undefined) {
+        const appointments = await this.appointmentModel.findAll({
+          attributes: [
+            'appointment_id',
+            'appointment_date',
+            'appointment_time',
+            'status',
+          ],
+          include: [
+            {
+              model: this.petModel,
+              as: 'pet',
+              attributes: ['id', 'pet_name'],
+              where: { user_id: req.user.userId },
+              required: true,
+            },
+            {
+              model: this.serviceModel,
+              as: 'service',
+              attributes: ['id', 'service_name'],
+              required: true,
+            },
+          ],
+          group: ['appointment_id', 'service.id', 'pet.id'],
+          order: [['appointment_date', 'ASC']],
+        });
+
+        return { data: appointments, totalCount: 1 };
       };
 
-      const petIds = pets.map((pet) => pet.id);
-      //console.log('petIds', petIds);
-      const appointments = await this.appointmentModel.findAll({
-        where: { pet_id: petIds },
-      });
-
-      if (!appointments) {
-        return new NotFoundException('There is no appointments');
+      if (
+        (!pagination.limit && pagination.page) ||
+        (pagination.limit && !pagination.page)
+      ) {
+        throw new BadRequestException('Please provide limit and page!');
       };
 
-      return appointments;
+      const limit = pagination?.limit ?? null;
+      const page = pagination?.page ?? 1;
+
+      const findOptions: any = {
+        attributes: [
+          'appointment_id',
+          'appointment_date',
+          'appointment_time',
+          'status',
+        ],
+        include: [
+          {
+            model: this.petModel,
+            as: 'pet',
+            attributes: ['id', 'pet_name'],
+            where: { user_id: req.user.userId },
+            required: true,
+          },
+          {
+            model: this.serviceModel,
+            as: 'service',
+            attributes: ['id', 'service_name'],
+            required: true,
+          },
+        ],
+        group: ['appointment_id', 'service.id', 'pet.id'],
+        order: [['appointment_date', 'ASC']],
+      };
+
+      if (limit !== null) {
+        findOptions.limit = limit;
+        findOptions.offset = (page - 1) * limit;
+      };
+
+      const appointments = await this.appointmentModel.findAll(findOptions);
+
+      const numberOfPages = Math.ceil(appointments.length / pagination.limit);
+
+      return {
+        data: appointments,
+        totalCount: numberOfPages,
+      };
+
     } catch (error) {
       console.log(error);
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      };
       throw new InternalServerErrorException(error.message);
     };
   };
@@ -327,11 +404,11 @@ export class AppointmentRepository implements IAppointment {
       });
 
       if (!appointment) {
-        return new NotFoundException('This appointment does not exist!');
+        throw new NotFoundException('This appointment does not exist!');
       };
 
       if (appointment.status === true) {
-        return new ConflictException('This appointment has been already accepted!');
+        throw new ConflictException('This appointment has been already accepted!');
       };
 
       await this.appointmentModel.update(
@@ -348,6 +425,9 @@ export class AppointmentRepository implements IAppointment {
       };
     } catch (error) {
       console.log(error);
+      if (error instanceof NotFoundException || error instanceof ConflictException) {
+        throw error;
+      }
       throw new InternalServerErrorException(error.message);
     };
   };
@@ -379,7 +459,7 @@ export class AppointmentRepository implements IAppointment {
         });
 
         if (!appointments) {
-          return new NotFoundException('There is no appointment!');
+          throw new NotFoundException('There is no appointment!');
         };
 
         return { data: appointments, totalCount: 1 };
@@ -389,7 +469,7 @@ export class AppointmentRepository implements IAppointment {
         (!pagination.limit && pagination.page) ||
         (pagination.limit && !pagination.page)
       ) {
-        return new BadRequestException('Please provide limit and page!');
+        throw new BadRequestException('Please provide limit and page!');
       };
 
       const limit = pagination?.limit ?? null;
@@ -425,16 +505,21 @@ export class AppointmentRepository implements IAppointment {
 
       const numberOfPages = Math.ceil(appointments.length / pagination.limit);
 
-      if (!appointments || appointments.length === 0) {
-        return new NotFoundException('There is no appointment');
-      } else {
-        return {
-          data: appointments,
-          totalCount: numberOfPages,
-        };
+
+      return {
+        data: appointments,
+        totalCount: numberOfPages,
       };
+
     } catch (error) {
       console.log(error);
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      };
+
       throw new InternalServerErrorException(error.message);
     };
   };

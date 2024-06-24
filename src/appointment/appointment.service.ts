@@ -35,8 +35,13 @@ export class AppointmentService {
     return this.appointmentRepository.delete(id)
   };
 
-  public async findByUser(req: RequestWithUser): Promise<object | InternalServerErrorException | NotFoundException> {
-    return this.appointmentRepository.findByUser(req)
+  public async findByUser(req: RequestWithUser, pagination: AppointmentPagination): Promise<
+    {
+      data: object[],
+      totalCount: number
+    } | InternalServerErrorException | NotFoundException
+  > {
+    return this.appointmentRepository.findByUser(req, pagination)
   };
 
   public async confirmAppointment(appointment_id: string): Promise<

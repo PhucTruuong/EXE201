@@ -114,7 +114,8 @@ export class AuthRepository implements IAuth {
     object |
     InternalServerErrorException |
     NotFoundException |
-    ForbiddenException
+    ForbiddenException |
+    UnauthorizedException
   > {
     try {
       console.log('loginDto: ', loginDto)
@@ -136,11 +137,11 @@ export class AuthRepository implements IAuth {
 
       // console.log('Role Name: ', user.dataValues.role.role_name);
       if (!user) {
-        return new NotFoundException('User not found!');
+        throw new NotFoundException('User not found!');
       };
 
       if (user.account_status === false) {
-        return new ForbiddenException('This account is not active!');
+        throw new ForbiddenException('This account is not active!');
       }
       const passwordMatch = await this.bcryptUtils.compare(
         loginDto.password,
@@ -149,7 +150,7 @@ export class AuthRepository implements IAuth {
       console.log('password check: ', passwordMatch);
 
       if (!passwordMatch) {
-        return new UnauthorizedException('Password not match!');
+        throw new UnauthorizedException('Password does not match!');
       }
       const payload: PayloadType = {
         email: user.email,
@@ -168,6 +169,13 @@ export class AuthRepository implements IAuth {
       };
     } catch (error) {
       console.log('error from login', error);
+      if (
+        error instanceof NotFoundException ||
+        error instanceof UnauthorizedException ||
+        error instanceof ForbiddenException
+      ) {
+        throw error;
+      };
       throw new InternalServerErrorException(error.message);
     }
   }

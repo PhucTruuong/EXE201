@@ -18,7 +18,7 @@ export class RoleRepository implements IRole {
     ) { };
 
     public async findAllRoles(): Promise<object[] | InternalServerErrorException | NotFoundException> {
-        //try {
+        try {
             const allRoles = await this.roleModel.findAll({
                 attributes: [
                     'role_id',
@@ -29,14 +29,10 @@ export class RoleRepository implements IRole {
                 }
             });
 
-            if (!allRoles || allRoles.length === 0) {
-                return new NotFoundException('No role found!');
-            } else {
-                return allRoles;
-            };
-        // } catch (error) {
-        //     throw new InternalServerErrorException("Error fetching roles", error)
-        // };
+            return allRoles;
+        } catch (error) {
+            throw new InternalServerErrorException(error.message);
+        };
     };
 
     public async findRoleById(role_id: number): Promise<object | InternalServerErrorException | NotFoundException> {
@@ -52,16 +48,21 @@ export class RoleRepository implements IRole {
             });
 
             if (!role) {
-                return new NotFoundException("Role not found!");
+                throw new NotFoundException("Role not found!");
             } else {
                 return role;
             };
         } catch (error) {
-            throw new InternalServerErrorException("Error fetching role", error)
+            if (error instanceof NotFoundException) {
+                throw error;
+            };
+            throw new InternalServerErrorException(error.message);
         };
     };
 
-    public async findRoleByName(role_name: string): Promise<object | InternalServerErrorException | NotFoundException> {
+    public async findRoleByName(role_name: string): Promise<
+        object | InternalServerErrorException | NotFoundException
+    > {
         try {
             const role = await this.roleModel.findOne({
                 where: {
@@ -74,12 +75,15 @@ export class RoleRepository implements IRole {
             });
 
             if (!role) {
-                return new NotFoundException("Role not found!");
+                throw new NotFoundException("Role not found!");
             } else {
                 return role;
             };
         } catch (error) {
-            throw new InternalServerErrorException("Error fetching role", error)
+            if (error instanceof NotFoundException) {
+                throw error;
+            };
+            throw new InternalServerErrorException(error.message);
         };
     };
 
@@ -87,12 +91,12 @@ export class RoleRepository implements IRole {
         try {
             console.log(role_name)
             const roleExisted = await this.roleModel.findOne({
-                where:{role_name: role_name}
+                where: { role_name: role_name }
             });
 
             console.log(roleExisted);
 
-            if(roleExisted){
+            if (roleExisted) {
                 throw new ConflictException("This role is existed!")
             }
 
@@ -106,6 +110,9 @@ export class RoleRepository implements IRole {
 
             return newRole;
         } catch (error) {
+            if (error instanceof ConflictException) {
+                throw error;
+            };
             throw new InternalServerErrorException(error)
         };
     };
@@ -122,16 +129,21 @@ export class RoleRepository implements IRole {
             });
 
             if (updatedRole[0] < 1) {
-                return new NotFoundException('Role not found!');
+                throw new NotFoundException('Role not found!');
             } else {
                 return true;
             };
         } catch (error) {
-            throw new InternalServerErrorException("Error updating role", error)
+            if (error instanceof NotFoundException) {
+                throw error;
+            };
+            throw new InternalServerErrorException(error.message);
         };
     };
 
-    public async disableRole(role_id: string): Promise<boolean | InternalServerErrorException | NotFoundException> {
+    public async disableRole(role_id: string): Promise<
+        boolean | InternalServerErrorException | NotFoundException
+    > {
         try {
             const disabledRole = await this.roleModel.update({
                 role_status: false,
@@ -144,12 +156,15 @@ export class RoleRepository implements IRole {
             });
 
             if (disabledRole[0] < 1) {
-                return new NotFoundException('Role not found!');
+                throw new NotFoundException('Role not found!');
             } else {
                 return true;
             };
         } catch (error) {
-            throw new InternalServerErrorException("Error disabling role", error)
+            if (error instanceof NotFoundException) {
+                throw error;
+            };
+            throw new InternalServerErrorException(error.message);
         };
     };
 }

@@ -15,7 +15,6 @@ export interface IBrand {
         totalCount: number
     } |
         InternalServerErrorException |
-        NotFoundException |
         BadRequestException
     >;
     createBrand(createBrandDto: CreateBrandDto & { image: Express.Multer.File }): Promise<

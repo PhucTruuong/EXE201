@@ -66,15 +66,15 @@ export class PetRepository implements IPet {
       const [existingPet, existingPetType, existingPetBreed] = await Promise.all(promise);
 
       if (existingPet) {
-        return new ConflictException('Pet has already existed, please choose another name!');
+        throw new ConflictException('Pet has already existed, please choose another name!');
       };
 
       if (!existingPetType) {
-        return new NotFoundException('Pet Type not found');
+        throw new NotFoundException('Pet Type not found');
       };
 
       if (!existingPetBreed) {
-        return new NotFoundException('Pet Breed not found');
+        throw new NotFoundException('Pet Breed not found');
       };
 
       let uploadedImageUrl;
@@ -121,6 +121,10 @@ export class PetRepository implements IPet {
       return newPet;
     } catch (error) {
       console.log('error from create pet', error);
+      if (error instanceof ConflictException || error instanceof NotFoundException) {
+        throw error;
+      };
+
       throw new InternalServerErrorException(error.message);
     }
   }
@@ -163,11 +167,11 @@ export class PetRepository implements IPet {
       };
 
       if (!existingPetType) {
-        return new NotFoundException('Pet Type not found');
+        throw new NotFoundException('Pet Type not found');
       };
 
       if (!existingPetBreed) {
-        return new NotFoundException('Pet  Breed not found');
+        throw new NotFoundException('Pet  Breed not found');
       };
 
       let imageUrl = null;
@@ -176,15 +180,12 @@ export class PetRepository implements IPet {
           const uploadResult = await this.cloudinaryService.uploadFile(
             createPetDto.image,
           );
-          if (!uploadResult) {
-            console.log('error upload image pet');
-            return new InternalServerErrorException();
-          }
+
           imageUrl = uploadResult.secure_url;
           console.log('image', imageUrl);
         } catch (error) {
           console.log('error from upload', error);
-          return new InternalServerErrorException();
+          return new InternalServerErrorException(error.message);
         };
 
         await this.notificationGateway.emitDemoNotification(req.user.userId, {
@@ -194,7 +195,7 @@ export class PetRepository implements IPet {
           type: 'info',
         });
       } else {
-        return new NotFoundException('There is no images');
+        throw new NotFoundException('There is no images');
       };
 
       const newPet = this.petModel.create({
@@ -214,6 +215,9 @@ export class PetRepository implements IPet {
       return newPet;
     } catch (error) {
       console.log('error from create pet type', error);
+      if (error instanceof ConflictException || error instanceof NotFoundException) {
+        throw error;
+      };
       throw new InternalServerErrorException(error.message);
     };
   };
@@ -245,13 +249,9 @@ export class PetRepository implements IPet {
           ],
         });
 
-        if (!allPet || allPet.length === 0) {
-          return new NotFoundException('No pet found!');
-        } else {
-          return {
-            data: allPet,
-            totalCount: 1,
-          };
+        return {
+          data: allPet,
+          totalCount: 1,
         };
       };
 
@@ -259,7 +259,7 @@ export class PetRepository implements IPet {
         (pagination.limit === undefined && pagination.page) ||
         (pagination.limit && pagination.page === undefined)
       ) {
-        return new BadRequestException('Please provide page and limit!');
+        throw new BadRequestException('Please provide page and limit!');
       };
 
       const limit = pagination?.limit ?? null;
@@ -288,17 +288,18 @@ export class PetRepository implements IPet {
 
       const numberOfPage = Math.ceil(count / pagination.limit);
 
-      if (!allPet || count === 0) {
-        return new NotFoundException('No pet found!');
-      } else {
-        return {
-          data: allPet,
-          totalCount: numberOfPage,
-        };
+      return {
+        data: allPet,
+        totalCount: numberOfPage,
       };
+
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error fetching pet ', error);
+      if (error instanceof BadRequestException) {
+        throw error;
+      };
+
+      throw new InternalServerErrorException(error.message);
     };
   };
 
@@ -333,13 +334,18 @@ export class PetRepository implements IPet {
           },
         ],
       });
+
       if (!pet) {
-        return new NotFoundException('pet  not found');
-      }
+        throw new NotFoundException('This pet does not exist!');
+      };
+
       return pet;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error find one  pet ', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+      throw new InternalServerErrorException(error.message);
     }
   };
 
@@ -353,9 +359,11 @@ export class PetRepository implements IPet {
       const pet = await this.petModel.findOne({
         where: { id: id },
       });
+
       if (!pet) {
-        return new NotFoundException('pet  not found');
-      }
+        throw new NotFoundException('This pet does not exist!');
+      };
+
       let uploadedImageUrl;
       if (updatePetDto.image) {
         try {
@@ -366,11 +374,11 @@ export class PetRepository implements IPet {
           uploadedImageUrl = myCloud.secure_url;
         } catch (error) {
           console.error('Image upload error:', error);
-          return new InternalServerErrorException('Upload failed');
+          return new InternalServerErrorException(error.message);
         };
       };
 
-      const PetUpdated = await this.petModel.update(
+      const petUpdated = await this.petModel.update(
         {
           pet_name: updatePetDto.pet_name,
           height: updatePetDto.height,
@@ -386,10 +394,13 @@ export class PetRepository implements IPet {
         },
       );
 
-      return PetUpdated;
+      return petUpdated;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error update one pet ', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+      throw new InternalServerErrorException(error.message);
     };
   };
 
@@ -402,17 +413,24 @@ export class PetRepository implements IPet {
       const pet = await this.petModel.findOne({
         where: { id: id },
       });
+
       if (!pet) {
-        return new NotFoundException('pet  not found');
-      }
+        throw new NotFoundException('pet  not found');
+      };
+
       await this.petModel.destroy({
         where: { id: id },
       });
+
       return {
         message: 'Pet deleted successfully!',
       };
     } catch (error) {
       console.log(error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+
       throw new InternalServerErrorException('Error delete one pet ', error);
     };
   };
@@ -425,11 +443,14 @@ export class PetRepository implements IPet {
         where: { id: id },
       });
       if (!exist) {
-        return new NotFoundException();
+        throw new NotFoundException('This pet does not exist!');
       }
       return exist;
     } catch (error) {
       console.log(error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
       throw new InternalServerErrorException('Error delete one pet ', error);
     };
   };
@@ -444,7 +465,7 @@ export class PetRepository implements IPet {
   > {
     try {
       if (!req.user || !req.user.userId) {
-        return new NotFoundException('User ID not found in request');
+        throw new NotFoundException('User ID not found in request');
       };
 
       const limit = pagination?.limit ?? null;
@@ -468,8 +489,9 @@ export class PetRepository implements IPet {
           'updated_at',
         ],
       };
-      const { count, rows: allPet } =
-        await this.petModel.findAndCountAll(findOptions);
+
+      const { count, rows: allPet } = await this.petModel.findAndCountAll(findOptions);
+
       if (limit !== null) {
         findOptions.limit = limit;
         findOptions.offset = (page - 1) * limit;
@@ -482,6 +504,9 @@ export class PetRepository implements IPet {
 
     } catch (error) {
       console.log(error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
       throw new InternalServerErrorException('Error fetching pet ', error);
     };
   };

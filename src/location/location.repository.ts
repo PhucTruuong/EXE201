@@ -33,27 +33,36 @@ export class LocationRepository implements ILocation {
                 where: {
                     location_name: createLocationDto.location_name,
                 }
-            })
+            });
+
             if (existing) {
-                throw new ConflictException("Items already exists , choose other name");
-            }
+                throw new ConflictException("This location has already existed, choose other ones!");
+            };
+
             const existingCity = await this.cityModel.findOne({
                 where: {
                     id: createLocationDto.city_id,
                 }
-            })
+            });
+
             if (!existingCity) {
-                throw new NotFoundException("City not found ");
-            }
+                throw new NotFoundException("This city does not exist!");
+            };
+
             const new_item = await this.locationModel.create({
                 location_name: createLocationDto.location_name,
                 location_address: createLocationDto.location_address,
                 city_id: createLocationDto.city_id,
-            })
-            return new_item
+            });
+
+            return new_item;
         } catch (error) {
-            console.log("error", error)
-            throw new InternalServerErrorException("Error create location", error)
+            console.log("error", error);
+            if (error instanceof ConflictException || error instanceof NotFoundException) {
+                throw error;
+            };
+
+            throw new InternalServerErrorException(error.message);
         };
     };
 
@@ -61,18 +70,25 @@ export class LocationRepository implements ILocation {
         try {
             const location = await this.locationModel.findOne({
                 where: { id: id }
-            })
+            });
+
             if (!location) {
                 throw new NotFoundException("item  not found");
-            }
+            };
+
             await this.locationModel.destroy({
                 where: { id: id }
-            })
+            });
+
             return {
                 message: "item deleted successfully"
-            }
+            };
         } catch (error) {
             console.log(error);
+            if (error instanceof NotFoundException) {
+                throw error;
+            };
+
             throw new InternalServerErrorException("Error delete one item ", error)
         };
     };
@@ -85,13 +101,10 @@ export class LocationRepository implements ILocation {
         try {
             if (pagination.page === undefined && pagination.limit === undefined) {
                 const allItem = await this.locationModel.findAll();
-                if (!allItem) {
-                    return new NotFoundException('No item found!');
-                } else {
-                    return {
-                        data: allItem,
-                        totalCount: 1
-                    };
+
+                return {
+                    data: allItem,
+                    totalCount: 1
                 };
             };
 
@@ -99,7 +112,7 @@ export class LocationRepository implements ILocation {
                 (pagination.limit === undefined && pagination.page) ||
                 (pagination.limit && pagination.page === undefined)
             ) {
-                return new BadRequestException('Please provide page and limit');
+                throw new BadRequestException('Please provide page and limit');
             };
 
             const { count, rows: allItem } = await this.locationModel.findAndCountAll({
@@ -118,44 +131,60 @@ export class LocationRepository implements ILocation {
             });
 
             const numberOfPage = Math.ceil(count / pagination.limit);
-            
-            if (!allItem || count === 0) {
-                return new NotFoundException()
-            } else {
-                return {
-                    data: allItem,
-                    totalCount: numberOfPage
-                };
+
+
+            return {
+                data: allItem,
+                totalCount: numberOfPage
             };
         } catch (error) {
             console.log(error);
+            if (error instanceof BadRequestException) {
+                throw error;
+            }
             throw new InternalServerErrorException(error.message)
         };
     };
 
-    public async findOne(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException> {
-        try {
-            const item = await this.locationModel.findOne({
-                where: { id: id }
-            })
-            if (!item) {
-                throw new NotFoundException("Item not found!");
-            }
-            return item
-        } catch (error) {
-            console.log(error);
-            throw new InternalServerErrorException(error.message);
-        };
-    };
-
-    public async update(id: string, updateLocationDto: UpdateLocationDto): Promise<object | InternalServerErrorException | NotFoundException | HttpException> {
+    public async findOne(id: string): Promise<
+        object |
+        InternalServerErrorException |
+        HttpException |
+        NotFoundException
+    > {
         try {
             const item = await this.locationModel.findOne({
                 where: { id: id }
             });
-    
+
             if (!item) {
-                throw new NotFoundException("item  not found");
+                throw new NotFoundException("Item not found!");
+            };
+
+            return item
+        } catch (error) {
+            console.log(error);
+            if (error instanceof NotFoundException) {
+                throw error;
+            };
+
+            throw new InternalServerErrorException(error.message);
+        };
+    };
+
+    public async update(id: string, updateLocationDto: UpdateLocationDto): Promise<
+        object |
+        InternalServerErrorException |
+        NotFoundException |
+        HttpException
+    > {
+        try {
+            const item = await this.locationModel.findOne({
+                where: { id: id }
+            });
+
+            if (!item) {
+                throw new NotFoundException("This location does not exist!");
             };
 
             const duplicateName = await this.locationModel.findOne({
@@ -178,10 +207,13 @@ export class LocationRepository implements ILocation {
                     where: { id: id }
                 }
             );
-            
+
             return updated;
         } catch (error) {
             console.log(error);
+            if (error instanceof NotFoundException || error instanceof ConflictException) {
+                throw error;
+            };
             throw new InternalServerErrorException("Error update item ", error)
         };
     };
