@@ -23,27 +23,36 @@ export class PetBreedRepository implements IPetBreed {
     private readonly petBreedModel: typeof PetBreed,
     @Inject('PET_TYPE_REPOSITORY')
     private readonly petTypeModel: typeof PetType,
-  ) { }
-  async createPetBreed(
+  ) { };
+
+  public async createPetBreed(
     createPetType: CreatePetBreedDto,
   ): Promise<
     object | InternalServerErrorException | HttpException | ConflictException
   > {
     try {
-      const existingPetBreed = await this.petBreedModel.findOne({
-        where: {
-          breed_name: createPetType.breed_name,
-        },
-      });
+      const promise = [
+        this.petBreedModel.findOne({
+          where: {
+            breed_name: createPetType.breed_name,
+          },
+        }),
+
+        this.petTypeModel.findOne({
+          where: { id: createPetType.pet_type_id },
+        }),
+      ];
+
+      const [existingPetBreed, existingPetType] = await Promise.all(promise);
+
       if (existingPetBreed) {
-        throw new ConflictException('Pet Breeds already exists');
-      }
-      const existingPetType = await this.petTypeModel.findOne({
-        where: { id: createPetType.pet_type_id },
-      });
+        throw new ConflictException('This pet breed has already existed!');
+      };
+
       if (!existingPetType) {
-        throw new ConflictException('Pet Type is wrong or not found');
-      }
+        throw new ConflictException('Pet Type is wrong or not existed!');
+      };
+
       const newPetBreed = this.petBreedModel.create({
         id: uuidv4(),
         breed_name: createPetType.breed_name,
@@ -52,13 +61,18 @@ export class PetBreedRepository implements IPetBreed {
         createAt: new Date(),
         updateAt: new Date(),
       });
+
       return newPetBreed;
     } catch (error) {
       console.log('error from create pet breeds', error);
-      throw new InternalServerErrorException('Error create pet breeds', error);
-    }
-  }
-  async findAllPetBreed(
+      if (error instanceof ConflictException) {
+        throw error;
+      };
+      throw new InternalServerErrorException(error.message);
+    };
+  };
+
+  public async findAllPetBreed(
     pagination: PetBreedPagination,
   ): Promise<
     | InternalServerErrorException
@@ -85,13 +99,9 @@ export class PetBreedRepository implements IPetBreed {
           ],
         });
 
-        if (!allPetBreed) {
-          return new HttpException('No Pet Type found!', HttpStatus.NOT_FOUND);
-        } else {
-          return {
-            data: allPetBreed,
-            totalCount: 1,
-          };
+        return {
+          data: allPetBreed,
+          totalCount: 1,
         };
       };
 
@@ -99,7 +109,7 @@ export class PetBreedRepository implements IPetBreed {
         (pagination.limit === undefined && pagination.page) ||
         (pagination.limit && pagination.page === undefined)
       ) {
-        return new BadRequestException('Please provide page and limit!');
+        throw new BadRequestException('Please provide page and limit!');
       };
 
       const limit = pagination?.limit ?? null;
@@ -129,25 +139,24 @@ export class PetBreedRepository implements IPetBreed {
       if (limit !== null) {
         findOptions.limit = limit;
         findOptions.offset = (page - 1) * limit;
-      }
-      if (!allPetBreed || count === 0) {
-        return new HttpException('No Pet Type found!', HttpStatus.NOT_FOUND);
-      } else {
-        return {
-          data: allPetBreed,
-          totalCount: numberOfPage,
-        };
-      }
+      };
+
+      return {
+        data: allPetBreed,
+        totalCount: numberOfPage,
+      };
+
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException(
-        'Error fetching pet  breed',
-        error,
-      );
-    }
-  }
+      if (error instanceof BadRequestException) {
+        throw error;
+      };
 
-  async findOnePetBreed(
+      throw new InternalServerErrorException(error.message);
+    }
+  };
+
+  public async findOnePetBreed(
     id: string,
   ): Promise<object | InternalServerErrorException | HttpException> {
     try {
@@ -160,13 +169,14 @@ export class PetBreedRepository implements IPetBreed {
       return petBreed;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException(
-        'Error find one  pet breed',
-        error,
-      );
-    }
-  }
-  async updatePetBreed(
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+      throw new InternalServerErrorException(error.message);
+    };
+  };
+
+  public async updatePetBreed(
     id: string,
     updatePetType: UpdatePetBreedDto,
   ): Promise<object | InternalServerErrorException | HttpException> {
@@ -174,10 +184,12 @@ export class PetBreedRepository implements IPetBreed {
       const petBreed = await this.petBreedModel.findOne({
         where: { id: id },
       });
+
       if (!petBreed) {
-        throw new NotFoundException('pet breed not found');
-      }
-      const PetBreedUpdated = await this.petBreedModel.update(
+        throw new NotFoundException('This pet breed does not exist!');
+      };
+
+      const petBreedUpdated = await this.petBreedModel.update(
         {
           breed_name: updatePetType.breed_name,
           breed_description: updatePetType.breed_description,
@@ -187,40 +199,48 @@ export class PetBreedRepository implements IPetBreed {
           where: { id: id },
         },
       );
-      return PetBreedUpdated;
+
+      return petBreedUpdated;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException(
-        'Error update one pet type',
-        error,
-      );
-    }
-  }
-  async deletePetBreed(
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+
+      throw new InternalServerErrorException(error.message);
+    };
+  };
+
+  public async deletePetBreed(
     id: string,
   ): Promise<object | InternalServerErrorException | HttpException> {
     try {
       const petType = await this.petBreedModel.findOne({
         where: { id: id },
       });
+
       if (!petType) {
-        throw new NotFoundException('pet breed not found');
-      }
+        throw new NotFoundException('This pet breed does not exist!');
+      };
+
       await this.petBreedModel.destroy({
         where: { id: id },
       });
+
       return {
         message: 'pet breed deleted successfully',
       };
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException(
-        'Error delete one pet breed',
-        error,
-      );
-    }
-  }
-  async getPetBreedByPetType(
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+
+      throw new InternalServerErrorException(error.message);
+    };
+  };
+
+  public async getPetBreedByPetType(
     id: string,
   ): Promise<object | InternalServerErrorException | NotFoundException> {
     try {
@@ -229,13 +249,17 @@ export class PetBreedRepository implements IPetBreed {
           pet_type_id: id,
         },
       });
+
       if (!petBreeds) {
-        return new NotFoundException('Do not find pet breed!');
+        throw new NotFoundException('This pet breed does not exist!');
       }
       return petBreeds;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error find pet breed', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(error.message);
     }
-  }
+  };
 }

@@ -51,18 +51,13 @@ export class BrandRepository implements IBrand {
             createBrandDto.image,
           );
 
-          if (!uploadResult) {
-            console.log('error upload image pet');
-            return new InternalServerErrorException();
-          };
-
           imageUrl = uploadResult.secure_url;
         } catch (error) {
           console.log('error from upload', error);
-          return new InternalServerErrorException();
+          throw new InternalServerErrorException(error.message);
         };
       } else {
-        return new NotFoundException('not have images');
+        throw new NotFoundException('There is no image uploaded!');
       };
 
       const newBrand = await this.brandModel.create({
@@ -74,6 +69,9 @@ export class BrandRepository implements IBrand {
       return newBrand;
     } catch (error) {
       console.log('error', error);
+      if (error instanceof ConflictException || error instanceof NotFoundException) {
+        throw error;
+      }
       throw new InternalServerErrorException(error.message);
     };
   };
@@ -84,7 +82,6 @@ export class BrandRepository implements IBrand {
     | { data: object[]; totalCount: number }
     | InternalServerErrorException
     | BadRequestException
-    | NotFoundException
   > {
     try {
       console.log('pagination: ', pagination.limit, pagination.page);
@@ -103,11 +100,11 @@ export class BrandRepository implements IBrand {
         (!pagination.page && pagination.limit)
       ) {
         console.log('one pagination');
-        return new BadRequestException(
+        throw new BadRequestException(
           'Page and limit query parameters are required',
         );
       };
-      
+
       console.log('pagination');
       const limit = pagination?.limit ?? null;
       const page = pagination?.page ?? 1;
@@ -132,19 +129,20 @@ export class BrandRepository implements IBrand {
       const { count, rows: allBrand } = await this.brandModel.findAndCountAll(findOptions);
       const numberOfPage = Math.ceil(count / pagination.limit);
 
-      if (!allBrand || count === 0) {
-        return new NotFoundException('No pet found!');
-      } else {
-        return {
-          data: allBrand,
-          totalCount: numberOfPage,
-        };
+      return {
+        data: allBrand,
+        totalCount: numberOfPage,
       };
+
     } catch (error) {
       console.log(error);
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
       throw new InternalServerErrorException(error.message);
-    }
-  }
+    };
+  };
+
   public async findOneBrand(
     id: string,
   ): Promise<
@@ -154,16 +152,23 @@ export class BrandRepository implements IBrand {
       const brand = await this.brandModel.findOne({
         where: { id: id },
       });
+
       if (!brand) {
-        throw new NotFoundException('brand  not found');
-      }
+        throw new NotFoundException('This brand does not exist!');
+      };
+
       return brand;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error find one  brand ', error);
-    }
-  }
-  async updateBrand(
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+
+      throw new InternalServerErrorException(error.message);
+    };
+  };
+
+  public async updateBrand(
     id: string,
     updateBrandDto: UpdateBrandDto,
   ): Promise<
@@ -174,21 +179,27 @@ export class BrandRepository implements IBrand {
     | ConflictException
   > {
     try {
-      const pet = await this.brandModel.findOne({
-        where: { id: id },
-      });
-      if (!pet) {
-        throw new NotFoundException('brand  not found');
-      }
-      const duplicateName = await this.brandModel.findOne({
-        where: {
-          brand_name: updateBrandDto.brand_name,
-        },
-      });
+      const promises = [
+        this.brandModel.findOne({
+          where: { id: id },
+        }),
+
+        this.brandModel.findOne({
+          where: { brand_name: updateBrandDto.brand_name },
+        }),
+      ];
+
+      const [brand, duplicateName] = await Promise.all(promises);
+
+      if (!brand) {
+        throw new NotFoundException('This brand does not exist!');
+      };
+
       if (duplicateName) {
-        throw new ConflictException('Duplicate brand name');
-      }
-      const BrandUpdated = await this.brandModel.update(
+        throw new ConflictException('Duplicate brand name!');
+      };
+
+      const brandUpdated = await this.brandModel.update(
         {
           brand_name: updateBrandDto.brand_name,
           brand_description: updateBrandDto.brand_description,
@@ -198,13 +209,19 @@ export class BrandRepository implements IBrand {
           where: { id: id },
         },
       );
-      return BrandUpdated;
+
+      return brandUpdated;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error update one brand ', error);
+      if (error instanceof NotFoundException || error instanceof ConflictException) {
+        throw error;
+      };
+
+      throw new InternalServerErrorException(error.message);
     }
-  }
-  async deleteBrand(
+  };
+
+  public async deleteBrand(
     id: string,
   ): Promise<
     object | InternalServerErrorException | HttpException | NotFoundException
@@ -213,18 +230,25 @@ export class BrandRepository implements IBrand {
       const brand = await this.brandModel.findOne({
         where: { id: id },
       });
+
       if (!brand) {
-        throw new NotFoundException('brand  not found');
+        throw new NotFoundException('This brand does not exist!');
       }
+
       await this.brandModel.destroy({
         where: { id: id },
       });
+
       return {
-        message: 'brand  deleted successfully',
+        message: 'This brand is deleted successfully!',
       };
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error delete one brand ', error);
-    }
-  }
-}
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+
+      throw new InternalServerErrorException(error.message);
+    };
+  };
+};

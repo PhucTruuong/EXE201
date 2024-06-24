@@ -50,13 +50,10 @@ export class CityRepository implements ICity {
         try {
             if (pagination.page === undefined && pagination.limit === undefined) {
                 const allCity = await this.cityModel.findAll();
-                if (!allCity) {
-                    return new NotFoundException('No City found!');
-                } else {
-                    return {
-                        data: allCity,
-                        totalCount: 1
-                    };
+
+                return {
+                    data: allCity,
+                    totalCount: 1
                 };
             };
 
@@ -64,7 +61,7 @@ export class CityRepository implements ICity {
                 (pagination.limit === undefined && pagination.page) ||
                 (pagination.limit && pagination.page === undefined)
             ) {
-                return new BadRequestException('Please provide page and limit');
+                throw new BadRequestException('Please provide page and limit');
             } else {
                 console.log("pagination", pagination)
                 const { count, rows: allCity } = await this.cityModel.findAndCountAll({
@@ -79,21 +76,21 @@ export class CityRepository implements ICity {
                     offset: (pagination.page - 1) * pagination.limit
                 });
 
-                console.log("allCity", allCity)
+                console.log("All Cities: ", allCity);
 
                 const numberOfPage = Math.ceil(count / pagination.limit);
 
-                if (!allCity || count === 0) {
-                    return new NotFoundException('No city found!');
-                } else {
-                    return {
-                        data: allCity,
-                        totalCount: numberOfPage
-                    };
+                return {
+                    data: allCity,
+                    totalCount: numberOfPage
                 };
             };
         } catch (error) {
             console.log(error);
+            if (error instanceof BadRequestException) {
+                throw error;
+            };
+
             throw new InternalServerErrorException(error.message)
         };
     };

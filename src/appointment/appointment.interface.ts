@@ -23,7 +23,12 @@ export interface IAppointment {
         object | InternalServerErrorException | NotFoundException | HttpException
     >;
     delete(id: string): Promise<object | InternalServerErrorException | HttpException | NotFoundException>;
-    findByUser(req: RequestWithUser): Promise<object | InternalServerErrorException | NotFoundException>;
+    findByUser(req: RequestWithUser, pagination: AppointmentPagination): Promise<
+        {
+            data: object[],
+            totalCount: number
+        } | InternalServerErrorException | NotFoundException
+    >;
     confirmAppointment(appointment_id: string): Promise<object | InternalServerErrorException | NotFoundException>;
     getHostAppointments(req: RequestWithUser, pagination: AppointmentPagination): Promise<
         {

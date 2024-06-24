@@ -71,21 +71,21 @@ export class ServiceRepository implements IService {
       const [existing, existingBrand, existingLocation, existingCategory] = await Promise.all(promises);
 
       if (existing) {
-        return new ConflictException(
+        throw new ConflictException(
           'Items already exists , choose other name',
         );
       };
 
       if (!existingBrand) {
-        return new NotFoundException('Brand not found');
+        throw new NotFoundException('Brand not found');
       };
 
       if (!existingLocation) {
-        return new NotFoundException('Item not found');
+        throw new NotFoundException('Item not found');
       };
 
       if (!existingCategory) {
-        return new NotFoundException('Category not found ');
+        throw new NotFoundException('Category not found ');
       };
 
       let imageUrl = null;
@@ -95,18 +95,13 @@ export class ServiceRepository implements IService {
             createServiceDto.image,
           );
 
-          if (!uploadResult) {
-            console.log('error upload image pet');
-            return new InternalServerErrorException();
-          };
-
           imageUrl = uploadResult.secure_url;
         } catch (error) {
           console.log('error from upload', error);
           return new InternalServerErrorException(error.message);
         };
       } else {
-        return new NotFoundException('There is no image');
+        throw new NotFoundException('There is no image');
       };
 
       const new_item = await this.serviceModel.create({
@@ -127,6 +122,9 @@ export class ServiceRepository implements IService {
       return new_item;
     } catch (error) {
       console.log('error', error);
+      if (error instanceof ConflictException || error instanceof NotFoundException) {
+        throw error;
+      };
       throw new InternalServerErrorException(error.message);
     };
   };
@@ -174,21 +172,17 @@ export class ServiceRepository implements IService {
           order: [['created_at', 'DESC']],
         });
 
-        // if (!allItem) {
-        //   return new NotFoundException();
-        // } else {
         return {
           data: allItem,
           totalCount: 1,
         };
-        //};
       };
 
       if (
         (pagination.limit === undefined && pagination.page) ||
         (pagination.limit && pagination.page === undefined)
       ) {
-        return new BadRequestException('Please provide page and limit!');
+        throw new BadRequestException('Please provide page and limit!');
       };
 
       const limit = pagination?.limit ?? null;
@@ -233,16 +227,16 @@ export class ServiceRepository implements IService {
 
       const numberOfPage = Math.ceil(count / pagination.limit);
 
-      // if (!allItem || count === 0) {
-      //   return new NotFoundException();
-      // } else {
       return {
         data: allItem,
         totalCount: numberOfPage,
       };
-      //}
+ 
     } catch (error) {
       console.log(error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
       throw new InternalServerErrorException(error.message);
     };
   };
@@ -290,13 +284,18 @@ export class ServiceRepository implements IService {
           },
         ],
       });
+
       if (!item) {
-        throw new NotFoundException('item  not found');
-      }
+        throw new NotFoundException('This service does not exist');
+      };
+
       return item;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error find item ', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+      throw new InternalServerErrorException(error.message);
     };
   };
 
@@ -311,7 +310,7 @@ export class ServiceRepository implements IService {
       });
 
       if (!existedService) {
-        return new NotFoundException('Service not found');
+        throw new NotFoundException('Service not found');
       }
 
       if (
@@ -325,7 +324,7 @@ export class ServiceRepository implements IService {
         !updateServiceDto.location_id &&
         !updateServiceDto.image
       ) {
-        return new BadRequestException('Please provide data to update');
+        throw new BadRequestException('Please provide data to update');
       };
 
       const updateObject = {};
@@ -334,9 +333,11 @@ export class ServiceRepository implements IService {
         const duplicateName = await this.serviceModel.findOne({
           where: { service_name: updateServiceDto.service_name },
         });
+
         if (duplicateName) {
           throw new ConflictException('Duplicate name!');
-        }
+        };
+
         updateObject['service_name'] = updateServiceDto.service_name;
       };
 
@@ -393,11 +394,6 @@ export class ServiceRepository implements IService {
             updateServiceDto.image,
           );
 
-          if (!uploadResult) {
-            console.log('error upload image pet');
-            return new InternalServerErrorException();
-          };
-
           imageUrl = uploadResult.secure_url;
           updateObject['image'] = imageUrl;
         } catch (error) {
@@ -415,6 +411,13 @@ export class ServiceRepository implements IService {
       return { message: 'Service updated successfully' };
     } catch (error) {
       console.log(error);
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ConflictException || 
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      };
       throw new InternalServerErrorException(error.message);
     };
   };
@@ -428,18 +431,24 @@ export class ServiceRepository implements IService {
       const item = await this.serviceModel.findOne({
         where: { id: id },
       });
+
       if (!item) {
-        throw new NotFoundException('item  not found');
-      }
+        throw new NotFoundException('This service does not exist');
+      };
+
       await this.serviceModel.destroy({
         where: { id: id },
       });
+
       return {
         message: 'item deleted successfully',
-      };
+      }
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error delete one item ', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+      throw new InternalServerErrorException(error.message);
     };
   };
 };

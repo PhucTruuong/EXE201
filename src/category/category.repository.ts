@@ -12,6 +12,7 @@ import { Category } from 'src/database/dabaseModels/category.entity';
 import { CategoryPagination } from './dto/category-pagination.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { error } from 'console';
 // import { find } from 'rxjs';
 
 export class CategoryRepository implements ICategory {
@@ -19,7 +20,7 @@ export class CategoryRepository implements ICategory {
     @Inject('CATEGORY_REPOSITORY')
     private readonly categoryModel: typeof Category,
     private readonly cloudinaryService: CloudinaryService,
-  ) {}
+  ) { }
   public async createCategory(
     createCategoryDto: CreateCategoryDto & { image: Express.Multer.File },
   ): Promise<
@@ -35,28 +36,27 @@ export class CategoryRepository implements ICategory {
           category_name: createCategoryDto.category_name,
         },
       });
+
       if (existingCategory) {
         throw new ConflictException(
           'Category  already exists , choose other name',
         );
-      }
+      };
+
       let imageUrl = null;
       if (createCategoryDto.image) {
         try {
           const uploadResult = await this.cloudinaryService.uploadFile(
             createCategoryDto.image,
           );
-          if (!uploadResult) {
-            console.log('error upload image pet');
-            return new InternalServerErrorException();
-          }
+
           imageUrl = uploadResult.secure_url;
         } catch (error) {
           console.log('error from upload', error);
-          return new InternalServerErrorException();
+          return new InternalServerErrorException(error.message);
         }
       } else {
-        return new NotFoundException('There is no image to upload!');
+        throw new NotFoundException('There is no image to upload!');
       }
       const newCategory = await this.categoryModel.create({
         category_name: createCategoryDto.category_name,
@@ -66,6 +66,10 @@ export class CategoryRepository implements ICategory {
       return newCategory;
     } catch (error) {
       console.log('error', error);
+      if (error instanceof ConflictException || error instanceof NotFoundException) {
+        throw error;
+      };
+
       throw new InternalServerErrorException('Error create category', error);
     };
   };
@@ -79,7 +83,7 @@ export class CategoryRepository implements ICategory {
     | BadRequestException
   > {
     try {
-      if(pagination.limit === undefined && pagination.page === undefined) {
+      if (pagination.limit === undefined && pagination.page === undefined) {
         const allCategory = await this.categoryModel.findAll({
           attributes: [
             'id',
@@ -91,21 +95,18 @@ export class CategoryRepository implements ICategory {
             'updated_at',
           ],
         });
-        if (!allCategory) {
-          return new NotFoundException('No category found!');
-        } else {
-          return {
-            data: allCategory,
-            totalCount: 1,
-          };
-        }
+
+        return {
+          data: allCategory,
+          totalCount: 1,
+        };
       };
 
       if (
         (pagination.limit === undefined && pagination.page) ||
         (pagination.limit && pagination.page === undefined)
       ) {
-        return new BadRequestException('Please provide page and limit!');
+        throw new BadRequestException('Please provide page and limit!');
       };
 
       const limit = pagination?.limit ?? null;
@@ -131,16 +132,17 @@ export class CategoryRepository implements ICategory {
 
       const numberOfPage = Math.ceil(count / pagination.limit);
 
-      if (!allCategory || count === 0) {
-        return new NotFoundException('No category found!');
-      } else {
-        return {
-          data: allCategory,
-          totalCount: numberOfPage,
-        };
-      }
+      return {
+        data: allCategory,
+        totalCount: numberOfPage,
+      };
+
     } catch (error) {
       console.log(error);
+      if (error instanceof BadRequestException) {
+        throw error;
+      };
+
       throw new InternalServerErrorException(error.message);
     };
   };
@@ -162,10 +164,10 @@ export class CategoryRepository implements ICategory {
       return category;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException(
-        'Error find one  category ',
-        error,
-      );
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+      throw new InternalServerErrorException(error.message);
     };
   };
 
@@ -179,7 +181,7 @@ export class CategoryRepository implements ICategory {
         where: { id: id },
       });
       if (!category) {
-        throw new NotFoundException('category  not found');
+        throw new NotFoundException('This category does not exist!');
       };
 
       await this.categoryModel.destroy({
@@ -187,14 +189,14 @@ export class CategoryRepository implements ICategory {
       });
 
       return {
-        message: 'category  deleted successfully',
+        message: 'This category is deleted successfully!',
       };
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException(
-        'Error delete one category',
-        error,
-      );
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+      throw new InternalServerErrorException(error.message);
     };
   };
 
@@ -205,13 +207,15 @@ export class CategoryRepository implements ICategory {
     object | InternalServerErrorException | NotFoundException | HttpException
   > {
     try {
-      const pet = await this.categoryModel.findOne({
+      const category = await this.categoryModel.findOne({
         where: { id: id },
       });
-      if (!pet) {
-        throw new NotFoundException('pet  not found');
-      }
-      const CategoryUpdate = await this.categoryModel.update(
+
+      if (!category) {
+        throw new NotFoundException('This category does not exist!');
+      };
+
+      const categoryUpdate = await this.categoryModel.update(
         {
           category_name: updateCategoryDto.category_name,
           category_description: updateCategoryDto.category_description,
@@ -221,9 +225,14 @@ export class CategoryRepository implements ICategory {
           where: { id: id },
         },
       );
-      return CategoryUpdate;
+
+      return categoryUpdate;
     } catch (error) {
       console.log(error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+      
       throw new InternalServerErrorException('Error update one pet ', error);
     };
   };

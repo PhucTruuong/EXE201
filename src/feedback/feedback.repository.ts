@@ -43,17 +43,24 @@ export class feedbackRepository implements IFeedBack {
     | ConflictException
   > {
     try {
-      const existUser = await this.userModel.findOne({
-        where: { user_id: req.user.userId },
-      });
+      const promise = [
+        this.userModel.findOne({
+          where: { user_id: req.user.userId },
+        }),
+
+        this.serviceModel.findOne({
+          where: { id: createFeedbackDto.service_id },
+        }),
+      ];
+
+      const [existUser, existService] = await Promise.all(promise);
+
       if (!existUser) {
-        throw new NotFoundException('User not found');
+        throw new NotFoundException('This user does not exist!');
       }
-      const existService = await this.serviceModel.findOne({
-        where: { id: createFeedbackDto.service_id },
-      });
+
       if (!existService) {
-        throw new NotFoundException('Service not found');
+        throw new NotFoundException('This service does not exist!');
       }
 
       const new_item = await this.feedBackModel.create({
@@ -86,7 +93,11 @@ export class feedbackRepository implements IFeedBack {
       return new_item;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error create feedback', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+
+      throw new InternalServerErrorException(error.message);
     };
   };
 
@@ -99,18 +110,25 @@ export class feedbackRepository implements IFeedBack {
       const item = await this.feedBackModel.findOne({
         where: { id: id },
       });
+
       if (!item) {
-        throw new NotFoundException('item  not found');
-      }
+        throw new NotFoundException('This feedback does not found');
+      };
+
       await this.feedBackModel.destroy({
         where: { id: id },
       });
+
       return {
-        message: 'item deleted successfully',
+        message: 'This feedback is deleted successfully',
       };
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error delete one item ', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+
+      throw new InternalServerErrorException(error.message);
     };
   };
 
@@ -126,9 +144,7 @@ export class feedbackRepository implements IFeedBack {
       console.log(pagination.limit, pagination.page);
       if (pagination.limit === undefined && pagination.page === undefined) {
         const allItem = await this.feedBackModel.findAll();
-        // if (!allItem) {
-        //   return new NotFoundException('No item found');
-        // }
+
         return {
           data: allItem,
           totalCount: 1,
@@ -139,7 +155,7 @@ export class feedbackRepository implements IFeedBack {
         (!pagination.limit && pagination.page) ||
         (pagination.limit && !pagination.page)
       ) {
-        return new BadRequestException('Please provide limit and page');
+        throw new BadRequestException('Please provide limit and page!');
       };
 
       const limit = pagination?.limit ?? null;
@@ -177,16 +193,16 @@ export class feedbackRepository implements IFeedBack {
 
       const numberOfPages = Math.ceil(count / pagination.limit);
 
-      // if (!allItem || count === 0) {
-      //   return new NotFoundException('No item found!');
-      // } else {
       return {
         data: allItem,
         totalCount: numberOfPages,
       };
-      //}
+
     } catch (error) {
       console.log(error);
+      if (error instanceof BadRequestException) {
+        throw error;
+      };
       throw new InternalServerErrorException(error.message);
     };
   };
@@ -200,13 +216,19 @@ export class feedbackRepository implements IFeedBack {
       const item = await this.feedBackModel.findOne({
         where: { id: id },
       });
+
       if (!item) {
-        throw new NotFoundException('item  not found');
-      }
+        throw new NotFoundException('This feedback does not exist!');
+      };
+
       return item;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error find item ', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+
+      throw new InternalServerErrorException(error.message);
     };
   };
 
@@ -220,9 +242,11 @@ export class feedbackRepository implements IFeedBack {
       const item = await this.feedBackModel.findOne({
         where: { id: id },
       });
+
       if (!item) {
-        throw new NotFoundException('item  not found');
-      }
+        throw new NotFoundException('This feedback does not exist!');
+      };
+
       const duplicateName = await this.feedBackModel.findOne({
         where: {
           [Op.and]: [
@@ -235,10 +259,11 @@ export class feedbackRepository implements IFeedBack {
           ],
         },
       });
-      
+
       if (duplicateName) {
-        throw new ConflictException('You are not update anything');
+        throw new ConflictException('You are not updating anything!');
       };
+
       const updated = await this.serviceModel.update(
         {
           comment: updateFeedbackDto.comment,
@@ -249,10 +274,14 @@ export class feedbackRepository implements IFeedBack {
           where: { id: id },
         },
       );
+
       return updated;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error update item ', error);
+      if (error instanceof NotFoundException || error instanceof ConflictException) {
+        throw error;
+      };
+      throw new InternalServerErrorException(error.message);
     };
   };
 };

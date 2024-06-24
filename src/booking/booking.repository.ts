@@ -54,7 +54,7 @@ export class BookingRepository implements IBooking {
       });
 
       if (!existAppointment) {
-        return new NotFoundException('Appointment Not Found');
+        throw new NotFoundException('This appointment does not exist!');
       };
 
       const service = await this.serviceModel.findOne({
@@ -72,6 +72,9 @@ export class BookingRepository implements IBooking {
       return { ...data, bookings };
     } catch (error) {
       console.log(error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
       throw new InternalServerErrorException('Error create booking', error);
     };
   };
@@ -83,18 +86,25 @@ export class BookingRepository implements IBooking {
       const item = await this.bookingModel.findOne({
         where: { id: id },
       });
+
       if (!item) {
-        throw new NotFoundException('item  not found');
-      }
+        throw new NotFoundException('This booking does not exist!');
+      };
+
       await this.bookingModel.destroy({
         where: { id: id },
       });
+
       return {
-        message: 'item deleted successfully',
+        message: 'This booking is deleted successfully!',
       };
+
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error delete one item ', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+      throw new InternalServerErrorException(error.message);
     };
   };
 
@@ -131,7 +141,7 @@ export class BookingRepository implements IBooking {
         });
 
         // if (!allItem || allItem.length === 0) {
-        //   return new NotFoundException('There is no bookings!');
+        //   throw new NotFoundException('There is no bookings!');
         // };
 
         return {
@@ -144,7 +154,7 @@ export class BookingRepository implements IBooking {
         (!pagination.limit && pagination.page) ||
         (pagination.limit && !pagination.page)
       ) {
-        return new BadRequestException('Please provide limit and page!');
+        throw new BadRequestException('Please provide limit and page!');
       };
 
       console.log('pagination');
@@ -182,7 +192,7 @@ export class BookingRepository implements IBooking {
       const numberOfPage = Math.ceil(count / pagination.limit);
 
       // if (!allItem || count === 0) {
-      //   return new NotFoundException();
+      //   throw new NotFoundException();
       // } else {
       return {
         data: allItem,
@@ -191,6 +201,10 @@ export class BookingRepository implements IBooking {
       //}
     } catch (error) {
       console.log(error);
+      if (error instanceof BadRequestException) {
+        throw error;
+      };
+
       throw new InternalServerErrorException(error.message);
     };
   };
@@ -250,7 +264,7 @@ export class BookingRepository implements IBooking {
         });
 
         // if (!allItem || allItem.length === 0) {
-        //   return new NotFoundException('There is no bookings!');
+        //   throw new NotFoundException('There is no bookings!');
         // };
 
         return {
@@ -263,7 +277,7 @@ export class BookingRepository implements IBooking {
         (!pagination.limit && pagination.page) ||
         (pagination.limit && !pagination.page)
       ) {
-        return new BadRequestException('Please provide limit and page!');
+        throw new BadRequestException('Please provide limit and page!');
       };
 
       const limit = pagination?.limit ?? null;
@@ -323,7 +337,7 @@ export class BookingRepository implements IBooking {
 
 
       // if (!allBookings || allBookings.length === 0) {
-      //   return new NotFoundException('There is no bookings!');
+      //   throw new NotFoundException('There is no bookings!');
       // } else {
       return {
         data: allBookings,
@@ -332,6 +346,10 @@ export class BookingRepository implements IBooking {
       //}
     } catch (error) {
       console.log(error);
+      if (error instanceof BadRequestException) {
+        throw error;
+      };
+
       throw new InternalServerErrorException(error.message);
     };
   };
@@ -345,12 +363,18 @@ export class BookingRepository implements IBooking {
       const item = await this.bookingModel.findOne({
         where: { id: id },
       });
+
       if (!item) {
         throw new NotFoundException('item  not found');
-      }
+      };
+
       return item;
     } catch (error) {
       console.log(error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+
       throw new InternalServerErrorException('Error find item ', error);
     };
   };
@@ -385,6 +409,10 @@ export class BookingRepository implements IBooking {
       return updated;
     } catch (error) {
       console.log(error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+
       throw new InternalServerErrorException('Error update item ', error);
     };
   };

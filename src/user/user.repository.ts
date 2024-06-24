@@ -24,7 +24,7 @@ export class UserRepository implements IUser {
     private readonly bcryptUtils: bcryptModule,
     @Inject('ROLE_REPOSITORY')
     private readonly roleModels: typeof Role,
-  ) { }
+  ) { };
 
   public async findAllUser(pagination: UserPaginationDto): Promise<
     | {
@@ -72,7 +72,7 @@ export class UserRepository implements IUser {
         (pagination.limit === undefined && pagination.page) ||
         (pagination.limit && pagination.page === undefined)
       ) {
-        return new BadRequestException('Please provide page and limit');
+        throw new BadRequestException('Please provide page and limit');
       } else {
         console.log('With pagination');
         const { count, rows: allUsers } = await this.userModel.findAndCountAll({
@@ -101,16 +101,16 @@ export class UserRepository implements IUser {
 
         const numberOfPage = Math.ceil(count / pagination.limit);
 
-        if (!allUsers || count === 0) {
-          return new NotFoundException('No user found!');
-        } else {
-          return {
-            data: allUsers,
-            totalCount: numberOfPage,
-          };
-        }
-      }
+        return {
+          data: allUsers,
+          totalCount: numberOfPage,
+        };
+      };
     } catch (error) {
+      console.log('Error: ', error);
+      if (error instanceof BadRequestException) {
+        throw error;
+      };
       throw new InternalServerErrorException(error.message);
     }
   }
@@ -137,8 +137,11 @@ export class UserRepository implements IUser {
       } else {
         return user;
       }
-    } catch {
-      throw new InternalServerErrorException('Error fetching user');
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+      throw new InternalServerErrorException(error.message);
     }
   }
 
@@ -146,11 +149,21 @@ export class UserRepository implements IUser {
     user: UserCreateDto,
   ): Promise<object | InternalServerErrorException | ConflictException> {
     try {
-      const existingUser = await this.userModel.findOne({
-        where: {
-          [Op.or]: [{ email: user.email }, { phone_number: user.phone_number }],
-        },
-      });
+      const promises = [
+        this.userModel.findOne({
+          where: {
+            [Op.or]: [{ email: user.email }, { phone_number: user.phone_number }],
+          },
+        }),
+
+        this.roleModels.findOne({
+          where: {
+            role_name: user.role_name,
+          },
+        })
+      ];
+
+      const [existingUser, role] = await Promise.all(promises);
 
       console.log(existingUser);
 
@@ -158,48 +171,40 @@ export class UserRepository implements IUser {
         throw new ConflictException(
           `The user has the email ${user.email} or the phone number ${user.phone_number} had already exists!`,
         );
-      } else {
-        const role = await this.roleModels.findOne({
-          where: {
-            role_name: user.role_name,
-          },
-        });
-
-        // console.log("Role: ", role.dataValues);
-        // console.log("Role Id: ", role.role_id)
-
-        if (!role) {
-          throw new NotFoundException(
-            `The role ${user.role_name} does not exist!`,
-          );
-        }
-
-        //console.log("skjdnfkjs");
-        const pwd = await this.bcryptUtils.getHash(user.password);
-        //console.log("Password: ", pwd);
-
-        const newUser = await this.userModel.create({
-          user_id: uuidv4(),
-          full_name: user.full_name,
-          email: user.email,
-          role_id: role.role_id,
-          phone_number: user.phone_number,
-          password_hashed: pwd,
-          account_status: true,
-          created_at: new Date(),
-          updated_at: new Date(),
-        });
-
-        //console.log("New user: ", newUser);
-
-        return newUser;
       }
+
+      if (!role) {
+        throw new NotFoundException(
+          `The role ${user.role_name} does not exist!`,
+        );
+      }
+
+      //console.log("skjdnfkjs");
+      const pwd = await this.bcryptUtils.getHash(user.password);
+      //console.log("Password: ", pwd);
+
+      const newUser = await this.userModel.create({
+        user_id: uuidv4(),
+        full_name: user.full_name,
+        email: user.email,
+        role_id: role.role_id,
+        phone_number: user.phone_number,
+        password_hashed: pwd,
+        account_status: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+
+      //console.log("New user: ", newUser);
+
+      return newUser;
+
     } catch (error) {
       console.log('Error: ', error);
-      throw new InternalServerErrorException(
-        'Error while creating user!',
-        error,
-      );
+      if (error instanceof ConflictException || error instanceof NotFoundException) {
+        throw error;
+      };
+      throw new InternalServerErrorException(error.message);
     }
   }
 
@@ -227,6 +232,10 @@ export class UserRepository implements IUser {
         return `User ${user.user_id} has been updated successfully!`;
       }
     } catch (error) {
+      console.log('Error: ', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
       throw new InternalServerErrorException(error.message);
     }
   }
@@ -250,8 +259,8 @@ export class UserRepository implements IUser {
       console.log(accountStatus);
 
       if (accountStatus) {
-        return new NotImplementedException('User account is already disabled!');
-      }
+        throw new NotImplementedException('User account is already disabled!');
+      };
 
       const disabledUser = await this.userModel.update(
         {
@@ -267,15 +276,18 @@ export class UserRepository implements IUser {
       console.log('Disabled user: ', disabledUser);
 
       if (disabledUser[0] < 1) {
-        return new NotFoundException('User not found!');
+        throw new NotFoundException('User not found!');
       } else {
         return `User account ${id} has been disabled!`;
-      }
+      };
     } catch (error) {
       console.log('check if error');
+      if (error instanceof NotFoundException || error instanceof NotImplementedException) {
+        throw error;
+      };
       throw new InternalServerErrorException(error.message);
-    }
-  }
+    };
+  };
 
   // public async checkIfUserExists(id: string) {
   //     const user = await this.userModel.findOne({
@@ -287,15 +299,29 @@ export class UserRepository implements IUser {
   //         return false
   //     }
   // };
-  async getProfile(
+  public async getProfile(
     req: RequestWithUser,
   ): Promise<object | InternalServerErrorException> {
-    const userId = req.user.userId;
-    console.log("id", userId)
-    const user = await this.userModel.findOne({ where: { user_id: userId }, attributes: { exclude: ['password_hashed'] } });
-    if (!user) {
-      return new NotFoundException();
-    }
-    return user;
-  }
-}
+    try {
+      const userId = req.user.userId;
+      console.log("id", userId);
+
+      const user = await this.userModel.findOne({
+        where: { user_id: userId },
+        attributes: { exclude: ['password_hashed'] }
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found!');
+      };
+
+      return user;
+    } catch (error) {
+      console.log('Error: ', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      };
+      throw new InternalServerErrorException(error.message);
+    };
+  };
+};

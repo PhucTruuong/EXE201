@@ -205,12 +205,31 @@ export class AppointmentController {
     status: 200,
     description: 'It will get all appointment by user in the response',
   })
-  async getByUser(@Req() req: RequestWithUser) {
-    const item = await this.appointmentService.findByUser(req);
-    if (item instanceof InternalServerErrorException || NotFoundException) {
-      return (item as InternalServerErrorException) || NotFoundException;
-    }
-    return item;
+  async getByUser(
+    @Query() pagination: AppointmentPagination,
+    @Req() req: RequestWithUser,
+    @StandardParam() standardParam: StandardParams
+  ) {
+    const item = await this.appointmentService.findByUser(req, pagination);
+
+    if (
+      item instanceof InternalServerErrorException ||
+      item instanceof HttpException ||
+      item instanceof BadRequestException ||
+      item instanceof NotFoundException
+    ) {
+      return item as HttpException |
+        InternalServerErrorException |
+        BadRequestException |
+        NotFoundException;
+    } else {
+      const { data, totalCount } = item;
+      standardParam.setPaginationInfo({
+        count: totalCount,
+        limit: data.length,
+      });
+      return data;
+    };
   };
 
   @Get('/v2/appointment/host/my-appointments')
