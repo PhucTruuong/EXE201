@@ -33,7 +33,7 @@ export class PetRepository implements IPet {
     private readonly petBreedModel: typeof PetBreed,
     private readonly cloudinaryService: CloudinaryService,
     private readonly notificationGateway: NotificationGateWay,
-  ) {};
+  ) { };
 
   public async createPetMobile(
     createPetDto: CreatePetMobileDto,
@@ -217,7 +217,7 @@ export class PetRepository implements IPet {
       throw new InternalServerErrorException(error.message);
     };
   };
-  
+
   public async findAllPet(
     pagination: PetPagination,
   ): Promise<
@@ -227,7 +227,7 @@ export class PetRepository implements IPet {
     | BadRequestException
   > {
     try {
-      if(pagination.limit === undefined && pagination.page === undefined) {
+      if (pagination.limit === undefined && pagination.page === undefined) {
         const allPet = await this.petModel.findAll({
           attributes: [
             'id',
@@ -445,7 +445,8 @@ export class PetRepository implements IPet {
     try {
       if (!req.user || !req.user.userId) {
         return new NotFoundException('User ID not found in request');
-      }
+      };
+
       const limit = pagination?.limit ?? null;
       const page = pagination?.page ?? 1;
       const findOptions: any = {
@@ -473,14 +474,12 @@ export class PetRepository implements IPet {
         findOptions.limit = limit;
         findOptions.offset = (page - 1) * limit;
       }
-      if (!allPet || count === 0) {
-        return new HttpException('No Pet  found!', HttpStatus.NOT_FOUND);
-      } else {
-        return {
-          data: allPet,
-          totalCount: count,
-        };
+
+      return {
+        data: allPet,
+        totalCount: count,
       };
+
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error fetching pet ', error);
